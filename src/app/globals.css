@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #08080a;
+  color: white;
+}
+
+/*
+ * Chrome/Safari paint their own background on autofilled fields, which turns
+ * our dark inputs pale the moment the browser fills or remembers a value.
+ * The background itself cannot be overridden, but an inset box-shadow covers
+ * it, and -webkit-text-fill-color wins over the forced text colour.
+ *
+ * The absurd transition delay is the standard trick: the autofill background
+ * is applied as a transition, so pushing it far into the future means it
+ * never visibly lands.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #0b0f18 inset !important;
+  box-shadow: 0 0 0 1000px #0b0f18 inset !important;
+  caret-color: #ffffff;
+  transition: background-color 100000s ease-in-out 0s;
+}
+
+/* Firefox uses its own mechanism rather than :-webkit-autofill */
+input:autofill,
+textarea:autofill {
+  filter: none;
+  background-color: #0b0f18 !important;
+  color: #ffffff !important;
+}
