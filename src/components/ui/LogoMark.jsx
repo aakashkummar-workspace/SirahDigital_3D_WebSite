@@ -1,6 +1,6 @@
 "use client";
 import React, { useMemo } from 'react';
-import { LOGO_OUTER, LOGO_HOLES } from './sirahLogoOutline';
+import { LOGO_OUTER, LOGO_HOLES } from '@/components/three/sirahLogoOutline';
 
 // Draws the mark as vector, straight from the traced outline. Sharper than
 // scaling down logo.png, and it carries no wordmark.

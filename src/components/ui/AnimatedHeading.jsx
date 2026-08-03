@@ -18,6 +18,8 @@ export default function AnimatedHeading({
   delay = 0,
   stagger = 55,
   highlightClass = 'bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent',
+  // Passed through so a section can point aria-labelledby at the heading.
+  ...rest
 }) {
   const ref = useRef(null);
   const [shown, setShown] = useState(false);
@@ -50,7 +52,7 @@ export default function AnimatedHeading({
   const highlightFrom = highlight ? words.length - highlightWords.length : -1;
 
   return (
-    <Tag ref={ref} className={className}>
+    <Tag ref={ref} className={className} {...rest}>
       {words.map((word, i) => (
         <span
           key={`${word}-${i}`}

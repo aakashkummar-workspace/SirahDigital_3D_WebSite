@@ -689,7 +689,7 @@ function Stage({ item, setLabel }) {
             <span className="text-[10px] uppercase tracking-[0.2em] px-2 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300">{item.tag}</span>
           </div>
           <h2 className="text-3xl font-bold text-white">{item.name}</h2>
-          <p className="mt-4 text-sm text-gray-400 leading-relaxed">{item.blurb}</p>
+          <p className="mt-4 text-sm text-brand-muted leading-relaxed">{item.blurb}</p>
           {item.hint && <p className="mt-4 text-xs text-amber-400/80">{item.hint}</p>}
         </div>
 
@@ -723,7 +723,7 @@ export default function AnimationLab() {
         <h1 className="mt-4 text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
           3D logo animation options
         </h1>
-        <p className="mt-4 text-gray-400 max-w-2xl">
+        <p className="mt-4 text-brand-muted max-w-2xl">
           Set C goes deeper on the two you liked — three glass treatments and two particle
           treatments. Scroll through, then tell me the number you want on the live site.
         </p>
@@ -732,7 +732,7 @@ export default function AnimationLab() {
             <button
               key={k}
               onClick={() => setSet(k)}
-              className={`px-5 py-2 rounded-full text-xs font-semibold transition-colors ${set === k ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
+              className={`px-5 py-2 rounded-full text-xs font-semibold transition-colors ${set === k ? 'bg-white text-black' : 'text-brand-muted hover:text-white'}`}
             >
               {label}
             </button>

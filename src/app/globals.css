@@ -2,10 +2,301 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #08080a;
-  color: white;
+/* Brand identity, mirrored as custom properties so SVG fills, gradients and
+   inline styles use the same values as the Tailwind tokens. */
+:root {
+  --space: #16142c;
+  --space-deep: #100e20;
+  --space-raised: #1d1a38;
+  --indigo: #6366f1;
+  --purple: #a855f7;
+  --cyan: #22d3ee;
+  --text: #ffffff;
+  --muted: #cbd5e1;
 }
+
+body {
+  background-color: var(--space);
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Accessibility                                                           */
+/* ---------------------------------------------------------------------- */
+
+/* Every interactive element gets the same visible focus treatment. Applied
+   on :focus-visible only, so pointer users never see it. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Skip link — first tab stop on every page. */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--cyan);
+  color: #04121a;
+  font-weight: 700;
+  transition: top 160ms ease;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/*
+ * Honour a reduced-motion preference globally. Components that drive motion
+ * from JavaScript check the media query themselves; this catches everything
+ * declarative — orbits, pulses, dashes, drifts.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Motion primitives used by the homepage sections                         */
+/* ---------------------------------------------------------------------- */
+
+/* Slow breathing glow behind a node or core. */
+@keyframes breathe {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 0.9;  transform: scale(1.12); }
+}
+
+/* Ring that expands outward and fades — the "pulse" on a milestone node. */
+@keyframes pulse-ring {
+  0%   { opacity: 0.7; transform: scale(0.7); }
+  80%  { opacity: 0;   transform: scale(2.1); }
+  100% { opacity: 0;   transform: scale(2.1); }
+}
+
+/* One particle of the burst that fires when a milestone activates. Direction
+   comes from --tx/--ty, set per particle. */
+@keyframes burst {
+  0%   { opacity: 0;   transform: translate3d(0, 0, 0) scale(0.4); }
+  15%  { opacity: 1; }
+  100% { opacity: 0;   transform: translate3d(var(--tx), var(--ty), 0) scale(0.9); }
+}
+
+/* Data travelling along a connection line. */
+@keyframes flow {
+  to { stroke-dashoffset: -1000; }
+}
+
+/* Gentle vertical drift for the service visuals. */
+@keyframes float-y {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -14px, 0); }
+}
+
+/* Audio-style bar for the chatbot waveform. */
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.28); }
+  50%      { transform: scaleY(1); }
+}
+
+/* Sweep of light across a surface. */
+@keyframes sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+
+/* Content swapping in place — used when the orbit selection changes. */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Light travelling down the services hero's scroll hint. */
+@keyframes scroll-hint {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Visual Transformation Story                                             */
+/*                                                                         */
+/* NB: the reduced-motion block above neutralises everything here, but it  */
+/* does NOT stop SMIL <animate> elements. Those must be gated in JS with   */
+/* {run && <animate/>}, which unmounts the node.                           */
+/* ---------------------------------------------------------------------- */
+
+/* Scene countdown. Duration comes from SCENE_MS, never hardcoded here.
+   scaleX from a left origin — animating width would be layout every frame. */
+@keyframes scene-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Eyelid drop. Open for most of the cycle, shut for a couple of frames —
+   the mood's blink rate comes from the animation-duration, not the shape. */
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%           { transform: scaleY(0.06); }
+}
+
+/* Torso rise and fall. Amplitude is scaled by the pose via CSS variables so
+   stressed breathing reads shallow and quick, calm reads deep and slow. */
+@keyframes torso-breathe {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50%      { transform: translateY(calc(var(--breathe, 2px) * -1)) scaleY(1.012); }
+}
+
+/* Forearm rocking at the elbow — the typing tell. */
+@keyframes type-tap {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(var(--tap, 2.5deg)); }
+}
+
+/* Fingers striking keys. */
+@keyframes finger-tap {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(1.6px); }
+}
+
+/* Head turning between things demanding attention. */
+@keyframes head-scan {
+  0%, 100% { transform: rotate(calc(var(--scan, 3deg) * -1)); }
+  50%      { transform: rotate(var(--scan, 3deg)); }
+}
+
+/* Notification arriving — overshoots, then settles. */
+@keyframes alert-pop {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.7); }
+  55%  { opacity: 1; transform: translateY(0) scale(1.12); }
+  70%  { transform: scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Energy particle travelling down the services navigation rail. */
+@keyframes rail-spark {
+  0%   { opacity: 0; transform: translateY(0) scale(0.6); }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(var(--rail-h, 240px)) scale(0.6); }
+}
+
+/* Light sweeping across a heading once it arrives. */
+@keyframes text-sweep {
+  0%   { background-position: -160% 0; }
+  100% { background-position: 260% 0; }
+}
+
+/* Soft breathing glow on a CTA. */
+@keyframes cta-charge {
+  0%, 100% { box-shadow: 0 0 0 0 var(--charge, rgba(34,211,238,.28)); }
+  50%      { box-shadow: 0 0 22px 3px var(--charge, rgba(34,211,238,.28)); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* ROI calculator controls                                                 */
+/*                                                                         */
+/* Built on native <input type="range">. A div-based slider would need     */
+/* hand-rolled keyboard handling, ARIA value plumbing and touch support,   */
+/* all of which the native control already gets right — so it is styled    */
+/* rather than replaced. The filled portion comes from --fill, written by  */
+/* the component on each change.                                           */
+/* ---------------------------------------------------------------------- */
+.roi-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;               /* full 44px touch target; the track is drawn thin */
+  background: transparent;
+  cursor: pointer;
+}
+.roi-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent, #6366f1) 0%,
+    var(--accent, #6366f1) var(--fill, 50%),
+    rgba(255, 255, 255, 0.09) var(--fill, 50%),
+    rgba(255, 255, 255, 0.09) 100%
+  );
+}
+.roi-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+.roi-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent, #6366f1);
+}
+.roi-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 3px solid var(--accent, #6366f1);
+  box-shadow: 0 0 14px 2px color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
+  transition: transform 160ms cubic-bezier(.22, .61, .36, 1);
+}
+.roi-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 3px solid var(--accent, #6366f1);
+  box-shadow: 0 0 14px 2px rgba(99, 102, 241, 0.5);
+}
+.roi-range:hover::-webkit-slider-thumb,
+.roi-range:focus-visible::-webkit-slider-thumb { transform: scale(1.18); }
+.roi-range:focus-visible { outline: none; }
+.roi-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35), 0 0 14px 2px rgba(34, 211, 238, 0.5);
+}
+
+/* Native select, restyled. Same reasoning as the range input. */
+.roi-select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23CBD5E1' stroke-width='2'%3e%3cpath d='M5 8l5 5 5-5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+}
+.roi-select option { background-color: #16142c; color: #ffffff; }
+
+/* Steam off a coffee cup — rises, drifts, thins out. */
+@keyframes steam-rise {
+  0%   { opacity: 0; transform: translateY(0) translateX(0) scaleX(1); }
+  25%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-26px) translateX(5px) scaleX(1.7); }
+}
+
+.animate-breathe { animation: breathe 4.5s ease-in-out infinite; }
+.animate-float-y { animation: float-y 7s ease-in-out infinite; }
+
+/* ---------------------------------------------------------------------- */
+/* Utilities                                                               */
+/* ---------------------------------------------------------------------- */
+
+/* Horizontal swipe rails (the mobile industry carousel) hide their bar. */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /*
  * Chrome/Safari paint their own background on autofilled fields, which turns
@@ -28,8 +319,8 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff;
-  -webkit-box-shadow: 0 0 0 1000px #0b0f18 inset !important;
-  box-shadow: 0 0 0 1000px #0b0f18 inset !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--space-deep) inset !important;
+  box-shadow: 0 0 0 1000px var(--space-deep) inset !important;
   caret-color: #ffffff;
   transition: background-color 100000s ease-in-out 0s;
 }
@@ -38,6 +329,6 @@ select:-webkit-autofill:focus {
 input:autofill,
 textarea:autofill {
   filter: none;
-  background-color: #0b0f18 !important;
+  background-color: #100e20 !important;
   color: #ffffff !important;
 }

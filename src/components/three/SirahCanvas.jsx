@@ -210,7 +210,14 @@ const BURST_X = 11.5;
 const BURST_Y = 6.5;
 const BURST_Z = 6.0;
 
-function ParticleLogo() {
+/**
+ * `mode` decides what the cloud is doing:
+ *   'scroll'    — homepage: assembled at the top, dispersing as you scroll
+ *   'dispersed' — inner pages: background texture, always open
+ *   'assembled' — a section has claimed it; hold the mark together regardless
+ *                 of scroll position
+ */
+function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0 }) {
   const pointsRef = useRef();
   const materialRef = useRef();
   const scatter = useRef(0);          // 0 = assembled, 1 = fully scattered
@@ -218,6 +225,27 @@ function ParticleLogo() {
   const pointer = useRef({ x: 0, y: 0, seen: false });
   const local = useMemo(() => new THREE.Vector3(), []);
   const pixels = useLogoPixels();
+
+  // Read through refs inside useFrame so a route change does not re-render
+  // the whole R3F tree — only the per-frame target moves.
+  const modeRef = useRef(mode);
+  useEffect(() => { modeRef.current = mode; }, [mode]);
+  const alignRef = useRef(align);
+  useEffect(() => { alignRef.current = align; }, [align]);
+
+  // A section can tint the whole field toward its own accent. pointsMaterial
+  // multiplies its colour into the per-vertex colours, so easing material.color
+  // toward the accent shifts the cloud without touching the colour buffer —
+  // 18,000 vertices stay untouched and the change costs nothing per frame.
+  const tintTarget = useMemo(() => new THREE.Color(), []);
+  const tintCurrent = useMemo(() => new THREE.Color(1, 1, 1), []);
+  const hasTint = useRef(false);
+  const energyRef = useRef(0);
+  useEffect(() => {
+    hasTint.current = Boolean(tint);
+    if (tint) tintTarget.set(tint);
+    energyRef.current = energy;
+  }, [tint, energy, tintTarget]);
 
   const { positions, targets, bursts, stagger, colors, count } = useMemo(() => {
     // Wait for the artwork before building, so the cloud is never shown in
@@ -236,7 +264,11 @@ function ParticleLogo() {
     // and back faces fill in and the mark reads solid.
     const sampler = new MeshSurfaceSampler(new THREE.Mesh(geo)).setWeightAttribute(null).build();
 
-    const n = 18000;
+    // Particle density scales with the device. A phone GPU chews through
+    // 18k points and the mark reads perfectly well at a third of that, so
+    // the budget is spent where there is screen to spend it on.
+    const width = typeof window === 'undefined' ? 1920 : window.innerWidth;
+    const n = width < 768 ? 6000 : width < 1280 ? 11000 : 18000;
     const targets = new Float32Array(n * 3);
     const bursts = new Float32Array(n * 3);
     const colors = new Float32Array(n * 3);
@@ -324,10 +356,18 @@ function ParticleLogo() {
       touching = pointInPolygon(sx, sy, LOGO_OUTER) || nearPolygon(sx, sy, LOGO_OUTER, TOUCH_MARGIN);
     }
 
-    // Whichever wants it more open wins: the cursor sitting on the mark, or
-    // how far down the page you have scrolled. Eased gently in both directions
-    // so it drifts apart rather than snapping.
-    const goal = Math.max(scrollScatter.current, touching ? 1 : 0);
+    // Eased gently in both directions so it drifts apart rather than snapping.
+    //
+    // In 'scroll' mode whichever wants it more open wins: the cursor sitting
+    // on the mark, or how far down the page you have scrolled. 'assembled'
+    // deliberately ignores both — a section that has claimed the background
+    // is nowhere near the top of the page, so scroll scatter would otherwise
+    // hold the cloud permanently open.
+    const m = modeRef.current;
+    const goal =
+      m === 'dispersed' ? 1
+        : m === 'assembled' ? 0
+          : Math.max(scrollScatter.current, touching ? 1 : 0);
     scatter.current += (goal - scatter.current) * Math.min(1, d * 2.2);
 
     const s = scatter.current;
@@ -347,18 +387,44 @@ function ParticleLogo() {
 
     // Thin the cloud out as it disperses so it sits back behind the copy,
     // but keep enough of it to read while it turns.
+    //
+    // Centred, the mark sits directly under a headline rather than beside it,
+    // so it is knocked back further — it should read as a backdrop the copy
+    // sits on, not as something competing with it.
+    const centred = alignRef.current === 'center';
     if (materialRef.current) {
-      materialRef.current.opacity = 0.95 * (1 - s * 0.55);
+      materialRef.current.opacity = 0.95 * (1 - s * 0.55) * (centred ? 0.5 : 1);
+
+      // Ease toward the active section's accent, or back to neutral white
+      // when nothing has claimed it. A slow lerp is deliberate — the field
+      // should feel like it is being lit, not repainted.
+      const goalR = hasTint.current ? tintTarget.r : 1;
+      const goalG = hasTint.current ? tintTarget.g : 1;
+      const goalB = hasTint.current ? tintTarget.b : 1;
+      const kt = Math.min(1, d * 1.4);
+      tintCurrent.r += (goalR - tintCurrent.r) * kt;
+      tintCurrent.g += (goalG - tintCurrent.g) * kt;
+      tintCurrent.b += (goalB - tintCurrent.b) * kt;
+      materialRef.current.color.copy(tintCurrent);
+
+      // A brief swell in point size when a section reports fresh energy,
+      // so a capability change registers in the background too.
+      const targetSize = 0.05 * (1 + energyRef.current * 0.55);
+      materialRef.current.size += (targetSize - materialRef.current.size) * Math.min(1, d * 2.5);
+      energyRef.current *= 1 - Math.min(1, d * 1.2);
     }
 
     // Assembled, the mark sits in the right-hand half on wide screens so it
     // clears the hero copy. As it disperses it slides back to centre, so the
     // scattered dots spread across the whole viewport rather than bunching
     // into one side.
+    // 'center' keeps the mark on the page's axis wherever it is in the scroll
+    // — used when a full-screen section asks the particles to converge on it.
     const aspect = state.size.width / state.size.height;
     const halfH = Math.tan((state.camera.fov * Math.PI) / 360) * 9;
     const wide = aspect > 1.15;
-    pts.position.x = wide ? halfH * aspect * 0.40 * (1 - s) : 0;
+    const offset = wide && alignRef.current === 'hero' ? halfH * aspect * 0.40 * (1 - s) : 0;
+    pts.position.x += (offset - pts.position.x) * Math.min(1, d * 2.2);
     pts.scale.setScalar(wide ? 1 : 0.72);
 
     // No spin — it only ever sways gently. Scattering is the whole effect.
@@ -366,7 +432,7 @@ function ParticleLogo() {
     // sits behind the page content rather than on top of it.
     pts.rotation.y = Math.sin(time * 0.25) * 0.18;
     pts.rotation.x = Math.sin(time * 0.19) * 0.07;
-    pts.position.z = -s * 3.4;
+    pts.position.z = -s * 3.4 + (centred ? -1.6 : 0);
   });
 
   if (!count) return null;
@@ -390,10 +456,12 @@ function ParticleLogo() {
   );
 }
 
-export default function SirahCanvas() {
+export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = null, energy = 0 }) {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: 0, pointerEvents: 'none' }}>
-      <Canvas camera={{ position: [0, 0, 9], fov: 45 }}>
+      {/* dpr capped at 1.5 — rendering a particle field at a phone's native
+          3x costs three times the fill rate for no visible gain. */}
+      <Canvas camera={{ position: [0, 0, 9], fov: 45 }} dpr={[1, 1.5]}>
         <ambientLight intensity={0.4} />
         <directionalLight position={[10, 10, 5]} intensity={1.8} />
 
@@ -402,7 +470,7 @@ export default function SirahCanvas() {
         <pointLight position={[6, -4, 5]} intensity={1.0} color="#06b6d4" />
 
         <Environment preset="studio" />
-        <ParticleLogo />
+        <ParticleLogo mode={mode} align={align} tint={tint} energy={energy} />
       </Canvas>
     </div>
   );
