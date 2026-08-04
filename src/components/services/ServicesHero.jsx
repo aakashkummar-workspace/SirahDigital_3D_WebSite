@@ -42,13 +42,7 @@ export default function ServicesHero() {
               className="block"
               style={{
                 fontSize: 'clamp(2.5rem, 1.1rem + 6.6vw, 7rem)',
-                background:
-                  i >= 2
-                    ? 'linear-gradient(90deg,#6366F1,#A855F7 45%,#22D3EE)'
-                    : 'none',
-                WebkitBackgroundClip: i >= 2 ? 'text' : undefined,
-                backgroundClip: i >= 2 ? 'text' : undefined,
-                color: i >= 2 ? 'transparent' : '#FFFFFF',
+                color: '#FFFFFF',
                 opacity: shown ? 1 : 0,
                 transform: shown ? 'none' : 'translateY(0.5em)',
                 transition: reduced

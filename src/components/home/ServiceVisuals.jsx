@@ -23,10 +23,6 @@ const Defs = ({ id }) => (
       <stop offset="55%" stopColor={INDIGO} />
       <stop offset="100%" stopColor={PURPLE} />
     </linearGradient>
-    <radialGradient id={`${id}-glow`}>
-      <stop offset="0%" stopColor={INDIGO} stopOpacity="0.55" />
-      <stop offset="100%" stopColor={INDIGO} stopOpacity="0" />
-    </radialGradient>
   </defs>
 );
 
@@ -43,7 +39,6 @@ export function AgentVisual({ active, reduced }) {
   return (
     <svg viewBox="0 0 360 360" className="w-full h-auto" role="img" aria-label="An abstract digital figure surrounded by orbiting data points">
       <Defs id="agent" />
-      <circle cx="180" cy="180" r="150" fill="url(#agent-glow)" opacity={run ? 0.9 : 0.4} />
 
       {/* orbit rails */}
       {satellites.map((s, i) => (
@@ -95,7 +90,6 @@ export function ChatbotVisual({ active, reduced }) {
   return (
     <svg viewBox="0 0 360 360" className="w-full h-auto" role="img" aria-label="An animated voice waveform between two conversation markers">
       <Defs id="bot" />
-      <circle cx="180" cy="180" r="140" fill="url(#bot-glow)" opacity={run ? 0.85 : 0.35} />
 
       {/* listening rings */}
       <circle cx="180" cy="180" r="128" fill="none" stroke="white" strokeOpacity="0.07" />
@@ -162,7 +156,6 @@ export function WorkflowVisual({ active, reduced }) {
   return (
     <svg viewBox="0 0 360 360" className="w-full h-auto" role="img" aria-label="A network of process nodes with data flowing along the connections">
       <Defs id="flow" />
-      <circle cx="180" cy="180" r="150" fill="url(#flow-glow)" opacity={run ? 0.8 : 0.3} />
 
       {links.map(([a, b], i) => {
         const p = `M${nodes[a].x} ${nodes[a].y} Q ${(nodes[a].x + nodes[b].x) / 2} ${(nodes[a].y + nodes[b].y) / 2 - 26} ${nodes[b].x} ${nodes[b].y}`;
@@ -215,12 +208,6 @@ export function DashboardVisual({ active, reduced }) {
           transformStyle: 'preserve-3d',
         }}
       >
-        {/* back plate */}
-        <div
-          className="absolute inset-0 rounded-3xl blur-2xl"
-          style={{ background: `linear-gradient(135deg, ${INDIGO}55, ${PURPLE}33)`, transform: 'translateZ(-60px) scale(0.92)' }}
-        />
-
         {/* the panel — a surface, not a card: no border, no shadow box */}
         <div className="relative rounded-3xl overflow-hidden bg-space-raised/80 backdrop-blur-xl p-6 sm:p-8">
           <div className="flex items-center gap-2">

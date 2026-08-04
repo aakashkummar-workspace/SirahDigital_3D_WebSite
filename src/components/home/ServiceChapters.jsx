@@ -21,7 +21,7 @@ import { ArrowRightIcon } from '@/components/ui/icons';
  */
 
 const CHAPTERS = SERVICES.slice(0, 4);
-const ACCENTS = ['#6366F1', '#22D3EE', '#A855F7', '#6366F1'];
+const ACCENTS = ['#22D3EE', '#22D3EE', '#22D3EE', '#22D3EE'];
 
 function Chapter({ service, index }) {
   const [ref, inView] = useInView({ threshold: 0.2, rootMargin: '0px 0px -12% 0px' });
@@ -107,12 +107,6 @@ function Chapter({ service, index }) {
               : 'opacity 1100ms cubic-bezier(.22,.61,.36,1) 80ms, transform 1100ms cubic-bezier(.22,.61,.36,1) 80ms',
           }}
         >
-          {/* ambient wash so the visual sits in light rather than on a panel */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 blur-3xl"
-            style={{ background: `radial-gradient(closest-side, ${accent}22, transparent 72%)` }}
-          />
           <div className="mx-auto w-full max-w-md lg:max-w-lg">
             {Visual && <Visual active={active} reduced={reduced} />}
           </div>

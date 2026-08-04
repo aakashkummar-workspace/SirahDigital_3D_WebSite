@@ -9,7 +9,7 @@ export default function MethodologyGrid() {
       {METHODOLOGY.map((m, i) => (
         <Reveal key={m.title} delay={i * 120} className="h-full">
           <SpotlightCard
-            className={`h-full p-8 backdrop-blur-xl rounded-3xl border pointer-events-auto transition-all duration-300 hover:-translate-y-1.5 ${m.hover} bg-[#0a0a0d]/70 border-white/5 hover:shadow-2xl hover:shadow-indigo-500/10`}
+            className={`h-full p-8 backdrop-blur-xl rounded-3xl border pointer-events-auto transition-all duration-300 hover:-translate-y-1.5 ${m.hover} bg-[#0a0a0d]/70 border-white/5`}
           >
             <h3 className={`text-2xl font-semibold ${m.accent}`}>{m.title}</h3>
             <p className="mt-4 text-sm text-brand-muted">{m.desc}</p>

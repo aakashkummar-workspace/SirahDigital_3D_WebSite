@@ -38,7 +38,9 @@ function reducer(state, action) {
 }
 
 export default function useSceneClock({ count, inView, reduced }) {
-  const [state, dispatch] = useReducer(reducer, { index: 0, tick: 0, playing: true, manual: false });
+  // Starts paused. Three scenes cycling on their own is the loudest thing on
+  // the page; the visitor opts in with the play button or the scene tabs.
+  const [state, dispatch] = useReducer(reducer, { index: 0, tick: 0, playing: false, manual: false });
   const { index, tick, playing, manual } = state;
 
   // A background tab throttles setTimeout to a second and eventually to a

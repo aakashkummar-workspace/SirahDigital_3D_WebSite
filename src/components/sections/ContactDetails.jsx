@@ -14,7 +14,7 @@ export default function ContactDetails() {
           {/* TODO: point at the real booking link (Calendly / Google Calendar) */}
           <a
             href="#send-message"
-            className="mt-7 w-full inline-flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-opacity"
+            className="mt-7 w-full inline-flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl font-bold text-white bg-brand-cyan hover:bg-white transition-colors"
           >
             Schedule Now
             <ArrowRightIcon />

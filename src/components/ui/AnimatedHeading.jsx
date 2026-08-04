@@ -17,7 +17,7 @@ export default function AnimatedHeading({
   className = '',
   delay = 0,
   stagger = 55,
-  highlightClass = 'bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent',
+  highlightClass = 'text-brand-cyan',
   // Passed through so a section can point aria-labelledby at the heading.
   ...rest
 }) {

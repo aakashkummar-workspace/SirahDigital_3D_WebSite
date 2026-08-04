@@ -32,7 +32,7 @@ export default function ProjectGrid({ limit }) {
             <Reveal key={proj.slug} delay={idx * 110} className="h-full">
               <SpotlightCard
                 glow="rgba(16, 185, 129, 0.14)"
-                className="h-full p-6 backdrop-blur-lg rounded-2xl border transition-all duration-300 pointer-events-auto hover:-translate-y-1.5 bg-[#0a0a0d]/50 border-white/5 hover:border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10"
+                className="h-full p-6 backdrop-blur-lg rounded-2xl border transition-all duration-300 pointer-events-auto hover:-translate-y-1.5 bg-[#0a0a0d]/50 border-white/5 hover:border-emerald-500/30"
               >
                 <span className="text-xs uppercase tracking-wider text-emerald-500">{proj.client}</span>
                 <h4 className="mt-3 text-xl font-semibold">{proj.title}</h4>
@@ -52,7 +52,7 @@ export default function ProjectGrid({ limit }) {
               <Reveal key={proj.slug} delay={idx * 110} className="h-full">
                 <SpotlightCard
                   glow="rgba(245, 158, 11, 0.14)"
-                  className="h-full p-6 backdrop-blur-lg rounded-2xl border transition-all duration-300 pointer-events-auto hover:-translate-y-1.5 bg-[#0a0a0d]/50 border-white/5 hover:border-amber-500/30 hover:shadow-2xl hover:shadow-amber-500/10"
+                  className="h-full p-6 backdrop-blur-lg rounded-2xl border transition-all duration-300 pointer-events-auto hover:-translate-y-1.5 bg-[#0a0a0d]/50 border-white/5 hover:border-amber-500/30"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xs px-2 py-1 rounded-full text-amber-500 bg-amber-500/10 border border-amber-500/20">{proj.phase}</span>

@@ -24,7 +24,9 @@ import { calculateROI } from '@/lib/roi';
  * frame is a real cost on mobile for no gain over an opaque fill.
  */
 
-const ACCENTS = ['#6366F1', '#A855F7', '#22D3EE'];
+// Single accent — the colour used to rotate by industry index, which was
+// decorative rather than informative.
+const ACCENTS = ['#22D3EE'];
 
 function reducer(state, action) {
   if (state[action.key] === action.value) return state;   // no-op, no re-render
@@ -44,13 +46,6 @@ export default function AIAutomationROICalculator() {
         className="relative overflow-hidden rounded-3xl border p-6 sm:p-10 lg:p-14 transition-[border-color] duration-1000 ease-brand"
         style={{ background: '#191634', borderColor: `${accent}2e` }}
       >
-        {/* ambient light inside the card, retinted per industry */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 z-0 pointer-events-none transition-[background] duration-1000 ease-brand"
-          style={{ background: `radial-gradient(70% 55% at 78% 12%, ${accent}1c, transparent 68%)` }}
-        />
-
         <div className="relative z-10">
           {/* ── header ───────────────────────────────────────────────────── */}
           <header className="max-w-3xl">
@@ -60,7 +55,7 @@ export default function AIAutomationROICalculator() {
             <AnimatedHeading
               id="roi-title"
               text="Calculate Your Annual AI Automation Savings"
-              className="mt-5 text-fluid-2xl font-bold tracking-tight bg-gradient-to-r from-brand-cyan via-brand-indigo to-brand-purple bg-clip-text text-transparent"
+              className="mt-5 text-fluid-2xl font-bold tracking-tight text-white"
             />
             <p className="mt-6 text-fluid-base leading-relaxed text-brand-muted">
               Four questions about how your business runs today. The dashboard updates as you move.

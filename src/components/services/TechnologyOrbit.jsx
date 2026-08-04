@@ -75,7 +75,6 @@ export default function TechnologyOrbit() {
 
           <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" stroke="white" strokeOpacity="0.07" />
           <ellipse cx={CX} cy={CY} rx={RX * 0.62} ry={RY * 0.62} fill="none" stroke="white" strokeOpacity="0.05" />
-          <circle cx={CX} cy={CY} r="200" fill={`url(#${uid}-core)`} opacity={shown ? 0.8 : 0.2} style={{ transition: 'opacity 1.2s ease' }} />
 
           {/* spokes from the centre, each carrying a travelling pulse */}
           {NODES.map((n, i) => (
@@ -139,13 +138,13 @@ export default function TechnologyOrbit() {
           aria-hidden="true"
           className="absolute left-[7px] top-4 bottom-4 w-px"
           style={{
-            background: 'linear-gradient(180deg,#6366F1,#A855F7 50%,#22D3EE)',
+            background: '#22D3EE',
             opacity: shown ? 0.8 : 0,
             transition: 'opacity 1s ease',
           }}
         />
         <p className="relative flex items-center gap-4 pb-6">
-          <span className="w-[15px] h-[15px] rounded-full shrink-0" style={{ background: '#6366F1', boxShadow: '0 0 16px 3px rgba(99,102,241,.5)' }} />
+          <span className="w-[15px] h-[15px] rounded-full shrink-0" style={{ background: '#6366F1' }} />
           <span className="text-fluid-base font-extrabold">
             <span className="text-white">SIRAH </span>
             <span className="text-brand-purple">DIGITAL</span>

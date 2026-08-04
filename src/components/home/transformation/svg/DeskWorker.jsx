@@ -332,7 +332,6 @@ export default function DeskWorker({ mood = 'calm', run, idBase, accent }) {
 export function Monitor({ idBase, accent, children, glow = true }) {
   return (
     <g>
-      {glow && <ellipse cx="492" cy="238" rx="150" ry="130" fill={`url(#${idBase}-glow)`} opacity="0.5" />}
       <g transform="rotate(-4 492 330)">
         <rect x="382" y="136" width="220" height="196" rx="12" fill="#171334" stroke="#37305F" strokeWidth="2.2" />
         <rect x="394" y="148" width="196" height="164" rx="6" fill="#0D0A20" />

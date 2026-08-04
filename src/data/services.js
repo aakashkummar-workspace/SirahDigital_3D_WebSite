@@ -14,9 +14,9 @@ export const SERVICES = [
 ];
 
 // The three pillars behind how the work gets delivered.
-// Accents run the brand ramp: Primary Accent → Secondary Accent → Highlight.
+// One accent across all three — the colour never encoded anything.
 export const METHODOLOGY = [
-  { title: 'Automate', accent: 'text-brand-indigo', hover: 'hover:border-brand-indigo/40', desc: 'Eliminate repetitive workflow structures with high-availability enterprise AI agents.' },
-  { title: 'Simplify', accent: 'text-brand-purple', hover: 'hover:border-brand-purple/40', desc: 'Deconstruct complex operations into intuitive, custom software applications.' },
+  { title: 'Automate', accent: 'text-brand-cyan', hover: 'hover:border-brand-cyan/40', desc: 'Eliminate repetitive workflow structures with high-availability enterprise AI agents.' },
+  { title: 'Simplify', accent: 'text-brand-cyan', hover: 'hover:border-brand-cyan/40', desc: 'Deconstruct complex operations into intuitive, custom software applications.' },
   { title: 'Scale', accent: 'text-brand-cyan', hover: 'hover:border-brand-cyan/40', desc: 'Launch cloud-ready API infrastructures positioned to grow alongside your business.' },
 ];

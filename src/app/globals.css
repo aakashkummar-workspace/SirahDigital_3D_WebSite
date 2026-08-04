@@ -198,26 +198,12 @@ textarea:focus-visible,
   100% { background-position: 260% 0; }
 }
 
-/* Soft breathing glow on a CTA. */
-@keyframes cta-charge {
-  0%, 100% { box-shadow: 0 0 0 0 var(--charge, rgba(34,211,238,.28)); }
-  50%      { box-shadow: 0 0 22px 3px var(--charge, rgba(34,211,238,.28)); }
-}
-
-/* ---------------------------------------------------------------------- */
-/* ROI calculator controls                                                 */
-/*                                                                         */
-/* Built on native <input type="range">. A div-based slider would need     */
-/* hand-rolled keyboard handling, ARIA value plumbing and touch support,   */
-/* all of which the native control already gets right — so it is styled    */
-/* rather than replaced. The filled portion comes from --fill, written by  */
-/* the component on each change.                                           */
-/* ---------------------------------------------------------------------- */
+/* Native range slider controls */
 .roi-range {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 44px;               /* full 44px touch target; the track is drawn thin */
+  height: 44px;
   background: transparent;
   cursor: pointer;
 }
@@ -251,7 +237,6 @@ textarea:focus-visible,
   border-radius: 999px;
   background: #ffffff;
   border: 3px solid var(--accent, #6366f1);
-  box-shadow: 0 0 14px 2px color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
   transition: transform 160ms cubic-bezier(.22, .61, .36, 1);
 }
 .roi-range::-moz-range-thumb {
@@ -260,13 +245,12 @@ textarea:focus-visible,
   border-radius: 999px;
   background: #ffffff;
   border: 3px solid var(--accent, #6366f1);
-  box-shadow: 0 0 14px 2px rgba(99, 102, 241, 0.5);
 }
 .roi-range:hover::-webkit-slider-thumb,
 .roi-range:focus-visible::-webkit-slider-thumb { transform: scale(1.18); }
 .roi-range:focus-visible { outline: none; }
 .roi-range:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35), 0 0 14px 2px rgba(34, 211, 238, 0.5);
+  outline: 2px solid var(--cyan);
 }
 
 /* Native select, restyled. Same reasoning as the range input. */

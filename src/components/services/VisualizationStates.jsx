@@ -37,7 +37,7 @@ const node = (pos, r, a = 1, color = CYAN) => ({ ...pos, r, a, color });
 /* ── 01 Neural AI Core ──────────────────────────────────────────────────
    Three concentric orbits around a dense core. The resting configuration. */
 const aiCore = {
-  accent: INDIGO,
+  accent: CYAN,
   core: { r: 46, a: 1 },
   rings: [78, 120, 160],
   ringAlpha: 1,
@@ -46,8 +46,8 @@ const aiCore = {
   detail: 'none',
   nodes: [
     ...[0, 1, 2].map((i) => node(onRing(i, 3, 78), 7, 1, CYAN)),
-    ...[0, 1, 2].map((i) => node(onRing(i, 3, 120, 120, 30), 6, 1, INDIGO)),
-    ...[0, 1].map((i) => node(onRing(i, 2, 160, 160, 60), 5, 1, PURPLE)),
+    ...[0, 1, 2].map((i) => node(onRing(i, 3, 120, 120, 30), 6, 1, CYAN)),
+    ...[0, 1].map((i) => node(onRing(i, 2, 160, 160, 60), 5, 1, CYAN)),
   ],
 };
 
@@ -64,14 +64,14 @@ const communicationHub = {
   detail: 'waveform',
   nodes: [
     ...[0, 1, 2, 3, 4].map((i) => node(onRing(i, 5, 140, 126), 9, 1, CYAN)),
-    ...[0, 1, 2].map((i) => node({ x: 168 + i * 32, y: 292 }, 4, 0.55, INDIGO)),
+    ...[0, 1, 2].map((i) => node({ x: 168 + i * 32, y: 292 }, 4, 0.55, CYAN)),
   ],
 };
 
 /* ── 03 Automation Engine ───────────────────────────────────────────────
    The ring collapses and the nodes fan out into a left-to-right pipeline. */
 const workflowEngine = {
-  accent: PURPLE,
+  accent: CYAN,
   core: { r: 20, a: 0.5 },
   rings: [150, 150, 150],
   ringAlpha: 0.12,
@@ -80,20 +80,20 @@ const workflowEngine = {
   detail: 'none',
   nodes: [
     node({ x: 66, y: 200 }, 11, 1, CYAN),
-    node({ x: 138, y: 126 }, 8, 1, INDIGO),
-    node({ x: 138, y: 274 }, 8, 1, INDIGO),
-    node({ x: 214, y: 200 }, 10, 1, PURPLE),
+    node({ x: 138, y: 126 }, 8, 1, CYAN),
+    node({ x: 138, y: 274 }, 8, 1, CYAN),
+    node({ x: 214, y: 200 }, 10, 1, CYAN),
     node({ x: 290, y: 132 }, 7, 1, CYAN),
     node({ x: 290, y: 268 }, 7, 1, CYAN),
-    node({ x: 348, y: 168 }, 5, 0.9, INDIGO),
-    node({ x: 348, y: 232 }, 5, 0.9, INDIGO),
+    node({ x: 348, y: 168 }, 5, 0.9, CYAN),
+    node({ x: 348, y: 232 }, 5, 0.9, CYAN),
   ],
 };
 
 /* ── 04 Enterprise Dashboard ────────────────────────────────────────────
    Nodes settle onto a trend line and the panel corners. */
 const enterpriseDashboard = {
-  accent: INDIGO,
+  accent: CYAN,
   core: { r: 14, a: 0.28 },
   rings: [170, 170, 170],
   ringAlpha: 0.08,
@@ -103,11 +103,11 @@ const enterpriseDashboard = {
   nodes: [
     node({ x: 108, y: 264 }, 6, 1, CYAN),
     node({ x: 156, y: 226 }, 6, 1, CYAN),
-    node({ x: 204, y: 238 }, 6, 1, INDIGO),
-    node({ x: 252, y: 190 }, 6, 1, INDIGO),
-    node({ x: 300, y: 152 }, 8, 1, PURPLE),
-    node({ x: 108, y: 132 }, 4, 0.35, INDIGO),
-    node({ x: 300, y: 132 }, 4, 0.35, INDIGO),
+    node({ x: 204, y: 238 }, 6, 1, CYAN),
+    node({ x: 252, y: 190 }, 6, 1, CYAN),
+    node({ x: 300, y: 152 }, 8, 1, CYAN),
+    node({ x: 108, y: 132 }, 4, 0.35, CYAN),
+    node({ x: 300, y: 132 }, 4, 0.35, CYAN),
     node({ x: 204, y: 132 }, 4, 0.25, CYAN),
   ],
 };
@@ -115,7 +115,7 @@ const enterpriseDashboard = {
 /* ── 05 Enterprise Database ─────────────────────────────────────────────
    A hexagonal mesh: every record connected to every neighbour. */
 const businessNetwork = {
-  accent: PURPLE,
+  accent: CYAN,
   core: { r: 34, a: 0.9 },
   rings: [124, 124, 66],
   ringAlpha: 0.4,
@@ -123,7 +123,7 @@ const businessNetwork = {
   mesh: 1,
   detail: 'none',
   nodes: [
-    ...[0, 1, 2, 3, 4, 5].map((i) => node(onRing(i, 6, 126), 9, 1, i % 2 ? INDIGO : PURPLE)),
+    ...[0, 1, 2, 3, 4, 5].map((i) => node(onRing(i, 6, 126), 9, 1, CYAN)),
     ...[0, 1].map((i) => node(onRing(i, 2, 62, 62, 45), 5, 0.8, CYAN)),
   ],
 };
@@ -140,7 +140,7 @@ const documentScanner = {
   detail: 'document',
   nodes: [
     ...[0, 1, 2, 3, 4].map((i) => node({ x: 142, y: 132 + i * 38 }, 4.5, 0.9, CYAN)),
-    ...[0, 1, 2].map((i) => node({ x: 282, y: 152 + i * 74 }, 7, 1, INDIGO)),
+    ...[0, 1, 2].map((i) => node({ x: 282, y: 152 + i * 74 }, 7, 1, CYAN)),
   ],
 };
 
@@ -155,7 +155,7 @@ const analyticsSphere = {
   mesh: 0.35,
   detail: 'sphere',
   nodes: [...Array(NODE_COUNT)].map((_, i) =>
-    node(onRing(i, NODE_COUNT, 124), i % 2 ? 6 : 8, 1, i % 3 === 0 ? PURPLE : CYAN)
+    node(onRing(i, NODE_COUNT, 124), i % 2 ? 6 : 8, 1, CYAN)
   ),
 };
 

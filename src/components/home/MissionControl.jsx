@@ -92,7 +92,6 @@ export default function MissionControl() {
       <div className="max-w-2xl">
         <div className="flex items-center gap-3">
           <span className="relative grid place-items-center w-2.5 h-2.5">
-            <span className="absolute inset-0 rounded-full" style={{ background: LIVE, animation: reduced ? undefined : 'pulse-ring 2.4s ease-out infinite' }} />
             <span className="relative w-2 h-2 rounded-full" style={{ background: LIVE }} />
           </span>
           <p className="text-fluid-xs uppercase tracking-[0.35em] font-semibold text-brand-cyan">Mission control</p>
@@ -119,7 +118,6 @@ export default function MissionControl() {
           </defs>
 
           {/* core aura + rails — sized to sit inside the ring of nodes */}
-          <circle cx={CX} cy={CY} r="200" fill={`url(#${uid}-core)`} opacity={active ? 0.75 : 0.25} style={{ transition: 'opacity 1.2s ease' }} />
           {[88, 128, 168].map((r, i) => (
             <circle key={r} cx={CX} cy={CY} r={r} fill="none" stroke="white" strokeOpacity={0.07 - i * 0.015} />
           ))}
@@ -150,9 +148,7 @@ export default function MissionControl() {
           })}
 
           {/* the core */}
-          <g style={{ transformOrigin: `${CX}px ${CY}px` }} className={active && !reduced ? 'animate-breathe' : undefined}>
-            <circle cx={CX} cy={CY} r="62" fill={CORE} fillOpacity="0.14" />
-          </g>
+          <circle cx={CX} cy={CY} r="62" fill={CORE} fillOpacity="0.1" />
           <circle cx={CX} cy={CY} r="42" fill={CORE} fillOpacity="0.22" stroke={CORE} strokeOpacity="0.55" />
           <text x={CX} y={CY - 4} textAnchor="middle" className="fill-white font-bold" style={{ fontSize: 17 }}>AI</text>
           <text x={CX} y={CY + 16} textAnchor="middle" className="fill-white/60" style={{ fontSize: 12, letterSpacing: 2 }}>CORE</text>
@@ -186,22 +182,15 @@ export default function MissionControl() {
               >
                 <span className="relative grid place-items-center shrink-0" style={{ width: 26, height: 26 }}>
                   <span
-                    className="absolute inset-0 rounded-full blur-md transition-opacity duration-300"
-                    style={{ background: s.color, opacity: on ? 0.7 : 0.25 }}
+                    className="absolute inset-0 rounded-full transition-opacity duration-300"
+                    style={{ background: s.color, opacity: on ? 0.14 : 0 }}
                   />
-                  {!reduced && (
-                    <span
-                      className="absolute w-3.5 h-3.5 rounded-full border"
-                      style={{ borderColor: s.color, animation: `pulse-ring ${2.6 + i * 0.3}s ease-out infinite` }}
-                    />
-                  )}
                   <span
                     className="relative rounded-full transition-all duration-300"
                     style={{
                       width: on ? 16 : 11,
                       height: on ? 16 : 11,
                       background: s.color,
-                      boxShadow: on ? `0 0 20px 5px ${s.color}66` : 'none',
                     }}
                   />
                 </span>

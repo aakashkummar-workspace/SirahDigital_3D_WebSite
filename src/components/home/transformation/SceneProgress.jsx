@@ -24,8 +24,7 @@ export default function SceneProgress({ accent, running }) {
       <div
         className="absolute inset-0 origin-left"
         style={{
-          background: `linear-gradient(90deg, ${accent}, ${accent}55)`,
-          boxShadow: `0 0 12px 1px ${accent}66`,
+          background: accent,
           transform: running ? undefined : 'scaleX(0)',
           opacity: running ? 1 : 0.3,
           animation: running ? `scene-progress ${SCENE_MS}ms linear both` : 'none',

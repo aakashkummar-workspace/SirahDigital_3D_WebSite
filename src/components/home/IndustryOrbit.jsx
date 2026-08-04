@@ -25,7 +25,7 @@ import { ArrowRightIcon } from '@/components/ui/icons';
  */
 
 const ORBITING = INDUSTRIES.slice(0, 8);
-const ACCENTS = ['#22D3EE', '#6366F1', '#A855F7'];
+const ACCENTS = ['#22D3EE', '#22D3EE', '#22D3EE'];
 // % of the stage that satellites orbit at. Each label extends outward from
 // its dot, so the ring has to sit far enough inside the stage that the widest
 // one ("Logistics & Supply Chain") still fits. At 42 the stage overflowed its
@@ -119,15 +119,6 @@ export default function IndustryOrbit() {
               style={{ width: `${size}%`, height: `${size}%` }}
             />
           ))}
-          {/* particles gather toward the centre as an industry is chosen */}
-          <span
-            className="absolute rounded-full blur-3xl transition-all duration-700"
-            style={{
-              width: '46%',
-              height: '46%',
-              background: `radial-gradient(closest-side, ${ACCENTS[selected % 3]}33, transparent 70%)`,
-            }}
-          />
         </div>
 
         {/* centre — a soft scrim lifts the copy off the particle field behind
@@ -140,7 +131,7 @@ export default function IndustryOrbit() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-6 w-[46%]">
           <p className="text-fluid-lg font-extrabold tracking-tight">
             <span className="text-white">SIRAH </span>
-            <span className="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-cyan bg-clip-text text-transparent">
+            <span className="text-brand-cyan">
               DIGITAL
             </span>
           </p>
@@ -182,7 +173,6 @@ export default function IndustryOrbit() {
                   width: on ? 12 : 8,
                   height: on ? 12 : 8,
                   background: accent,
-                  boxShadow: on ? `0 0 18px 4px ${accent}66` : `0 0 8px 1px ${accent}44`,
                 }}
               />
               <span

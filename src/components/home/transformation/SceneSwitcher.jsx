@@ -68,7 +68,6 @@ export default function SceneSwitcher({ active, onSelect }) {
                 style={{
                   background: scene.accent,
                   opacity: on ? 1 : 0.45,
-                  boxShadow: on ? `0 0 10px 2px ${scene.accent}88` : 'none',
                 }}
               />
               <span className="truncate">

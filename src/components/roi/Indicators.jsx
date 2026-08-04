@@ -70,8 +70,7 @@ export function EfficiencyMeter({ value, accent }) {
           className="h-full rounded-full"
           style={{
             width: `${pct}%`,
-            background: 'linear-gradient(90deg,#6366F1,#A855F7 55%,#22D3EE)',
-            boxShadow: `0 0 14px 1px ${accent}66`,
+            background: '#22D3EE',
             transition: 'width 900ms cubic-bezier(.22,.61,.36,1)',
           }}
         />
@@ -96,7 +95,7 @@ export function ComparisonChart({ before, after, accent }) {
       <div className="mt-4 space-y-3">
         {[
           { label: 'Today', pct: 100, value: before, fill: 'rgba(255,255,255,.16)', text: '#CBD5E1' },
-          { label: 'With Sirah', pct: afterPct, value: after, fill: `linear-gradient(90deg,#6366F1,${accent})`, text: '#FFFFFF' },
+          { label: 'With Sirah', pct: afterPct, value: after, fill: accent, text: '#FFFFFF' },
         ].map((row) => (
           <div key={row.label} className="flex items-center gap-3">
             <span className="w-20 shrink-0 text-fluid-xs text-white/45">{row.label}</span>

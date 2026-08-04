@@ -11,7 +11,7 @@ export default function NotFound() {
     <div className="min-h-screen grid place-items-center px-6 text-center font-sans text-white bg-[#060608]">
       <div>
         <p className="text-xs uppercase tracking-[0.3em] font-semibold text-blue-400">Error 404</p>
-        <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight text-white">
           That page moved.
         </h1>
         <p className="mt-6 text-brand-muted max-w-md mx-auto">
@@ -20,7 +20,7 @@ export default function NotFound() {
         <div className="mt-10 flex flex-wrap gap-4 justify-center">
           <Link
             href="/"
-            className="px-6 py-3 rounded-full font-medium text-white bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-opacity"
+            className="px-6 py-3 rounded-full font-medium text-white bg-brand-cyan hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-opacity"
           >
             Back to home
           </Link>

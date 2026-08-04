@@ -53,7 +53,7 @@ export default function Footer() {
 
             <Link
               href="/contact"
-              className="mt-8 inline-flex items-center px-7 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-opacity"
+              className="mt-8 inline-flex items-center px-7 py-3.5 rounded-xl font-bold text-white bg-brand-cyan hover:bg-white transition-colors"
             >
               Book Free Consultation
             </Link>

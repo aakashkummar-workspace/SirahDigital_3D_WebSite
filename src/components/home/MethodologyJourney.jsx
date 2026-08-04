@@ -16,19 +16,13 @@ import { METHODOLOGY } from '@/data/services';
  * state, so the line fills at frame rate without re-rendering the section.
  */
 
+// One accent across all three milestones. The colours here cycled by index
+// and never encoded anything, so three of them was noise rather than meaning.
 const ACCENTS = [
-  { dot: '#6366F1', name: 'indigo' },   // Automate  — Primary Accent
-  { dot: '#A855F7', name: 'purple' },   // Simplify  — Secondary Accent
-  { dot: '#22D3EE', name: 'cyan' },     // Scale     — Highlight
+  { dot: '#22D3EE', name: 'cyan' },
+  { dot: '#22D3EE', name: 'cyan' },
+  { dot: '#22D3EE', name: 'cyan' },
 ];
-
-// Fixed directions so the burst is deterministic — no Math.random() during
-// render, which would differ between server and client.
-const BURST = Array.from({ length: 10 }, (_, i) => {
-  const angle = (i / 10) * Math.PI * 2;
-  const reach = 34 + (i % 3) * 12;
-  return { tx: `${(Math.cos(angle) * reach).toFixed(1)}px`, ty: `${(Math.sin(angle) * reach).toFixed(1)}px`, delay: (i % 5) * 60 };
-});
 
 function Milestone({ item, index, reduced }) {
   const [ref, inView] = useInView({ threshold: 0.5, rootMargin: '0px 0px -15% 0px' });
@@ -42,39 +36,6 @@ function Milestone({ item, index, reduced }) {
     >
       {/* Node ------------------------------------------------------------ */}
       <span className="relative shrink-0 grid place-items-center w-16 h-16 md:w-20 md:h-20" aria-hidden="true">
-        {/* soft ambient glow */}
-        <span
-          className="absolute inset-0 rounded-full blur-xl transition-opacity duration-700"
-          style={{ background: accent.dot, opacity: active ? 0.45 : 0.12 }}
-        />
-
-        {/* expanding pulse, only once the milestone is reached */}
-        {active && !reduced && (
-          <>
-            <span
-              className="absolute w-10 h-10 rounded-full border"
-              style={{ borderColor: accent.dot, animation: 'pulse-ring 2.8s ease-out infinite' }}
-            />
-            <span
-              className="absolute w-10 h-10 rounded-full border"
-              style={{ borderColor: accent.dot, animation: 'pulse-ring 2.8s ease-out 1.4s infinite' }}
-            />
-          </>
-        )}
-
-        {/* particle burst on activation */}
-        {active && !reduced && BURST.map((p, i) => (
-          <span
-            key={i}
-            className="absolute w-1 h-1 rounded-full"
-            style={{
-              background: accent.dot,
-              '--tx': p.tx,
-              '--ty': p.ty,
-              animation: `burst 1400ms cubic-bezier(.22,.61,.36,1) ${p.delay}ms both`,
-            }}
-          />
-        ))}
 
         {/* core */}
         <span
@@ -83,7 +44,6 @@ function Milestone({ item, index, reduced }) {
             width: active ? 22 : 12,
             height: active ? 22 : 12,
             background: accent.dot,
-            boxShadow: active ? `0 0 26px 6px ${accent.dot}66` : 'none',
           }}
         />
       </span>
@@ -168,8 +128,7 @@ export default function MethodologyJourney() {
             style={{
               height: '100%',
               transform: 'scaleY(var(--progress))',
-              background: 'linear-gradient(180deg, #6366F1, #A855F7 55%, #22D3EE)',
-              boxShadow: '0 0 18px 1px rgba(99,102,241,.55)',
+              background: '#22D3EE',
             }}
           />
         </div>
@@ -180,8 +139,7 @@ export default function MethodologyJourney() {
             className="absolute inset-y-0 left-0 w-full origin-left"
             style={{
               transform: 'scaleX(var(--progress))',
-              background: 'linear-gradient(90deg, #6366F1, #A855F7 55%, #22D3EE)',
-              boxShadow: '0 0 18px 1px rgba(99,102,241,.55)',
+              background: '#22D3EE',
             }}
           />
         </div>

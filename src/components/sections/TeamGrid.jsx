@@ -17,7 +17,6 @@ export default function TeamGrid() {
         {/* Sizes step up at lg, where the panel is stretched tall — keeps the
             content filling the box instead of floating in the middle */}
         <div className="group h-full flex flex-col justify-center rounded-3xl border p-8 lg:p-10 text-center relative overflow-hidden pointer-events-auto bg-gradient-to-b from-[#0b1c2b] via-[#0a1220] to-[#0b0714] border-white/10">
-          <div className="absolute -top-20 -left-16 w-56 h-56 bg-cyan-500/10 rounded-full filter blur-3xl pointer-events-none" />
           <Avatar
             src={FOUNDER.photo}
             name={FOUNDER.name}

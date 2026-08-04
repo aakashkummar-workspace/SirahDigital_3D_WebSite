@@ -720,7 +720,7 @@ export default function AnimationLab() {
     <main className="min-h-screen bg-[#060608] text-white font-sans">
       <header className="max-w-6xl mx-auto px-6 pt-20 pb-10">
         <span className="text-xs uppercase tracking-[0.3em] font-semibold text-blue-400">Sirah Digital</span>
-        <h1 className="mt-4 text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <h1 className="mt-4 text-4xl md:text-5xl font-bold text-white">
           3D logo animation options
         </h1>
         <p className="mt-4 text-brand-muted max-w-2xl">

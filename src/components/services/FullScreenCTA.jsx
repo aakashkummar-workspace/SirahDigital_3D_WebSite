@@ -41,13 +41,6 @@ export default function FullScreenCTA() {
       aria-labelledby="services-cta-title"
       className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden"
     >
-      {/* A single wash to seat the converging particles — no panel, no border */}
-      <div
-        aria-hidden="true"
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[130vw] h-[130vw] max-w-[1000px] max-h-[1000px] rounded-full blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(closest-side, rgba(99,102,241,.20), transparent 70%)' }}
-      />
-
       <div
         ref={copyRef}
         className="relative max-w-3xl"

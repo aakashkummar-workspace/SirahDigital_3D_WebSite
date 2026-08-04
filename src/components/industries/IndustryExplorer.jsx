@@ -109,7 +109,6 @@ export default function IndustryExplorer() {
                   background: on
                     ? `linear-gradient(100deg, ${sector.accent}24, rgba(12,10,26,.92) 65%)`
                     : 'rgba(12,10,26,.88)',
-                  boxShadow: on ? `0 0 0 1px ${sector.accent}33, 0 16px 44px -24px ${sector.accent}` : 'none',
                 }}
               >
                 {/* icon tile */}
@@ -120,7 +119,6 @@ export default function IndustryExplorer() {
                     color: sector.accent,
                     borderColor: `${sector.accent}${on ? '55' : '2e'}`,
                     background: `${sector.accent}${on ? '26' : '12'}`,
-                    boxShadow: on ? `0 0 20px -4px ${sector.accent}` : 'none',
                   }}
                 >
                   <IndustryIcon name={sector.icon} className="w-[1.15rem] h-[1.15rem]" />
@@ -165,17 +163,6 @@ export default function IndustryExplorer() {
            behind every page and reads as noise through a translucent panel. */
         className="relative min-w-0 overflow-hidden rounded-3xl border border-white/[0.07] bg-[#0B0A18]/95 p-5 sm:p-7 lg:p-8 lg:sticky lg:top-28 lg:self-start lg:min-h-[32rem]"
       >
-        {/* ambient accent wash, remounted per sector so the colour crossfades */}
-        <span
-          key={`${item.slug}-glow`}
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -left-16 h-64 w-64 rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(closest-side, ${accent}2e, transparent 72%)`,
-            ...rise(0),
-          }}
-        />
-
         <div key={item.slug} className="relative">
           {/* header: identity on the left, the headline number on the right */}
           <div className="flex flex-wrap items-start justify-between gap-4" style={rise(0)}>
@@ -187,7 +174,6 @@ export default function IndustryExplorer() {
                   color: accent,
                   borderColor: `${accent}55`,
                   background: `${accent}1f`,
-                  boxShadow: `0 0 28px -6px ${accent}`,
                 }}
               >
                 <IndustryIcon name={item.icon} className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -275,8 +261,7 @@ export default function IndustryExplorer() {
                 href="/contact"
                 className="group inline-flex items-center gap-2 min-h-[44px] rounded-xl px-5 text-fluid-xs font-bold text-white transition-all duration-300 hover:brightness-110"
                 style={{
-                  background: 'linear-gradient(100deg, #6366F1, #2563EB)',
-                  boxShadow: '0 14px 34px -16px rgba(37,99,235,.95)',
+                  background: '#22D3EE',
                 }}
               >
                 Build This Solution

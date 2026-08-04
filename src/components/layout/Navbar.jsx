@@ -90,7 +90,7 @@ export default function Navbar() {
                     openMenu ? 'opacity-100 translate-y-0 visible' : 'opacity-0 -translate-y-1 invisible'
                   }`}
                 >
-                  <ul className="rounded-2xl border p-2 shadow-2xl backdrop-blur-xl bg-space-raised/95 border-white/10">
+                  <ul className="rounded-2xl border p-2 backdrop-blur-xl bg-space-raised/95 border-white/10">
                     {link.menu.map((item) => (
                       <li key={item.label}>
                         <Link
@@ -121,7 +121,7 @@ export default function Navbar() {
         <div className="ml-auto lg:ml-0 flex items-center gap-2 shrink-0">
           <Link
             href="/contact"
-            className="hidden sm:inline-flex items-center px-6 py-3 rounded-full text-sm font-bold text-white bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-opacity whitespace-nowrap"
+            className="hidden sm:inline-flex items-center px-6 py-3 rounded-full text-sm font-bold text-white bg-brand-cyan hover:bg-white transition-colors whitespace-nowrap"
           >
             Book Free Consultation
           </Link>
@@ -169,7 +169,7 @@ export default function Navbar() {
             <Link
               href="/contact"
               onClick={() => setMobileOpen(false)}
-              className="block text-center px-6 py-3 rounded-full font-bold text-white bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
+              className="block text-center px-6 py-3 rounded-full font-bold text-white bg-brand-cyan"
             >
               Book Free Consultation
             </Link>

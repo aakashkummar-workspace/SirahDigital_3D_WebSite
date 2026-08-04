@@ -24,7 +24,7 @@ export default function BrandLockup({ size = 'sm', interactive = false, classNam
       </span>
       <span className="text-xl font-extrabold tracking-tight whitespace-nowrap">
         <span className="text-white">SIRAH </span>
-        <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">
+        <span className="text-brand-cyan">
           DIGITAL
         </span>
       </span>

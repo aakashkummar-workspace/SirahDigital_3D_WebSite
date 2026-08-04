@@ -11,7 +11,6 @@ import SceneNarrative from './SceneNarrative';
 import SceneProgress from './SceneProgress';
 import SceneControls from './SceneControls';
 import AnimatedStatus from './AnimatedStatus';
-import BackgroundGlow from './BackgroundGlow';
 
 /*
  * The homepage centrepiece: a three-scene story that plays itself.
@@ -60,8 +59,6 @@ export default function VisualTransformationStory() {
           transform: shown ? 'none' : 'translateY(26px)',
         }}
       >
-        <BackgroundGlow accent={scene.accent} />
-
         {/* Countdown rail. key={tick} remounts it on exactly the signal that
             restarts the timer, so bar and clock cannot drift apart. */}
         <SceneProgress key={tick} accent={scene.accent} running={playing && onScreen && !reduced} />

@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SERVICE_EXPERIENCE } from '@/data/serviceExperience';
 
 /**
  * The service navigator, in the three forms the design specifies:
  *
- *   rail     — desktop: pinned vertical list, active glows, completed dim
+ *   rail     — desktop: pinned vertical list, one marker slides to the active
  *   progress — tablet: horizontal progress indicator
  *   chips    — mobile: swipeable chips
  *
@@ -17,7 +17,11 @@ import { SERVICE_EXPERIENCE } from '@/data/serviceExperience';
 
 const RAIL_KEYS = { ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 };
 
-export default function ServiceNavigator({ variant, active, onSelect, progress, reduced = false }) {
+// Height of the sliding marker, in px. Kept here because the offset maths
+// needs to centre the marker against a row, so the two cannot drift apart.
+const MARKER_H = 32;
+
+export default function ServiceNavigator({ variant, active, onSelect, reduced = false }) {
   const listRef = useRef(null);
   const total = SERVICE_EXPERIENCE.length;
 
@@ -29,6 +33,29 @@ export default function ServiceNavigator({ variant, active, onSelect, progress, 
     el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
   }, [active, variant]);
 
+  // Where the sliding marker sits. Measured from the active row rather than
+  // computed as `index * rowHeight`: these labels wrap at narrower desktop
+  // widths, so a fixed step multiplier drifts out of alignment the moment one
+  // row becomes two lines. useLayoutEffect so the marker is never painted at
+  // a stale offset for a frame.
+  const [markerY, setMarkerY] = useState(0);
+  useLayoutEffect(() => {
+    if (variant !== 'rail') return undefined;
+    const ol = listRef.current;
+    if (!ol) return undefined;
+    const measure = () => {
+      const row = ol.querySelector(`[data-idx="${active}"]`);
+      if (row) setMarkerY(row.offsetTop + (row.offsetHeight - MARKER_H) / 2);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    // Fires on the hidden→visible transition at `lg` as well as on reflow,
+    // so the first desktop paint is measured rather than left at zero.
+    const ro = new ResizeObserver(measure);
+    ro.observe(ol);
+    return () => ro.disconnect();
+  }, [active, variant]);
+
   const onKeyDown = (e) => {
     const dir = RAIL_KEYS[e.key];
     if (!dir) return;
@@ -37,114 +64,57 @@ export default function ServiceNavigator({ variant, active, onSelect, progress, 
   };
 
   /* ── Desktop: pinned vertical rail ─────────────────────────────────────
-     The fill is driven by `progress` — a continuous 0-1 value from the page's
-     scroll position, not a step per item — so the rail keeps moving between
-     capabilities instead of jumping on each change. Two sparks ride the lit
-     part of the rail so it reads as a live line rather than a bar. */
+     The rows themselves never change appearance. All of the active-state
+     signal is carried by one short bar sliding down the track — the same
+     single-cue treatment as the reference. */
   if (variant === 'rail') {
-    const fill = typeof progress === 'number' ? progress : (active + 1) / total;
     return (
       <nav aria-label="Services" onKeyDown={onKeyDown}>
         <p className="text-fluid-xs uppercase tracking-[0.3em] font-semibold text-white/35 mb-7">
           Capabilities
         </p>
-        <ol className="relative space-y-1">
-          {/* progress rule: dim rail, bright fill following the scroll */}
+        {/* The track and marker live outside the <ol>, not inside it. Two
+            reasons: only <li> is valid as a child of <ol>, and `space-y-1`
+            targets every child after the first — which silently added a 4px
+            top margin to the absolutely-positioned marker and pushed it off
+            the row it was supposed to sit against. */}
+        <div className="relative">
+          {/* the track the marker runs down */}
           <span aria-hidden="true" className="absolute left-0 top-1 bottom-1 w-px bg-white/10" />
+          {/* the marker — the whole of the active state */}
           <span
             aria-hidden="true"
-            className="absolute left-0 top-1 w-px origin-top"
+            className="absolute top-0"
             style={{
-              height: 'calc(100% - 8px)',
-              transform: `scaleY(${Math.max(0.02, fill)})`,
-              background: 'linear-gradient(180deg,#6366F1,#A855F7 55%,#22D3EE)',
-              boxShadow: '0 0 12px 1px rgba(99,102,241,.5)',
-              transition: 'transform 260ms linear',
+              left: '-0.5px',
+              width: 2,
+              height: MARKER_H,
+              background: '#22D3EE',
+              transform: `translateY(${markerY}px)`,
+              transition: reduced ? 'none' : 'transform 320ms cubic-bezier(.22,.61,.36,1)',
             }}
           />
-          {/* energy travelling the lit section */}
-          {!reduced && (
-            <span
-              aria-hidden="true"
-              className="absolute left-0 top-1 w-px overflow-hidden pointer-events-none"
-              style={{ height: `calc((100% - 8px) * ${Math.max(0.02, fill)})` }}
-            >
-              {[0, 1].map((i) => (
-                <span
-                  key={i}
-                  className="absolute -left-[2px] w-[5px] h-[5px] rounded-full"
-                  style={{
-                    background: '#22D3EE',
-                    boxShadow: '0 0 10px 3px rgba(34,211,238,.75)',
-                    '--rail-h': '100%',
-                    animation: `rail-spark ${3200 + i * 900}ms linear ${i * 1500}ms infinite`,
-                  }}
-                />
-              ))}
-            </span>
-          )}
-          {SERVICE_EXPERIENCE.map((s) => {
-            const on = s.index === active;
-            const visited = s.index < active;
-            return (
-              <li key={s.slug}>
+          <ol ref={listRef} className="space-y-1">
+            {SERVICE_EXPERIENCE.map((s) => (
+              <li key={s.slug} data-idx={s.index}>
                 <button
                   type="button"
                   onClick={() => onSelect(s.index)}
-                  aria-current={on ? 'true' : undefined}
+                  aria-current={s.index === active ? 'true' : undefined}
                   data-cursor="nav"
-                  className="interactive-hover group relative flex items-baseline gap-3 w-full text-left pl-5 pr-2 min-h-[44px] transition-all duration-500 ease-brand hover:opacity-100 hover:translate-x-1.5"
-                  style={{
-                    opacity: on ? 1 : visited ? 0.34 : 0.62,
-                    transform: on ? 'translateX(4px)' : 'none',
-                  }}
+                  className="interactive-hover group flex items-baseline gap-3 w-full text-left pl-5 pr-2 min-h-[44px]"
                 >
-                  {/* the active marker, and a dot that appears on hover */}
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full transition-all duration-500 ease-brand"
-                    style={{
-                      width: on ? 9 : 5,
-                      height: on ? 9 : 5,
-                      background: on ? '#22D3EE' : 'rgba(255,255,255,.25)',
-                      boxShadow: on ? '0 0 14px 3px rgba(34,211,238,.7)' : 'none',
-                    }}
-                  />
-                  <span
-                    className="font-mono text-fluid-xs shrink-0 transition-all duration-500 group-hover:text-brand-cyan"
-                    style={{
-                      color: on ? '#22D3EE' : 'rgba(255,255,255,.4)',
-                      // the number lifts and brightens as it becomes current
-                      transform: on ? 'translateY(-1px) scale(1.12)' : 'none',
-                      display: 'inline-block',
-                      textShadow: on ? '0 0 14px rgba(34,211,238,.6)' : 'none',
-                    }}
-                  >
+                  <span className="font-mono text-fluid-xs shrink-0 text-white/40 transition-colors duration-300 group-hover:text-brand-cyan">
                     {s.number}
                   </span>
-                  <span className="relative">
-                    <span
-                      className="block text-fluid-sm leading-tight transition-all duration-500 group-hover:text-white"
-                      style={{
-                        color: on ? '#FFFFFF' : '#CBD5E1',
-                        fontWeight: on ? 700 : 500,
-                        textShadow: on ? '0 0 22px rgba(34,211,238,.45)' : 'none',
-                      }}
-                    >
-                      {s.navLabel}
-                    </span>
-                    {/* underline that draws in on hover */}
-                    <span
-                      aria-hidden="true"
-                      className="absolute left-0 -bottom-0.5 h-px w-full origin-left scale-x-0 transition-transform duration-400 ease-brand group-hover:scale-x-100"
-                      style={{ background: 'linear-gradient(90deg,#22D3EE,transparent)' }}
-                    />
+                  <span className="block text-fluid-sm leading-tight font-medium text-brand-muted transition-colors duration-300 group-hover:text-white">
+                    {s.navLabel}
                   </span>
                 </button>
               </li>
-            );
-          })}
-        </ol>
+            ))}
+          </ol>
+        </div>
       </nav>
     );
   }
@@ -183,11 +153,10 @@ export default function ServiceNavigator({ variant, active, onSelect, progress, 
                     className="block w-full h-[3px] rounded-full transition-all duration-500 ease-brand"
                     style={{
                       background: on
-                        ? 'linear-gradient(90deg,#6366F1,#22D3EE)'
+                        ? '#22D3EE'
                         : visited
                           ? 'rgba(203,213,225,.32)'
                           : 'rgba(255,255,255,.1)',
-                      boxShadow: on ? '0 0 12px 1px rgba(34,211,238,.5)' : 'none',
                     }}
                   />
                 </button>

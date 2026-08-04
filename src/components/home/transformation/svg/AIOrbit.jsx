@@ -67,9 +67,6 @@ export default function AIOrbit({ run, idBase }) {
       <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" stroke="#FFFFFF" strokeOpacity="0.08" />
       <ellipse cx={CX} cy={CY} rx={RX * 0.6} ry={RY * 0.6} fill="none" stroke="#FFFFFF" strokeOpacity="0.05" />
 
-      {/* core aura */}
-      <circle cx={CX} cy={CY} r="150" fill={`url(#${idBase}-glow)`} opacity={run ? 0.9 : 0.4} />
-
       {/* connections, each carrying a packet outward */}
       {NODES.map((n) => (
         <g key={`link-${n.id}`}>
@@ -85,33 +82,8 @@ export default function AIOrbit({ run, idBase }) {
         </g>
       ))}
 
-      {/* particles converging on the core */}
-      {run && [0, 1, 2, 3, 4, 5].map((i) => {
-        const a = (i / 6) * Math.PI * 2;
-        return (
-          <circle
-            key={`p-${i}`}
-            cx={CX + Math.cos(a) * 96} cy={CY + Math.sin(a) * 76} r="2.6" fill={INDIGO}
-            style={{
-              '--tx': `${-Math.cos(a) * 78}px`,
-              '--ty': `${-Math.sin(a) * 62}px`,
-              animation: `burst 2200ms ease-in ${i * 320}ms infinite`,
-            }}
-          />
-        );
-      })}
-
       {/* the core */}
-      <g style={{ transformOrigin: `${CX}px ${CY}px` }} className={run ? 'animate-breathe' : undefined}>
-        <circle cx={CX} cy={CY} r="72" fill={CYAN} fillOpacity="0.13" />
-      </g>
-      {run && [0, 1].map((i) => (
-        <circle
-          key={`ring-${i}`}
-          cx={CX} cy={CY} r="46" fill="none" stroke={CYAN} strokeOpacity="0.55" strokeWidth="1.8"
-          style={{ transformOrigin: `${CX}px ${CY}px`, animation: `pulse-ring 2800ms ease-out ${i * 1400}ms infinite` }}
-        />
-      ))}
+      <circle cx={CX} cy={CY} r="72" fill={CYAN} fillOpacity="0.09" />
       <circle cx={CX} cy={CY} r="46" fill={INDIGO} fillOpacity="0.5" stroke={CYAN} strokeOpacity="0.9" strokeWidth="2.2" />
       <circle cx={CX} cy={CY} r="23" fill={CYAN} fillOpacity="0.55">
         {run && <animate attributeName="r" values="23;27;23" dur="2.2s" repeatCount="indefinite" />}

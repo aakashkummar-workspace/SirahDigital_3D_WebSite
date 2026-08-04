@@ -4,7 +4,7 @@ import AnimatedHeading from '@/components/ui/AnimatedHeading';
 
 // Shared styling for every field in the consultation form
 const inputClass =
-  'w-full px-5 py-4 rounded-xl border text-sm transition-colors focus:outline-none focus:border-cyan-400 bg-[#0b0f18] border-white/10 text-white placeholder:text-gray-500';
+  'w-full px-5 py-4 rounded-xl border text-sm transition-colors focus:outline-none focus:border-indigo-500 bg-[#0b0f18] border-white/10 text-white placeholder:text-gray-500';
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', message: '', website: '' };
 
@@ -99,7 +99,7 @@ export default function ContactForm() {
         <button
           type="submit"
           disabled={status === 'sending'}
-          className="w-full px-6 py-4 rounded-xl font-bold text-[#04121a] bg-cyan-400 hover:bg-cyan-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full px-6 py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {status === 'sending' ? 'Sending…' : 'Submit'}
         </button>

@@ -24,7 +24,9 @@ import { useReducedMotion } from '@/hooks/useMediaQuery';
  *   inline  — mobile, between a service's heading and description
  */
 
-const LERP = 0.085;          // per-frame approach rate at 60fps
+// Slower approach than before: the object should settle into its new shape
+// rather than snap toward it.
+const LERP = 0.045;          // per-frame approach rate at 60fps
 const SNAP = 0.4;            // below this distance, land on the target
 
 export default function VisualizationContainer({
@@ -40,10 +42,8 @@ export default function VisualizationContainer({
 
   const rootRef = useRef(null);
   const coreRef = useRef(null);
-  const coreGlowRef = useRef(null);
   const ringRefs = useRef([]);
   const nodeRefs = useRef([]);
-  const haloRefs = useRef([]);
   const spokeRefs = useRef([]);
   const packetRefs = useRef([]);
   const meshRefs = useRef([]);
@@ -69,7 +69,6 @@ export default function VisualizationContainer({
   reducedRef.current = reduced;
 
   const setNode = useMemo(() => (i) => (el) => { nodeRefs.current[i] = el; }, []);
-  const setHalo = useMemo(() => (i) => (el) => { haloRefs.current[i] = el; }, []);
   const setSpoke = useMemo(() => (i) => (el) => { spokeRefs.current[i] = el; }, []);
   const setPacket = useMemo(() => (i) => (el) => { packetRefs.current[i] = el; }, []);
   const setMesh = useMemo(() => (i) => (el) => { meshRefs.current[i] = el; }, []);
@@ -86,10 +85,6 @@ export default function VisualizationContainer({
         coreRef.current.setAttribute('r', L.core.r.toFixed(2));
         coreRef.current.setAttribute('opacity', L.core.a.toFixed(3));
       }
-      if (coreGlowRef.current) {
-        coreGlowRef.current.setAttribute('r', (L.core.r * 2.3).toFixed(2));
-        coreGlowRef.current.setAttribute('opacity', (L.core.a * 0.5).toFixed(3));
-      }
       L.rings.forEach((r, i) => {
         const el = ringRefs.current[i];
         if (!el) return;
@@ -98,7 +93,6 @@ export default function VisualizationContainer({
       });
       L.nodes.forEach((n, i) => {
         const dot = nodeRefs.current[i];
-        const halo = haloRefs.current[i];
         const spoke = spokeRefs.current[i];
         const link = meshRefs.current[i];
         if (dot) {
@@ -106,12 +100,6 @@ export default function VisualizationContainer({
           dot.setAttribute('cy', n.y.toFixed(2));
           dot.setAttribute('r', n.r.toFixed(2));
           dot.setAttribute('opacity', n.a.toFixed(3));
-        }
-        if (halo) {
-          halo.setAttribute('cx', n.x.toFixed(2));
-          halo.setAttribute('cy', n.y.toFixed(2));
-          halo.setAttribute('r', (n.r * 2.6).toFixed(2));
-          halo.setAttribute('opacity', (n.a * 0.16).toFixed(3));
         }
         if (spoke) {
           spoke.setAttribute('x1', C);
@@ -189,29 +177,12 @@ export default function VisualizationContainer({
 
   return (
     <div ref={rootRef} className={`relative mx-auto ${size} ${className}`}>
-      {/* Ambient glow, retinted per capability. The transition on background
-          is what makes the colour shift feel like lighting rather than a
-          repaint.
-
-          Insets stay at zero or positive on purpose. A negative inset enlarges
-          the element's box, and in the wide desktop column this sits flush to
-          the page edge — it would push the document wider and produce
-          horizontal scroll. blur-3xl already blooms the light well past the
-          box without affecting layout, which is the effect we actually want.
-          Clipping it with overflow-hidden on an ancestor is not an option
-          either: that would break the sticky columns. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 blur-3xl transition-[background] duration-[1200ms] ease-brand"
-        style={{ background: `radial-gradient(closest-side, ${accent}52, transparent 72%)` }}
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-[14%] -z-10 blur-2xl transition-[background] duration-[1200ms] ease-brand"
-        style={{ background: `radial-gradient(closest-side, ${accent}45, transparent 70%)` }}
-      />
-      {/* Dark plate: the particle field behind is busy enough that thin
-          strokes lose contrast without it. */}
+      {/* Dark plate. Not decoration — the fixed particle field behind this
+          page is busy enough that thin SVG strokes lose contrast without it,
+          so it stays even though the accent glows have been removed.
+          Inset is non-negative on purpose: a negative inset enlarges the box,
+          and in the wide desktop column this sits flush to the page edge,
+          which would widen the document and produce horizontal scroll. */}
       <div
         aria-hidden="true"
         className="absolute inset-[2%] -z-10 rounded-full blur-2xl"
@@ -224,14 +195,6 @@ export default function VisualizationContainer({
         role="img"
         aria-label="An evolving diagram of the active capability"
       >
-        <defs>
-          <radialGradient id={`${uid}-core`}>
-            <stop offset="0%" stopColor={accent} stopOpacity="0.9" />
-            <stop offset="60%" stopColor={accent} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={accent} stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
         {/* orbit rails — radii morph between configurations */}
         {[0, 1, 2].map((i) => (
           <circle
@@ -265,19 +228,11 @@ export default function VisualizationContainer({
         ))}
 
         {/* core */}
-        <circle ref={coreGlowRef} cx={VIEW / 2} cy={VIEW / 2} r="90" fill={`url(#${uid}-core)`} opacity="0.5" />
         <circle
           ref={coreRef} cx={VIEW / 2} cy={VIEW / 2} r="46"
           fill={accent} fillOpacity="0.3" stroke={accent} strokeOpacity="0.85" strokeWidth="2"
           style={{ transition: 'fill 900ms ease, stroke 900ms ease' }}
         />
-        {alive && (
-          <circle
-            cx={VIEW / 2} cy={VIEW / 2} r="46" fill="none" stroke={accent} strokeOpacity="0.5" strokeWidth="1.6"
-            style={{ transformOrigin: `${VIEW / 2}px ${VIEW / 2}px`, animation: 'pulse-ring 3s ease-out infinite' }}
-          />
-        )}
-
         {/* the detail that cannot morph, cross-faded over the skeleton */}
         {Object.entries(STATES).map(([key, cfg]) => {
           const on = key === state;
@@ -303,21 +258,10 @@ export default function VisualizationContainer({
 
         {/* nodes, on top of everything they connect */}
         {[...Array(NODE_COUNT)].map((_, i) => (
-          <circle key={`halo-${i}`} ref={setHalo(i)} fill={accent} opacity="0" style={{ transition: 'fill 900ms ease' }} />
-        ))}
-        {[...Array(NODE_COUNT)].map((_, i) => (
           <circle
             key={`node-${i}`} ref={setNode(i)} fill={target.nodes[i]?.color || accent} opacity="0"
             style={{ transition: 'fill 900ms ease' }}
           >
-            {alive && (
-              <animate
-                attributeName="fill-opacity"
-                values="0.75;1;0.75"
-                dur={`${2 + (i % 4) * 0.35}s`}
-                repeatCount="indefinite"
-              />
-            )}
           </circle>
         ))}
       </svg>
