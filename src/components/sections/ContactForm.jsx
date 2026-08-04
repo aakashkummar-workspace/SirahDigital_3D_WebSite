@@ -4,19 +4,13 @@ import AnimatedHeading from '@/components/ui/AnimatedHeading';
 
 // Shared styling for every field in the consultation form
 const inputClass =
-  'w-full px-5 py-4 rounded-xl border text-sm transition-colors focus:outline-none focus:border-indigo-500 bg-[#0b0f18] border-white/10 text-white placeholder:text-gray-500';
+  'w-full px-4 py-3.5 rounded-lg border text-sm transition-colors focus:outline-none focus:border-cyan-400 bg-black/40 border-white/10 text-white placeholder:text-slate-500';
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', message: '', website: '' };
 
-/**
- * The only interactive part of the marketing site, and therefore the only
- * client component among the sections. Everything around it renders on the
- * server.
- */
 export default function ContactForm() {
   const [form, setForm] = useState(EMPTY);
 
-  // 'idle' | 'sending' | 'sent' | 'error'
   const [status, setStatus] = useState('idle');
   const [statusMessage, setStatusMessage] = useState('');
 
@@ -47,9 +41,9 @@ export default function ContactForm() {
   return (
     <div
       id="send-message"
-      className="rounded-2xl border p-8 md:p-10 scroll-mt-28 pointer-events-auto bg-[#0a0d15]/70 border-white/10 backdrop-blur-xl"
+      className="scroll-mt-28 pointer-events-auto py-6"
     >
-      <AnimatedHeading text="Send us a message" className="text-3xl font-bold" />
+      <AnimatedHeading text="Send us a message" className="text-3xl font-bold text-white" />
 
       <form onSubmit={submitLead} className="mt-8 space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -80,11 +74,11 @@ export default function ContactForm() {
         />
 
         <textarea
-          rows={5} required placeholder="Your automation needs" aria-label="Your automation needs"
-          className={`${inputClass} resize-y min-h-[140px]`} value={form.message} onChange={set('message')}
+          rows={4} required placeholder="Your automation needs" aria-label="Your automation needs"
+          className={`${inputClass} resize-y min-h-[120px]`} value={form.message} onChange={set('message')}
         />
 
-        {/* Honeypot: hidden from people, catnip for bots */}
+        {/* Honeypot */}
         <input
           type="text"
           name="website"
@@ -96,13 +90,16 @@ export default function ContactForm() {
           onChange={set('website')}
         />
 
-        <button
-          type="submit"
-          disabled={status === 'sending'}
-          className="w-full px-6 py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {status === 'sending' ? 'Sending…' : 'Submit'}
-        </button>
+        <div>
+          <button
+            type="submit"
+            disabled={status === 'sending'}
+            className="group inline-flex items-center gap-2 text-base font-bold text-white hover:text-cyan-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span>{status === 'sending' ? 'Sending…' : 'Submit Form'}</span>
+            <span className="text-cyan-400 group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </div>
 
         {statusMessage && (
           <p

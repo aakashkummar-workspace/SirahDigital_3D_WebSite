@@ -1,5 +1,6 @@
 import SectionHeader, { PageHeader } from '@/components/sections/SectionHeader';
 import TeamGrid from '@/components/sections/TeamGrid';
+import InsightsSuccessStories from '@/components/sections/InsightsSuccessStories';
 import CTABand from '@/components/sections/CTABand';
 import { COMPANY } from '@/data/company';
 
@@ -22,6 +23,8 @@ export default function AboutPage() {
       <section id="team" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-28">
         <TeamGrid />
       </section>
+
+      <InsightsSuccessStories />
 
       <CTABand />
     </>

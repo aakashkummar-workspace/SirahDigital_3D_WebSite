@@ -5,14 +5,14 @@
 /* Brand identity, mirrored as custom properties so SVG fills, gradients and
    inline styles use the same values as the Tailwind tokens. */
 :root {
-  --space: #16142c;
-  --space-deep: #100e20;
-  --space-raised: #1d1a38;
+  --space: #0b0e17;
+  --space-deep: #070910;
+  --space-raised: #111522;
   --indigo: #6366f1;
   --purple: #a855f7;
-  --cyan: #22d3ee;
+  --cyan: #38bdf8;
   --text: #ffffff;
-  --muted: #cbd5e1;
+  --muted: #94a3b8;
 }
 
 body {

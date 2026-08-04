@@ -53,9 +53,9 @@ export default function Footer() {
 
             <Link
               href="/contact"
-              className="mt-8 inline-flex items-center px-7 py-3.5 rounded-xl font-bold text-white bg-brand-cyan hover:bg-white transition-colors"
+              className="mt-6 inline-flex items-center text-sm font-semibold text-white hover:text-cyan-400 transition-colors gap-1"
             >
-              Book Free Consultation
+              Book Free Consultation →
             </Link>
 
             <div className="mt-8 flex gap-3">
@@ -66,7 +66,7 @@ export default function Footer() {
                   aria-label={s.label}
                   target={s.href.startsWith('http') ? '_blank' : undefined}
                   rel={s.href.startsWith('http') ? 'noreferrer noopener' : undefined}
-                  className="w-11 h-11 rounded-xl grid place-items-center transition-colors bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                  className="w-10 h-10 rounded-lg grid place-items-center transition-colors border border-white/10 text-slate-300 hover:text-white hover:border-white/30"
                 >
                   <SocialIcon path={s.path} />
                 </a>
@@ -77,13 +77,11 @@ export default function Footer() {
           {/* Link columns */}
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h4 className="font-bold text-white">{col.title}</h4>
-              {/* Rows carry their own 44px minimum, so the list needs less
-                  gap than it did when the links were bare text. */}
+              <h4 className="font-semibold text-white">{col.title}</h4>
               <ul className="mt-4 space-y-1">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link href={l.href} className={`inline-flex items-center min-h-[44px] text-sm transition-colors ${link}`}>{l.label}</Link>
+                    <Link href={l.href} className={`inline-flex items-center text-sm transition-colors ${link}`}>{l.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -92,22 +90,22 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-bold text-white">Contact</h4>
+            <h4 className="font-semibold text-white">Contact</h4>
             <ul className="mt-4 space-y-1">
               <li>
                 <a href={`mailto:${COMPANY.email}`} className={`flex items-center min-h-[44px] gap-3 text-sm transition-colors ${link}`}>
-                  <MailIcon className="w-4 h-4 shrink-0 text-brand-cyan" />
+                  <MailIcon className="w-4 h-4 shrink-0 text-slate-400" />
                   {COMPANY.email}
                 </a>
               </li>
               <li>
                 <a href={COMPANY.phoneHref} className={`flex items-center min-h-[44px] gap-3 text-sm transition-colors ${link}`}>
-                  <PhoneIcon className="w-4 h-4 shrink-0 text-brand-cyan" />
+                  <PhoneIcon className="w-4 h-4 shrink-0 text-slate-400" />
                   {COMPANY.phone}
                 </a>
               </li>
               <li className={`flex items-start gap-3 pt-3 text-sm ${muted}`}>
-                <PinIcon className="w-4 h-4 mt-0.5 shrink-0 text-brand-cyan" />
+                <PinIcon className="w-4 h-4 mt-0.5 shrink-0 text-slate-400" />
                 <address className="not-italic leading-relaxed">
                   {COMPANY.address.map((line) => (
                     <span key={line} className="block">{line}</span>

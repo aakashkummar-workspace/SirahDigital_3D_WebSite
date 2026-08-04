@@ -70,51 +70,39 @@ export default function ServiceNavigator({ variant, active, onSelect, reduced = 
   if (variant === 'rail') {
     return (
       <nav aria-label="Services" onKeyDown={onKeyDown}>
-        <p className="text-fluid-xs uppercase tracking-[0.3em] font-semibold text-white/35 mb-7">
+        <p className="text-fluid-xs uppercase tracking-[0.3em] font-semibold text-white/40 mb-5">
           Capabilities
         </p>
-        {/* The track and marker live outside the <ol>, not inside it. Two
-            reasons: only <li> is valid as a child of <ol>, and `space-y-1`
-            targets every child after the first — which silently added a 4px
-            top margin to the absolutely-positioned marker and pushed it off
-            the row it was supposed to sit against. */}
-        <div className="relative">
-          {/* the track the marker runs down */}
-          <span aria-hidden="true" className="absolute left-0 top-1 bottom-1 w-px bg-white/10" />
-          {/* the marker — the whole of the active state */}
-          <span
-            aria-hidden="true"
-            className="absolute top-0"
-            style={{
-              left: '-0.5px',
-              width: 2,
-              height: MARKER_H,
-              background: '#22D3EE',
-              transform: `translateY(${markerY}px)`,
-              transition: reduced ? 'none' : 'transform 320ms cubic-bezier(.22,.61,.36,1)',
-            }}
-          />
-          <ol ref={listRef} className="space-y-1">
-            {SERVICE_EXPERIENCE.map((s) => (
+        <ol ref={listRef} className="space-y-1">
+          {SERVICE_EXPERIENCE.map((s) => {
+            const isActive = s.index === active;
+            return (
               <li key={s.slug} data-idx={s.index}>
                 <button
                   type="button"
                   onClick={() => onSelect(s.index)}
-                  aria-current={s.index === active ? 'true' : undefined}
-                  data-cursor="nav"
-                  className="interactive-hover group flex items-baseline gap-3 w-full text-left pl-5 pr-2 min-h-[44px]"
+                  aria-current={isActive ? 'true' : undefined}
+                  className={`group flex items-center gap-3 w-full text-left py-2 pl-3.5 border-l-2 transition-all duration-300 ${
+                    isActive
+                      ? 'border-cyan-400 text-white font-semibold'
+                      : 'border-transparent text-white/40 hover:text-white/80 font-normal'
+                  }`}
                 >
-                  <span className="font-mono text-fluid-xs shrink-0 text-white/40 transition-colors duration-300 group-hover:text-brand-cyan">
+                  <span
+                    className={`font-mono text-xs shrink-0 transition-colors ${
+                      isActive ? 'text-cyan-400 font-bold' : 'text-white/30 group-hover:text-white/60'
+                    }`}
+                  >
                     {s.number}
                   </span>
-                  <span className="block text-fluid-sm leading-tight font-medium text-brand-muted transition-colors duration-300 group-hover:text-white">
+                  <span className="block text-sm leading-snug">
                     {s.navLabel}
                   </span>
                 </button>
               </li>
-            ))}
-          </ol>
-        </div>
+            );
+          })}
+        </ol>
       </nav>
     );
   }

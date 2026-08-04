@@ -23,7 +23,7 @@ export default function ServicesHero() {
     <section
       ref={ref}
       aria-labelledby="services-hero-title"
-      className="relative min-h-[86vh] flex flex-col justify-center max-w-6xl mx-auto px-6 pt-16 pb-24"
+      className="relative min-h-[60vh] flex flex-col justify-center max-w-6xl mx-auto px-6 pt-12 pb-12"
     >
       <p
         className="text-fluid-xs uppercase tracking-[0.35em] font-semibold text-brand-cyan"

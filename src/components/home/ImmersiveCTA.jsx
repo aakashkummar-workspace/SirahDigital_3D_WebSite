@@ -23,23 +23,12 @@ export default function ImmersiveCTA() {
     <section
       ref={ref}
       aria-labelledby="cta-title"
-      className="relative min-h-[80vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden py-24"
+      className="relative min-h-[45vh] flex flex-col items-center justify-center text-center px-6 py-20 border-t border-white/10"
     >
-      {/* 3D mark */}
-      <div className="relative w-full max-w-[380px] aspect-square mx-auto" aria-hidden="true">
-        {use3D ? (
-          <CTALogo3D />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center p-12">
-            <LogoMark className="w-full h-auto" gradientId="ctaMark" />
-          </div>
-        )}
-      </div>
-
       {/* Copy */}
       <div
         ref={copyRef}
-        className="relative max-w-3xl -mt-4 md:-mt-8"
+        className="relative max-w-3xl"
         style={{
           opacity: shown ? 1 : 0,
           transform: shown ? 'none' : 'translateY(24px)',
@@ -56,10 +45,10 @@ export default function ImmersiveCTA() {
 
         <Link
           href="/contact"
-          className="mt-10 inline-flex items-center justify-center gap-3 min-h-[44px] px-9 py-4 rounded-full text-fluid-base font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors duration-300"
+          className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-white hover:text-cyan-400 transition-colors duration-300"
         >
-          Book Free Consultation
-          <ArrowRightIcon />
+          <span>Book Free Consultation</span>
+          <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />
         </Link>
       </div>
     </section>

@@ -9,7 +9,7 @@ export default function Hero() {
     <section className="min-h-[calc(100vh-72px)] max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 items-center gap-12">
       <div className="max-w-xl">
         <Reveal>
-          <span className="inline-block text-xs uppercase tracking-[0.3em] font-semibold border px-3.5 py-1.5 rounded-full mb-6 text-slate-300 border-slate-700 bg-slate-800/40">
+          <span className="inline-block text-xs uppercase tracking-[0.3em] font-semibold text-cyan-400 mb-4">
             Sirah Digital
           </span>
         </Reveal>
@@ -28,18 +28,18 @@ export default function Hero() {
           </p>
         </Reveal>
         <Reveal delay={270}>
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-10 flex flex-wrap items-center gap-8">
             <Link
               href="/contact"
-              className="px-6 py-3 rounded-full font-medium text-white bg-indigo-600 hover:bg-indigo-500 transition-all pointer-events-auto"
+              className="text-base font-semibold text-white hover:text-cyan-400 transition-colors pointer-events-auto flex items-center gap-1.5"
             >
-              Start an automation audit
+              Start an automation audit →
             </Link>
             <Link
               href="/work"
-              className="px-6 py-3 rounded-full font-medium border transition-all pointer-events-auto border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-white"
+              className="text-base font-semibold text-slate-400 hover:text-white transition-colors pointer-events-auto flex items-center gap-1.5"
             >
-              See our work
+              See our work →
             </Link>
           </div>
         </Reveal>

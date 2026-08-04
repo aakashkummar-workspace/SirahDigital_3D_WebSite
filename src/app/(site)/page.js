@@ -1,5 +1,6 @@
 import Hero from '@/components/sections/Hero';
 import MethodologyJourney from '@/components/home/MethodologyJourney';
+import InsightsSuccessStories from '@/components/sections/InsightsSuccessStories';
 import ImmersiveCTA from '@/components/home/ImmersiveCTA';
 import AnchorRedirect from '@/components/sections/AnchorRedirect';
 
@@ -20,6 +21,7 @@ export default function HomePage() {
 
       <Hero />
       <MethodologyJourney />
+      <InsightsSuccessStories />
       <ImmersiveCTA />
     </>
   );
