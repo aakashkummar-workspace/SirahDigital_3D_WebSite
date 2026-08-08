@@ -1,0 +1,289 @@
+/*
+ * Styles for the automation savings calculator.
+ *
+ * A CSS Module rather than an addition to globals.css: the existing
+ * `.roi-range` there is the old 6px-track / 20px-thumb slider, and this
+ * redesign needs a thinner one. Scoping it here means the two can coexist and
+ * nothing outside this component can be affected by the change.
+ *
+ * The particle background is untouched by everything in this file.
+ */
+
+/* ── Legibility scrim ──────────────────────────────────────────────────────
+   The page renders over a fixed WebGL particle field, and on this route the
+   field is dense enough to run straight through the read-out — 13px labels,
+   the 2px meters and the savings curve all become unreadable against it.
+
+   The previous design solved this with a solid #191634 card. That worked, and
+   it is exactly the dashboard-panel language this redesign is removing. This
+   is the same fix without the card: a heavily feathered radial wash that fades
+   to nothing well before any edge, so it reads as depth rather than as a
+   container. No border, no visible corner, no blur filter — a backdrop-blur
+   this large over a canvas repainting every frame is a real cost on mobile for
+   no gain over a plain fill.
+
+   It sits on the content layer, behind the text and in front of the canvas.
+   The particle component, its density, opacity, colour, speed and animation
+   are untouched. */
+.scrim {
+  position: absolute;
+  /*
+   * Overshoots vertically only.
+   *
+   * A horizontal overshoot (-10%) widened the section past the viewport and
+   * put 39px of horizontal overflow on the page at 390px. The body carries
+   * `overflow-x-hidden`, so nothing was visibly broken — which is the problem:
+   * the page was relying on a clip to hide a layout error rather than not
+   * having one. The horizontal softness comes from the mask's own feather
+   * instead, which costs no width.
+   */
+  inset: -3% 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* Fallback for engines without mask-composite: a soft ellipse. It cannot
+     cover a section this tall evenly, but it never shows a hard edge, which
+     is the property that matters — a visible rectangle would read as exactly
+     the card this redesign removed. */
+  background: radial-gradient(
+    ellipse 74% 78% at 50% 46%,
+    rgba(13, 11, 30, 0.93) 0%,
+    rgba(13, 11, 30, 0.88) 45%,
+    rgba(13, 11, 30, 0.5) 74%,
+    rgba(13, 11, 30, 0) 100%
+  );
+}
+
+/* The section is ~2600px tall and ~1160px wide, so a radial gradient is the
+   wrong shape for it: sized to cover the bottom it becomes far too strong in
+   the middle. A flat fill masked separately on each axis gives even coverage
+   with a soft edge on all four sides, which is what is actually wanted. */
+@supports (mask-composite: intersect) or (-webkit-mask-composite: source-in) {
+  .scrim {
+    background: rgba(13, 11, 30, 0.9);
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 7%,
+        black 93%,
+        transparent 100%
+      ),
+      linear-gradient(to right, transparent 0%, black 13%, black 87%, transparent 100%);
+    -webkit-mask-composite: source-in;
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 7%,
+        black 93%,
+        transparent 100%
+      ),
+      linear-gradient(to right, transparent 0%, black 13%, black 87%, transparent 100%);
+    mask-composite: intersect;
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Slider ────────────────────────────────────────────────────────────────
+   A native <input type="range"> under custom styling. The native control
+   already handles keyboard stepping, Home/End, touch dragging and the ARIA
+   value contract; a div-based slider would have to reimplement all of it.
+
+   2px track, 14px handle — the number beside it is the information, the
+   slider is the instrument. */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  /* The visible track is 2px but the hit area is 40px: a 2px pointer target
+     would be unusable, particularly on touch. */
+  height: 40px;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--accent) var(--fill),
+    rgba(255, 255, 255, 0.14) var(--fill),
+    rgba(255, 255, 255, 0.14) 100%
+  );
+}
+
+.slider::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.slider::-moz-range-progress {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  transition: transform 150ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  transition: transform 150ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.slider:hover::-webkit-slider-thumb,
+.slider:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+.slider:hover::-moz-range-thumb,
+.slider:active::-moz-range-thumb {
+  transform: scale(1.25);
+}
+
+/* Focus is shown as a ring around the handle rather than the 40px input box,
+   which would draw a rectangle across the whole row. */
+.slider:focus {
+  outline: none;
+}
+.slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.55);
+}
+.slider:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slider::-webkit-slider-thumb,
+  .slider::-moz-range-thumb {
+    transition: none;
+  }
+}
+
+/* ── Select ────────────────────────────────────────────────────────────────
+   Underline rather than a bordered box, so it reads as a line of the sentence
+   the visitor is completing rather than another form field in a panel. */
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 26px 8px 0;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 0;
+  transition: border-color 200ms ease;
+
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23ffffff' stroke-opacity='0.5' stroke-width='1.6'%3e%3cpath d='M5 8l5 5 5-5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  background-size: 16px;
+}
+
+.select:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.select:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.select:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.55);
+  outline-offset: 4px;
+}
+
+/* The dropdown list is drawn by the OS, so it needs an explicit dark fill —
+   otherwise it inherits white-on-white on most platforms. */
+.select option {
+  background-color: #16142c;
+  color: #ffffff;
+}
+
+/* ── Disclosure ───────────────────────────────────────────────────────────── */
+.disclosure {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 200ms ease;
+}
+.disclosure:hover {
+  color: #ffffff;
+}
+.disclosure:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.55);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.disclosureIcon {
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.disclosureOpen .disclosureIcon {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disclosureIcon {
+    transition: none;
+  }
+}
+
+/* ── Thin meters ──────────────────────────────────────────────────────────── */
+.meterTrack {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.meterFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meterFill {
+    transition: none;
+  }
+}
+
+/* The savings curve redraws on every input change. Transitioning the path
+   itself keeps that from reading as a jump cut. */
+.curvePath,
+.curveArea {
+  transition: d 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curvePath,
+  .curveArea {
+    transition: none;
+  }
+}

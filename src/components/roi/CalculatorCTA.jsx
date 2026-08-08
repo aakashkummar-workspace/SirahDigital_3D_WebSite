@@ -10,10 +10,15 @@ import { COMPANY } from '@/data/company';
  *
  * The report opens a print-ready summary in a new window and calls print(),
  * which lets the browser produce the PDF. That keeps a genuinely working
- * download without adding a PDF library, and without a backend — the spec
- * allows a placeholder here, but this is the real thing.
+ * download without adding a PDF library and without a backend.
+ *
+ * ── Presentation ─────────────────────────────────────────────────────────
+ * Two equally-weighted pill buttons used to sit here, which made the visitor
+ * choose between them rather than read one as the next step. The strategy
+ * session is the primary action; the report is a quiet text link beside it.
+ * The report generation itself is unchanged.
  */
-export default function CalculatorCTA({ result, input, accent }) {
+export default function CalculatorCTA({ result, input }) {
   const [blocked, setBlocked] = useState(false);
 
   const downloadReport = () => {
@@ -89,13 +94,13 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
   };
 
   return (
-    <div className="mt-12">
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div>
+      <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
         <Link
           href="/contact"
-          className="interactive-hover group inline-flex items-center justify-center gap-3 min-h-[44px] px-7 py-4 rounded-full text-fluid-sm font-bold text-[#04121a] bg-brand-cyan hover:bg-white transition-colors"
+          className="interactive-hover group inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-xl bg-brand-cyan px-6 py-3.5 text-[15px] font-semibold text-[#04121a] transition-colors hover:bg-white"
         >
-          Book My Free AI Strategy Session
+          Book a free AI strategy session
           <span className="transition-transform duration-300 group-hover:translate-x-1">
             <ArrowRightIcon />
           </span>
@@ -104,18 +109,17 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
         <button
           type="button"
           onClick={downloadReport}
-          className="interactive-hover group inline-flex items-center justify-center gap-3 min-h-[44px] px-7 py-4 rounded-full text-fluid-sm font-semibold text-white transition-colors"
-          style={{ background: `${accent}1f`, border: `1px solid ${accent}4d` }}
+          className="interactive-hover group inline-flex min-h-[44px] items-center gap-2 text-[14px] font-medium text-white/60 transition-colors hover:text-white"
         >
-          Download My AI Automation Report
-          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
-            <path d="M12 3v10.6l3.3-3.3 1.4 1.4L12 16.4l-4.7-4.7 1.4-1.4L12 13.6V3h0zM5 18h14v2H5z" />
-          </svg>
+          Download the automation report
+          <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">
+            →
+          </span>
         </button>
       </div>
 
       {blocked && (
-        <p role="status" className="mt-4 text-fluid-xs text-amber-400">
+        <p role="status" className="mt-4 text-[12px] text-amber-400">
           Your browser blocked the report window. Allow pop-ups for this site and try again.
         </p>
       )}
@@ -123,11 +127,11 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
       {/* The honest caveat. These are modelled projections shown to a
           prospect, so the page says so plainly rather than implying they are
           measured results. */}
-      <p className="mt-7 max-w-2xl text-fluid-xs leading-relaxed text-white/35">
-        <strong className="text-white/55">Indicative estimate.</strong> Figures are modelled from your inputs
-        using industry-typical assumptions for automatable workload, transaction handling time and
-        implementation cost. They are not a quotation and not a guarantee of results — a scoping call
-        replaces them with numbers based on your actual processes.
+      <p className="mt-8 max-w-[62ch] text-[12px] leading-relaxed text-white/35">
+        <strong className="font-medium text-white/55">Indicative estimate.</strong> Figures are modelled from
+        your inputs using industry-typical assumptions for automatable workload, transaction handling time and
+        implementation cost. They are not a quotation and not a guarantee of results — a scoping call replaces
+        them with numbers based on your actual processes.
       </p>
     </div>
   );

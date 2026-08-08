@@ -1,32 +1,42 @@
 "use client";
 import React, { useMemo, useReducer } from 'react';
 import AnimatedHeading from '@/components/ui/AnimatedHeading';
-import ROISlider, { SelectField } from './ROISlider';
-import ImpactDashboard from './ImpactDashboard';
-import RecommendationEngine from './RecommendationEngine';
+import ConfigPanel from './ConfigPanel';
+import ResultPanel from './ResultPanel';
 import CalculatorCTA from './CalculatorCTA';
-import { ROI_INPUTS, ROI_DEFAULTS, ROI_INDUSTRIES, BUSINESS_SIZES } from '@/data/roi';
+import { ROI_DEFAULTS } from '@/data/roi';
 import { calculateROI } from '@/lib/roi';
+import s from './calculator.module.css';
 
 /**
- * Interactive business-value simulator.
+ * Interactive automation savings calculator.
  *
- * State is one reducer over the whole input set, and the model is a pure
- * function memoised on it — so every control updates the entire dashboard in
- * the same render, and nothing recalculates unless an input actually changed.
+ * State is one reducer over the whole input set and the model is a pure
+ * function memoised on it, so every control updates the whole read-out in the
+ * same render and nothing recalculates unless an input actually changed.
+ * `calculateROI` is untouched by this redesign — the change is visual and
+ * structural only.
  *
  * ── Surface ──────────────────────────────────────────────────────────────
- * The whole calculator sits on one near-opaque card. This page renders over
- * the fixed WebGL particle field, and dense figures and 6px slider tracks are
- * unreadable against a moving starfield — the card is what makes the numbers
- * legible. It is deliberately solid rather than translucent, and deliberately
- * not backdrop-blurred: a blur this large over a canvas that repaints every
- * frame is a real cost on mobile for no gain over an opaque fill.
+ * The previous version sat on one near-opaque #191634 card, because dense
+ * figures are unreadable over the WebGL particle field behind this page. That
+ * reasoning was correct and still is — removing the card outright made the
+ * lower half of the read-out (coverage, productivity, the hours comparison,
+ * the savings curve) genuinely hard to read against the particles.
+ *
+ * So the card is gone but the contrast is not: a heavily feathered radial
+ * scrim sits behind the content and fades to nothing before any edge. It reads
+ * as depth rather than as a panel — no border, no corner, no blur.
+ *
+ * The particle background itself is untouched: no component, config, opacity,
+ * density, speed, colour or animation. The scrim is a content-layer element
+ * drawn above the canvas, which is the layer this redesign owns.
+ *
+ * ── One accent ───────────────────────────────────────────────────────────
+ * Brand cyan, and only brand cyan: slider fill, the meters, the curve, the
+ * primary CTA. It used to rotate by industry index, which encoded nothing.
  */
-
-// Single accent — the colour used to rotate by industry index, which was
-// decorative rather than informative.
-const ACCENTS = ['#22D3EE'];
+const ACCENT = '#22D3EE';
 
 function reducer(state, action) {
   if (state[action.key] === action.value) return state;   // no-op, no re-render
@@ -38,94 +48,64 @@ export default function AIAutomationROICalculator() {
   const set = (key) => (value) => dispatch({ key, value });
 
   const result = useMemo(() => calculateROI(input), [input]);
-  const accent = ACCENTS[ROI_INDUSTRIES.findIndex((i) => i.id === input.industry) % ACCENTS.length];
 
   return (
-    <section aria-labelledby="roi-title" className="relative max-w-7xl mx-auto px-6 py-24 md:py-32">
-      <div
-        className="relative overflow-hidden rounded-3xl border p-6 sm:p-10 lg:p-14 transition-[border-color] duration-1000 ease-brand"
-        style={{ background: '#191634', borderColor: `${accent}2e` }}
-      >
-        <div className="relative z-10">
-          {/* ── header ───────────────────────────────────────────────────── */}
-          <header className="max-w-3xl">
-            <p className="text-fluid-xs uppercase tracking-[0.35em] font-semibold text-brand-cyan">
-              Interactive ROI engine
-            </p>
-            <AnimatedHeading
-              id="roi-title"
-              text="Calculate Your Annual AI Automation Savings"
-              className="mt-5 text-fluid-2xl font-bold tracking-tight text-white"
-            />
-            <p className="mt-6 text-fluid-base leading-relaxed text-brand-muted">
-              Four questions about how your business runs today. The dashboard updates as you move.
-            </p>
-          </header>
+    <section aria-labelledby="roi-title" className="relative mx-auto max-w-[1160px] px-6 py-24 md:py-32">
+      <div className={s.scrim} aria-hidden="true" />
 
-          {/* ── two columns on desktop, stacked below ───────────────────── */}
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] gap-10 lg:gap-14 items-start">
+      <div className={s.content}>
+      {/* ── hero ────────────────────────────────────────────────────────── */}
+      <header className="max-w-[38ch]">
+        <AnimatedHeading
+          id="roi-title"
+          text="See what automation could save."
+          className="font-semibold leading-[1.05] tracking-tight text-white"
+          style={{ fontSize: 'clamp(2.25rem, 1.5rem + 3vw, 3.5rem)' }}
+        />
+        <p className="mt-6 max-w-[52ch] text-[16px] leading-relaxed text-white/55">
+          Adjust a few details about your business to estimate your potential automation impact.
+        </p>
+      </header>
 
-            {/* configuration */}
-            <div
-              className="min-w-0 rounded-2xl p-6 sm:p-7 lg:sticky lg:top-28"
-              style={{ background: 'rgba(255,255,255,.035)', border: '1px solid rgba(255,255,255,.07)' }}
-            >
-              <p className="text-fluid-xs uppercase tracking-[0.3em] font-semibold" style={{ color: accent }}>
-                AI business configuration
-              </p>
+      {/* ── inputs and results ──────────────────────────────────────────────
+          Two columns of one calculator, not two panels. The gap does the
+          separating; there is no divider and no container on either side.
 
-              <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <SelectField
-                  label="Industry"
-                  value={input.industry}
-                  options={ROI_INDUSTRIES}
-                  accent={accent}
-                  onChange={set('industry')}
-                />
-                <SelectField
-                  label="Business Size"
-                  value={input.businessSize}
-                  options={BUSINESS_SIZES}
-                  accent={accent}
-                  onChange={set('businessSize')}
-                />
-              </div>
-
-              <div className="mt-8 space-y-8">
-                {ROI_INPUTS.map((def) => (
-                  <ROISlider
-                    key={def.id}
-                    def={def}
-                    value={input[def.id]}
-                    accent={accent}
-                    onChange={set(def.id)}
-                  />
-                ))}
-              </div>
-
-              {/* what the model assumed rather than asked — stated, not hidden */}
-              <p className="mt-8 text-fluid-xs leading-relaxed text-white/35">
-                Lead, call and document volumes are estimated from your team size
-                (~{result.monthlyLeads.toLocaleString('en-US')} leads,
-                {' '}{result.monthlyCalls.toLocaleString('en-US')} calls and
-                {' '}{result.monthlyDocs.toLocaleString('en-US')} documents a month).
-              </p>
-
-              <div className="mt-8 pt-7" style={{ borderTop: '1px solid rgba(255,255,255,.07)' }}>
-                <RecommendationEngine industry={result.industry} accent={accent} />
-              </div>
-            </div>
-
-            {/* live dashboard */}
-            <div className="min-w-0">
-              {/* Inputs change faster than a screen reader can usefully follow,
-                  so the region is not a live region; the numbers are readable
-                  on demand rather than announced on every slider step. */}
-              <ImpactDashboard result={result} accent={accent} />
-              <CalculatorCTA result={result} input={input} accent={accent} />
-            </div>
-          </div>
+          The configuration sticks on desktop so the numbers stay in view while
+          a slider is being dragged — the whole point of the thing is watching
+          the result move. */}
+      <div className="mt-16 grid grid-cols-1 items-start gap-14 md:mt-20 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-20">
+        <div className="min-w-0 lg:sticky lg:top-28">
+          <ConfigPanel
+            input={input}
+            set={set}
+            accent={ACCENT}
+            derived={result}
+          />
         </div>
+
+        {/* Not an aria-live region: inputs change faster than a screen reader
+            can usefully follow, so the figures are readable on demand rather
+            than announced on every slider step. */}
+        <ResultPanel result={result} accent={ACCENT} />
+      </div>
+
+      {/* ── recommendations ─────────────────────────────────────────────────
+          Inline text rather than a row of pills. The set changes with the
+          industry, so it is keyed on the industry id and re-reads naturally. */}
+      <div className="mt-20 border-t border-white/[0.06] pt-8">
+        <h2 className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/45">
+          Recommended automations
+        </h2>
+        <p key={result.industry.id} className="mt-4 max-w-[70ch] text-[15px] leading-relaxed text-white/70">
+          {result.industry.recommendations.join(' · ')}
+        </p>
+      </div>
+
+      {/* ── close ───────────────────────────────────────────────────────── */}
+      <div className="mt-14">
+        <CalculatorCTA result={result} input={input} />
+      </div>
       </div>
     </section>
   );
