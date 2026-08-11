@@ -3,21 +3,18 @@ import Link from 'next/link';
 import Reveal from '@/components/ui/Reveal';
 import { ArrowRightIcon } from '@/components/ui/icons';
 import { COMPANY } from '@/data/company';
-// EXPERIMENTAL: Living Automation Core — safe to remove, see components/experiments/
-import LivingAutomationCore from '@/components/experiments/LivingAutomationCore';
 
 /**
  * The homepage hero.
  *
  * Two columns, but only one of them has anything in it. The right-hand column
- * is an empty spacer: the mark is the site's fixed particle canvas, which
- * offsets itself into the right half of the viewport while it is assembled
- * (see SirahCanvas). Giving it a real column here is what keeps the copy out
- * of its way — the spacer is load-bearing, not decoration.
+ * is an empty spacer, and it is load-bearing rather than decoration: it is
+ * what keeps the copy to the left half of the grid.
  *
- * Below lg the mark cannot sit beside anything, so the spacer becomes vertical
- * instead and the canvas drops the mark into it. That is why the phone layout
- * reserves 32vh under the CTA and then appears to leave it empty.
+ * It originally reserved room for the site's fixed particle canvas, and later
+ * for a 3D experiment. Both have been removed. The column stays because the
+ * copy column's width is what decides where the heading wraps — drop the
+ * spacer and the heading reflows across the full grid.
  *
  * The copy column is capped at 520px and the paragraph at 420px. Both are
  * deliberately narrower than the grid: at these sizes the measure is what
@@ -85,16 +82,14 @@ export default function Hero() {
           </Reveal>
         </div>
 
-        {/* The mark's room. A column beside the copy on a desktop, a band
-            beneath it on a phone.
+        {/* An empty second column, so the copy keeps to the left half of the
+            grid rather than running the full width.
 
-            EXPERIMENTAL: Living Automation Core
-            Safe to remove without affecting the rest of the website — delete
-            the <LivingAutomationCore /> line below and its import above, and
-            this returns to the empty spacer it has always been. */}
-        <div aria-hidden className="relative h-[32vh] lg:h-[min(34rem,60vh)]">
-          <LivingAutomationCore />
-        </div>
+            It used to reserve room for the particle mark, and briefly for a 3D
+            experiment; both are gone and the space is now just space. Removing
+            the column entirely would widen the heading measure, which is what
+            decides where it wraps — so the spacer stays. */}
+        <div aria-hidden className="h-[32vh] lg:h-auto" />
       </div>
     </section>
   );
