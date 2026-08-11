@@ -10,22 +10,23 @@ import { Canvas, useFrame } from '@react-three/fiber';
  * dynamic import, the breakpoint and the reduced-motion check.
  *
  * ── The form ─────────────────────────────────────────────────────────────
- * A stack of three machined plates inside a thin halo, seen from slightly
- * above. Bottom to top: the systems a business already runs, the automation
- * laid over them, the outcome sitting proud on top.
+ * One machined puck — bevelled rims, a recessed accent seam, a raised top
+ * face — sitting inside a thin halo that carries three nodes.
  *
- * It is layering rather than sequence — "built on" instead of "flows to" —
- * which is the honest version of the idea and needs no arrows, no labels and
- * no flowchart.
+ * The systems a business already runs, the automation threaded through them,
+ * the outcome on top. Said as a form rather than a sequence: nothing is
+ * labelled and nothing points at anything, which is the difference between an
+ * object and a diagram.
  *
- * Two earlier forms were rejected on the way here, both worth recording so
- * they are not retried: a faceted icosahedron core read as an asteroid, and a
- * smooth sphere read as a planet the moment a ring went round it. Discs read
- * as something machined, which is the register the brief asks for.
+ * Three forms were rejected getting here, recorded so they are not retried:
+ * a faceted icosahedron read as an asteroid; a smooth sphere read as a planet
+ * the moment a ring went round it; three stacked discs of decreasing radius
+ * read as a tiered cake stand. A single body with one seam says the same thing
+ * and reads as a device.
  *
- * Nothing moves except three nodes drifting round the halo and a slow
- * highlight on the top plate. Everything else is still until the cursor asks
- * it to tilt — that is what keeps this an object rather than an animation.
+ * Nothing moves but the three nodes drifting round the halo. Everything else
+ * is still until the cursor asks it to tilt — that is what keeps this an
+ * object rather than an animation.
  *
  * ── Why plain three geometry ─────────────────────────────────────────────
  * Cylinders, toruses and spheres from three itself: no drei helpers, no loaded
@@ -45,12 +46,24 @@ const ACCENT = '#22D3EE';
  */
 const OUTER_R = 1.34;
 
+/**
+ * The object's resting pose: a three-quarter view from slightly above.
+ *
+ * This MUST live on its own group, inside the one the cursor drives. Setting
+ * it as a rotation prop on the driven group itself means the tilt lerp treats
+ * the base pose as a starting error and drags it to zero — the object flattens
+ * to edge-on within a second of load, and what should be a 7 degree tilt
+ * becomes a 29 degree swing between the pose and nothing. That was the first
+ * version of this file and it is an easy mistake to repeat.
+ */
+const BASE_POSE = [0.42, -0.32, 0.04];
+
 /** Max tilt in radians: ~7.5 deg of yaw, ~5 deg of pitch. */
 const MAX_YAW = 0.13;
 const MAX_PITCH = 0.09;
 
 function Core({ interactive, idle }) {
-  const group = useRef(null);
+  const tilt = useRef(null);
   const halo = useRef(null);
   const core = useRef(null); // the body; kept for the cursor group hierarchy
 
@@ -77,7 +90,7 @@ function Core({ interactive, idle }) {
     // unclamped one makes the object jump when attention returns.
     const d = Math.min(delta, 0.1);
 
-    if (group.current) {
+    if (tilt.current) {
       const targetYaw = interactive ? pointer.current.x * MAX_YAW : 0;
       const targetPitch = interactive ? pointer.current.y * MAX_PITCH : 0;
 
@@ -85,8 +98,8 @@ function Core({ interactive, idle }) {
       // to feel connected, low enough that it trails the cursor rather than
       // being pinned to it.
       const k = 1 - Math.exp(-3.2 * d);
-      group.current.rotation.y += (targetYaw - group.current.rotation.y) * k;
-      group.current.rotation.x += (targetPitch - group.current.rotation.x) * k;
+      tilt.current.rotation.y += (targetYaw - tilt.current.rotation.y) * k;
+      tilt.current.rotation.x += (targetPitch - tilt.current.rotation.x) * k;
     }
 
     if (idle) {
@@ -108,9 +121,11 @@ function Core({ interactive, idle }) {
   );
 
   return (
-    // Seen from slightly above and off-axis. A straight-on view flattens the
-    // stack into concentric circles and loses the layering entirely.
-    <group ref={group} rotation={[0.42, -0.32, 0.04]}>
+    // Outer group: cursor tilt only, resting at identity.
+    // Inner group: the fixed three-quarter pose. Keeping these apart is what
+    // makes the tilt a deviation FROM the pose rather than a move toward zero.
+    <group ref={tilt}>
+      <group rotation={BASE_POSE}>
       {/*
         Materials are deliberately LOW metalness. A metal in three.js is almost
         entirely reflective and barely diffuse, so with no environment map to
@@ -194,6 +209,7 @@ function Core({ interactive, idle }) {
           />
         </mesh>
       ))}
+      </group>
       </group>
     </group>
   );
