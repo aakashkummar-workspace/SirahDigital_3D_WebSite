@@ -6,7 +6,6 @@ import ResultPanel from './ResultPanel';
 import CalculatorCTA from './CalculatorCTA';
 import { ROI_DEFAULTS } from '@/data/roi';
 import { calculateROI } from '@/lib/roi';
-import s from './calculator.module.css';
 
 /**
  * Interactive automation savings calculator.
@@ -18,19 +17,14 @@ import s from './calculator.module.css';
  * structural only.
  *
  * ── Surface ──────────────────────────────────────────────────────────────
- * The previous version sat on one near-opaque #191634 card, because dense
- * figures are unreadable over the WebGL particle field behind this page. That
- * reasoning was correct and still is — removing the card outright made the
- * lower half of the read-out (coverage, productivity, the hours comparison,
- * the savings curve) genuinely hard to read against the particles.
+ * No card and no scrim. Both existed only to lift the read-out off the WebGL
+ * particle field this page used to render over — first a solid #191634 panel,
+ * then a feathered wash once the panel was removed as too dashboard-like.
  *
- * So the card is gone but the contrast is not: a heavily feathered radial
- * scrim sits behind the content and fades to nothing before any edge. It reads
- * as depth rather than as a panel — no border, no corner, no blur.
- *
- * The particle background itself is untouched: no component, config, opacity,
- * density, speed, colour or animation. The scrim is a content-layer element
- * drawn above the canvas, which is the layer this redesign owns.
+ * That background has since been removed from the site entirely, so there is
+ * nothing left to fight: the figures sit directly on the page background, and
+ * separation is carried by type size and weight alone, which is what the
+ * design wanted in the first place.
  *
  * ── One accent ───────────────────────────────────────────────────────────
  * Brand cyan, and only brand cyan: slider fill, the meters, the curve, the
@@ -51,9 +45,6 @@ export default function AIAutomationROICalculator() {
 
   return (
     <section aria-labelledby="roi-title" className="relative mx-auto max-w-[1160px] px-6 py-24 md:py-32">
-      <div className={s.scrim} aria-hidden="true" />
-
-      <div className={s.content}>
       {/* ── hero ────────────────────────────────────────────────────────── */}
       <header className="max-w-[38ch]">
         <AnimatedHeading
@@ -105,7 +96,6 @@ export default function AIAutomationROICalculator() {
       {/* ── close ───────────────────────────────────────────────────────── */}
       <div className="mt-14">
         <CalculatorCTA result={result} input={input} />
-      </div>
       </div>
     </section>
   );

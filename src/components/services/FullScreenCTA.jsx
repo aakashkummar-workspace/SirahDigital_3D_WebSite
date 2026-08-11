@@ -1,43 +1,30 @@
 "use client";
-import React, { useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import AnimatedHeading from '@/components/ui/AnimatedHeading';
 import useInView from '@/hooks/useInView';
 import { useReducedMotion } from '@/hooks/useMediaQuery';
 import { ArrowRightIcon } from '@/components/ui/icons';
-import { BACKGROUND_FOCUS_EVENT } from '@/components/three/SiteBackground';
 
 /**
  * Full-screen close: large type, one button, nothing else.
  *
- * "Background particles converge toward the logo" is done with the particle
- * field the site already has rather than a second canvas. While this section
- * owns the viewport it asks the shared background to reassemble the mark and
- * centre it; on the way out it releases it again. The request goes over a
- * window event, so the section and the canvas stay decoupled — no context
- * provider threaded through a server layout, and no import cycle.
+ * This used to ask the shared WebGL particle field to reassemble the logo
+ * behind it while in view, over a window event. That background has been
+ * removed from the site, so the request had nobody listening and is gone with
+ * it. The section is unchanged otherwise — it was never drawing the particles
+ * itself.
  */
 export default function FullScreenCTA() {
-  const [ref, inView] = useInView({ threshold: 0.4, once: false });
+  // The section-level useInView that used to drive the background focus is
+  // gone with it. `copyRef` stays — that one reveals the copy, and is nothing
+  // to do with the particles.
   const [copyRef, copyIn] = useInView({ threshold: 0.35 });
   const reduced = useReducedMotion();
   const shown = copyIn || reduced;
 
-  useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent(BACKGROUND_FOCUS_EVENT, {
-        detail: inView ? { assembled: true, align: 'center' } : null,
-      })
-    );
-    // Release the background if this unmounts mid-view (route change).
-    return () => {
-      window.dispatchEvent(new CustomEvent(BACKGROUND_FOCUS_EVENT, { detail: null }));
-    };
-  }, [inView]);
-
   return (
     <section
-      ref={ref}
       aria-labelledby="services-cta-title"
       className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden"
     >
