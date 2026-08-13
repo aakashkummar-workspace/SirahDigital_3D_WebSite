@@ -5,6 +5,7 @@ import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 import { LOGO_OUTER, LOGO_HOLES, LOGO_PX } from './sirahLogoOutline';
+import { buildRibbonGeometry, sampleRibbonSurface, solveRibbon } from './ribbonForm';
 
 // The mark's outline is traced directly from logo.png rather than
 // reconstructed by hand, so the 3D geometry is the real logo. See
@@ -210,6 +211,93 @@ const BURST_X = 11.5;
 const BURST_Y = 6.5;
 const BURST_Z = 6.0;
 
+/* ---- how quickly the scroll opens the cloud ------------------------------
+ *
+ * Two separate things control this, and they are worth keeping apart.
+ *
+ * BURST_SPAN is the distance, in scroll, over which the cloud goes from
+ * assembled to fully open. It used to be a flat 0.9 viewport heights, which
+ * meant the burst was over within the hero no matter how long the page below
+ * it was — on the homepage the mark had finished dispersing before the
+ * carousel came into view. Measuring it against the page's own scrollable
+ * height instead ties the burst to the thing being scrolled: a long page
+ * opens the cloud slowly across its whole length.
+ *
+ * BURST_SPAN_MIN is a floor in viewport heights, and it is the old value on
+ * purpose. Taking the larger of the two means this can only ever be slower
+ * than it was, never faster — a short page (or one measured before its images
+ * have laid out) falls back to the original behaviour rather than snapping
+ * the cloud open in a few hundred pixels.
+ */
+const BURST_SPAN = 0.75;
+const BURST_SPAN_MIN = 0.9;
+
+/* ---- how quickly the cloud chases that target ----------------------------
+ *
+ * Separate from the span: the span says where the cloud should be for a given
+ * scroll position, this says how fast it gets there.
+ *
+ * Only the scroll-driven opening is slowed. Everything else keeps the
+ * original rate — the cursor burst has to feel like a direct response to the
+ * pointer, the reassembly on the way back up would read as sluggish if it
+ * lagged, and the fixed goals of 'dispersed' and 'assembled' are entrances
+ * rather than gestures.
+ */
+const BURST_EASE = 1.1;    // scrolling down, cloud opening
+const SETTLE_EASE = 2.2;   // everything else — the original rate
+
+/* ---- presentation of the assembled mark ----------------------------------
+ *
+ * Everything below only applies while the mark is together — each term is
+ * multiplied by (1 - scatter), so an inner page's dispersed field is exactly
+ * what it was before. The point is to make the hero's mark feel like a held
+ * object rather than a still, without any of it being noticeable enough to
+ * pull the eye off the headline.
+ *
+ * INTRO_MS is the one-shot entrance: the cloud arrives at 0.96 and settles to
+ * 1. It runs from the first frame that has geometry, and because the canvas
+ * is mounted by the site layout rather than by a page, it happens once per
+ * session and not again on navigation.
+ *
+ * The sway was already here; it is slower and a little wider now, which is
+ * what reads as a very slow rotation without ever turning the mark far enough
+ * to show its back.
+ *
+ * SHIMMER_PERIOD with the exponent below gives roughly an 0.8s swell every
+ * 6.5s — flat for most of the cycle, so it registers as an occasional catch
+ * of light rather than a pulse.
+ */
+const INTRO_MS = 700;
+const INTRO_FROM = 0.96;
+
+const FLOAT_AMP = 0.13;    // world units of vertical drift
+const FLOAT_RATE = 0.34;
+
+const SWAY_Y = 0.22;       // radians
+const SWAY_Y_RATE = 0.16;
+const SWAY_X = 0.085;
+const SWAY_X_RATE = 0.12;
+
+const PARALLAX_ROT = 0.10; // radians of lean at the edge of the screen
+const PARALLAX_POS = 0.20; // world units of travel at the edge of the screen
+const PARALLAX_EASE = 1.6;
+
+const SHIMMER_PERIOD = 6.5;
+const SHIMMER_SHARPNESS = 12;
+const SHIMMER_SIZE = 0.35;
+const SHIMMER_OPACITY = 0.12;
+
+/* The field sits a touch further back than it used to. The brief asked for
+ * slightly less of it behind the headline and this is the whole of that
+ * change — no scrim, no gradient, just less of the cloud. */
+const FIELD_OPACITY = 0.88;
+
+/* Below this the hero stacks and there is no column beside the copy for the
+ * mark to sit in. Matches Tailwind's lg, which is where Hero.jsx switches
+ * from a spacer column to a spacer band under the CTA. */
+const BESIDE_MIN_WIDTH = 1024;
+const DROP_FRACTION = 0.52;   // of the half-viewport, downward
+
 /**
  * `mode` decides what the cloud is doing:
  *   'scroll'    — homepage: assembled at the top, dispersing as you scroll
@@ -222,9 +310,36 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
   const materialRef = useRef();
   const scatter = useRef(0);          // 0 = assembled, 1 = fully scattered
   const scrollScatter = useRef(0);    // how far the page has been scrolled
+  // Distinct from scrollScatter, which saturates at BURST_SPAN — three
+  // quarters of the way down. The ribbon is not finished until the bottom of
+  // the page, so it needs the whole scroll, not the part the burst uses.
+  const scrollFull = useRef(0);
+  const ribbon = useRef(0);           // 0 = no band, 1 = solid band
   const pointer = useRef({ x: 0, y: 0, seen: false });
   const local = useMemo(() => new THREE.Vector3(), []);
   const pixels = useLogoPixels();
+
+  // Presentation state for the assembled mark. These are the eased *base*
+  // positions; the float and the parallax are added on top each frame, so
+  // they cannot be folded into the ease without damping themselves.
+  const intro = useRef(0);
+  const parallax = useRef({ x: 0, y: 0 });
+  const baseX = useRef(0);
+  const baseY = useRef(0);
+
+  // WebGL is outside the reach of the reduced-motion block in globals.css,
+  // which only neutralises CSS transitions. This switches off the float, the
+  // parallax, the shimmer and the entrance — the sway and the scatter are the
+  // component's existing behaviour and are left as they were.
+  const calm = useRef(false);
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!mq) return undefined;
+    calm.current = mq.matches;
+    const onChange = (e) => { calm.current = e.matches; };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   // Read through refs inside useFrame so a route change does not re-render
   // the whole R3F tree — only the per-frame target moves.
@@ -310,6 +425,22 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     return { positions: new Float32Array(targets), targets, bursts, stagger, colors, count: n };
   }, [pixels]);
 
+  /**
+   * Where each particle goes when the cloud forms the band.
+   *
+   * The band itself is never kept: it is extruded, sampled once, and thrown
+   * away in the same breath. All that survives is one landing point per
+   * particle, which is the only thing the frame loop needs — there is no ribbon
+   * object in this scene, only the cloud arranged into the shape of one.
+   */
+  const landings = useMemo(() => {
+    if (!count) return null;
+    const geometry = buildRibbonGeometry();
+    const points = sampleRibbonSurface(geometry, count);
+    geometry.dispose();
+    return points;
+  }, [count]);
+
   // The canvas is pointer-events:none so it never receives events itself.
   // Track the cursor on the window instead.
   useEffect(() => {
@@ -319,11 +450,18 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
       pointer.current.seen = true;
     };
     const onLeave = () => { pointer.current.seen = false; };
-    // Scattering also tracks the page: fully dispersed roughly one screen down,
-    // and it comes back together as you scroll up again.
+    // Scattering also tracks the page, and it comes back together as you
+    // scroll up again.
+    //
+    // The span is recomputed per event rather than cached because scrollHeight
+    // is not stable: images, fonts and the carousel's own stage height all land
+    // after mount, and a span measured once at mount would be taken from a
+    // shorter page than the one being scrolled.
     const onScroll = () => {
-      const span = window.innerHeight * 0.9;
+      const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const span = Math.max(window.innerHeight * BURST_SPAN_MIN, scrollable * BURST_SPAN);
       scrollScatter.current = THREE.MathUtils.clamp(window.scrollY / span, 0, 1);
+      scrollFull.current = THREE.MathUtils.clamp(window.scrollY / scrollable, 0, 1);
     };
     onScroll();
     window.addEventListener('pointermove', onMove);
@@ -364,26 +502,119 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     // is nowhere near the top of the page, so scroll scatter would otherwise
     // hold the cloud permanently open.
     const m = modeRef.current;
+    const scrollGoal = scrollScatter.current;
+    const touchGoal = touching ? 1 : 0;
     const goal =
       m === 'dispersed' ? 1
         : m === 'assembled' ? 0
-          : Math.max(scrollScatter.current, touching ? 1 : 0);
-    scatter.current += (goal - scatter.current) * Math.min(1, d * 2.2);
+          : Math.max(scrollGoal, touchGoal);
+
+    // Slow the opening, but only the part of it the scroll is responsible for.
+    //
+    // The three conditions are each load-bearing. 'scroll' mode: the other two
+    // modes are entrances, not gestures. Rising: coming back together on the
+    // way up would read as lag, not weight. And scroll outranking touch is
+    // what keeps the cursor burst sharp — when the pointer is on the mark it
+    // is touchGoal driving the goal, so that case takes the original rate.
+    const scrollOpening =
+      m === 'scroll' && goal > scatter.current && scrollGoal >= touchGoal;
+    const rate = scrollOpening ? BURST_EASE : SETTLE_EASE;
+
+    scatter.current += (goal - scatter.current) * Math.min(1, d * rate);
 
     const s = scatter.current;
+
+    // How far the cloud has resolved into the band. Its own eased value with
+    // its own hysteresis — see solveRibbon; forming and releasing are
+    // deliberately not the same journey.
+    // What the band is doing depends on what the field is for.
+    //
+    // 'scroll' is the homepage, where there is a mark to form *out of*: the
+    // scroll position drives it, and the hysteresis in solveRibbon makes the
+    // trip back a different journey from the trip out.
+    //
+    // 'dispersed' is every inner page. There is no mark there and no story to
+    // tell about one — the field is background, so the band simply exists,
+    // flowing, from the moment the page loads. Navigating in from the top of
+    // the homepage forms it on the way rather than cutting to it, because the
+    // canvas is mounted by the layout and survives the route change.
+    //
+    // 'assembled' is a section that has claimed the mark and is holding it
+    // together. A band would be pulling the same particles the other way.
+    const ribbonGoal = !landings ? 0 : m === 'assembled' ? 0 : m === 'scroll' ? scrollFull.current : 1;
+    ribbon.current = solveRibbon(ribbon.current, ribbonGoal, d);
+    const r = ribbon.current;
+
     const arr = pts.geometry.attributes.position.array;
     for (let i = 0; i < count; i++) {
       const k = i * 3;
       // Per-particle stagger so the cloud pulls apart raggedly, not as one lump
       const w = THREE.MathUtils.clamp(s * (0.65 + stagger[i] * 0.7), 0, 1);
-      const e = w * w * (3 - 2 * w);   // smoothstep
+      let e = w * w * (3 - 2 * w);   // smoothstep
+
+      // Staggered like the burst is, so the swarm gathers raggedly rather than
+      // every speck arriving on the same frame.
+      const rw = THREE.MathUtils.clamp(r * (0.7 + stagger[i] * 0.6), 0, 1);
+      const re = rw * rw * (3 - 2 * rw);
+
+      // The burst is withdrawn by exactly as much as the band has taken hold.
+      // Without this a particle travels mark -> scattered -> band, and the trip
+      // through "scattered" is the whole of the middle of the animation: the
+      // logo blows apart and only later gathers, which reads as two separate
+      // events. Damped, the two blend into one move and a speck goes from its
+      // place on the mark to its place on the ribbon directly.
+      e *= 1 - re;
+
       // A little idle drift so the assembled mark still breathes
-      const idle = (1 - e) * 0.02;
-      arr[k] = targets[k] + (bursts[k] - targets[k]) * e + Math.sin(time * 1.1 + stagger[i] * 12) * idle;
-      arr[k + 1] = targets[k + 1] + (bursts[k + 1] - targets[k + 1]) * e + Math.cos(time * 1.3 + stagger[i] * 9) * idle;
-      arr[k + 2] = targets[k + 2] + (bursts[k + 2] - targets[k + 2]) * e;
+      const idle = (1 - e) * (1 - re) * 0.02;
+      let x = targets[k] + (bursts[k] - targets[k]) * e + Math.sin(time * 1.1 + stagger[i] * 12) * idle;
+      let y = targets[k + 1] + (bursts[k + 1] - targets[k + 1]) * e + Math.cos(time * 1.3 + stagger[i] * 9) * idle;
+      let z = targets[k + 2] + (bursts[k + 2] - targets[k + 2]) * e;
+
+      if (re > 0.001) {
+        x += (landings[k] - x) * re;
+        y += (landings[k + 1] - y) * re;
+        z += (landings[k + 2] - z) * re;
+
+        // A wave travelling up the band, so it flows rather than hangs. Phased
+        // on the particle's own height, which for a ribbon this vertical is a
+        // good enough stand-in for distance along it — the crest then runs the
+        // length of the ribbon instead of the whole thing breathing at once.
+        const wave = Math.sin(time * 0.8 - landings[k + 1] * 0.85) * 0.11 * re;
+        x += wave;
+        z += wave * 0.75;
+      }
+
+      arr[k] = x;
+      arr[k + 1] = y;
+      arr[k + 2] = z;
     }
     pts.geometry.attributes.position.needsUpdate = true;
+
+
+    // How much of the presentation applies. 1 while the mark is together,
+    // 0 once it has opened out into background texture — every term below is
+    // scaled by it, so an inner page's field behaves exactly as it always did.
+    const hold = calm.current ? 0 : 1 - s;
+
+    // One-shot entrance, ease-out cubic. Advancing it here rather than in an
+    // effect means it starts on the first frame that actually has geometry,
+    // not on mount — the cloud waits for logo.png before it exists at all.
+    intro.current = calm.current ? 1 : Math.min(1, intro.current + (d * 1000) / INTRO_MS);
+    const introScale = INTRO_FROM + (1 - INTRO_FROM) * (1 - Math.pow(1 - intro.current, 3));
+
+    // Flat for most of its cycle, so this reads as an occasional catch of
+    // light rather than a heartbeat.
+    const shimmer =
+      Math.pow(Math.max(0, Math.sin((time * Math.PI * 2) / SHIMMER_PERIOD)), SHIMMER_SHARPNESS) * hold;
+
+    // The mark leans toward the cursor. Eased separately from the scatter so
+    // a fast pointer sweep does not snap it.
+    const wantX = pointer.current.seen ? pointer.current.x : 0;
+    const wantY = pointer.current.seen ? pointer.current.y : 0;
+    const kp = Math.min(1, d * PARALLAX_EASE);
+    parallax.current.x += (wantX - parallax.current.x) * kp;
+    parallax.current.y += (wantY - parallax.current.y) * kp;
 
     // Thin the cloud out as it disperses so it sits back behind the copy,
     // but keep enough of it to read while it turns.
@@ -393,7 +624,15 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     // sits on, not as something competing with it.
     const centred = alignRef.current === 'center';
     if (materialRef.current) {
-      materialRef.current.opacity = 0.95 * (1 - s * 0.55) * (centred ? 0.5 : 1);
+      // The scatter's dimming is undone as the band forms — but only on the
+      // homepage, where the band is the hero's backdrop and is meant to be
+      // looked at. On an inner page it is behind somebody's paragraphs and
+      // stays knocked back exactly as the open field always was; brightening it
+      // there would be turning up the volume on the wallpaper.
+      const lift = m === 'scroll' ? r : 0;
+      materialRef.current.opacity =
+        FIELD_OPACITY * (1 - s * 0.55 * (1 - lift)) * (centred ? 0.5 : 1)
+        * (1 + shimmer * SHIMMER_OPACITY);
 
       // Ease toward the active section's accent, or back to neutral white
       // when nothing has claimed it. A slow lerp is deliberate — the field
@@ -408,8 +647,9 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
       materialRef.current.color.copy(tintCurrent);
 
       // A brief swell in point size when a section reports fresh energy,
-      // so a capability change registers in the background too.
-      const targetSize = 0.05 * (1 + energyRef.current * 0.55);
+      // so a capability change registers in the background too — and the
+      // shimmer rides the same channel.
+      const targetSize = 0.05 * (1 + energyRef.current * 0.55) * (1 + shimmer * SHIMMER_SIZE);
       materialRef.current.size += (targetSize - materialRef.current.size) * Math.min(1, d * 2.5);
       energyRef.current *= 1 - Math.min(1, d * 1.2);
     }
@@ -423,16 +663,61 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     const aspect = state.size.width / state.size.height;
     const halfH = Math.tan((state.camera.fov * Math.PI) / 360) * 9;
     const wide = aspect > 1.15;
-    const offset = wide && alignRef.current === 'hero' ? halfH * aspect * 0.40 * (1 - s) : 0;
-    pts.position.x += (offset - pts.position.x) * Math.min(1, d * 2.2);
-    pts.scale.setScalar(wide ? 1 : 0.72);
 
-    // No spin — it only ever sways gently. Scattering is the whole effect.
+    // Two different questions. `wide` is about the shape of the viewport and
+    // decides how big the cloud is drawn. `beside` is about whether the hero
+    // actually laid out a column next to the copy, which needs the CSS
+    // breakpoint — a phone held in landscape is wide but still stacks.
+    const beside = wide && state.size.width >= BESIDE_MIN_WIDTH;
+
+    // Specifically the homepage hero's slot, not just "align is hero" — every
+    // inner page leaves align at its default too, and their cloud is opened
+    // out as background texture rather than parked next to a headline.
+    const heroSlot = m === 'scroll' && alignRef.current === 'hero';
+    const heroStacked = heroSlot && !beside;
+
+    // Off to one side on an inner page. Centred, a band this defined runs down
+    // the middle of the reading column, and a shape behind text is far more
+    // distracting than the even field it replaced — the scattered cloud covered
+    // more of the screen but had no edge for the eye to catch on. Only where
+    // there is margin to put it in; on a narrow screen it stays where it is.
+    const aside = m !== 'scroll' && beside ? halfH * aspect * 0.44 * r : 0;
+
+    const offset = (heroSlot && beside ? halfH * aspect * 0.40 * (1 - s) : 0) + aside;
+
+    // Stacked, there is nothing to the side, so the mark goes under the copy
+    // into the band the hero reserves for it rather than sitting behind the
+    // heading. Both this and the offset fade out with the scatter, which is
+    // what lets the opened cloud fill the viewport evenly.
+    const drop = heroStacked ? -halfH * DROP_FRACTION * (1 - s) : 0;
+
+    baseX.current += (offset - baseX.current) * Math.min(1, d * 2.2);
+    baseY.current += (drop - baseY.current) * Math.min(1, d * 2.2);
+
+    // Float and parallax ride on top of the eased base rather than being
+    // eased toward — a moving target inside a lerp would damp itself away.
+    pts.position.x = baseX.current + parallax.current.x * PARALLAX_POS * hold;
+    pts.position.y =
+      baseY.current
+      + Math.sin(time * FLOAT_RATE) * FLOAT_AMP * hold
+      + parallax.current.y * PARALLAX_POS * 0.7 * hold;
+
+    // A landscape phone is `wide` but still stacks, and at full scale the
+    // dropped mark would climb back up into the CTA. Only the homepage's own
+    // stacked case is capped — inner pages keep the size they always had.
+    pts.scale.setScalar((wide && !heroStacked ? 1 : 0.72) * introScale);
+
+    // No spin — it only ever sways, slowly enough that the mark never turns
+    // far enough to show its back, with a few degrees of lean toward the
+    // cursor on top. Scattering is still the whole effect.
     // It does drift back from the camera as it opens, so the dispersing cloud
     // sits behind the page content rather than on top of it.
-    pts.rotation.y = Math.sin(time * 0.25) * 0.18;
-    pts.rotation.x = Math.sin(time * 0.19) * 0.07;
-    pts.position.z = -s * 3.4 + (centred ? -1.6 : 0);
+    pts.rotation.y = Math.sin(time * SWAY_Y_RATE) * SWAY_Y + parallax.current.x * PARALLAX_ROT * hold;
+    pts.rotation.x = Math.sin(time * SWAY_X_RATE) * SWAY_X - parallax.current.y * PARALLAX_ROT * 0.7 * hold;
+    // The dispersing cloud drifts back so it sits behind the page content. The
+    // band should not: it is a formed object at a settled depth, so the retreat
+    // is withdrawn as it takes hold.
+    pts.position.z = -s * 3.4 * (1 - r) + (centred ? -1.6 : 0);
   });
 
   if (!count) return null;
@@ -452,6 +737,7 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
         opacity={0.95}
         depthWrite={false}
       />
+
     </points>
   );
 }
