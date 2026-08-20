@@ -1,127 +1,224 @@
 /**
- * Smoke test for the chatbot's knowledge index and answers.
+ * Accuracy check for the chatbot.
  *
- *   node scripts/chat-check.mjs            # summary + fixture questions
+ *   node scripts/chat-check.mjs            # the fixture suite
  *   node scripts/chat-check.mjs "your question here"
  *
- * Why a harness rather than a plain import: src/lib/chat is written for the
- * Next bundle — ESM `.js` in a CommonJS package, the `@/` alias, and a
- * `require.context` glob that only webpack implements. Node can run none of
- * that directly. So this copies the real source into a temp directory with
- * three mechanical rewrites (extension, alias, and the glob swapped for
- * generated static imports) and runs *that*. The logic under test is the
- * shipped logic — only the module plumbing differs.
+ * The module plumbing lives in chat-harness.mjs; this file is the fixtures and
+ * the verdict.
  *
- * The point is to check answers without a browser: retrieval quality is the
- * part most likely to be quietly wrong, and clicking through a chat panel is a
- * slow way to find out.
+ * ── what changed, and why the old suite passed a broken bot ──────────────
+ * This used to assert one thing: that a must-answer question came back with
+ * `confidence: high` and a must-refuse question came back refused. Eighteen
+ * fixtures, all green — while the live bot was answering "do you work with
+ * real estate" with "1.08", "do you do data entry automation" with "Chaos",
+ * and "do you build dashboards" with a photo caption. Every one of those was
+ * high confidence. Confidence was never a measure of correctness; it only ever
+ * said the gate had opened.
+ *
+ * So a fixture now says *what the answer has to be*:
+ *
+ *   intent   which handler must claim the question. This is what catches a
+ *            regex quietly widening until it swallows its neighbour — the
+ *            failure that produced most of the bad answers above, and the one
+ *            that is invisible from the reply text alone.
+ *   expect   a string or regex the reply must contain. Where the answer is a
+ *            fact, this is the fact.
+ *   reject   a string or regex it must NOT contain. Used for the answers that
+ *            were wrong in a specific, memorable way, so they cannot come back.
+ *
+ * A fixture may set any combination. `refuse` fixtures assert the opposite:
+ * that the question is turned away rather than answered from whichever page
+ * shared a word with it.
+ *
+ * Adding an intent or an FAQ entry means adding a fixture here. That is the
+ * whole contract — the suite is the only thing standing between a helpful
+ * pattern tweak and a bot that confidently says something untrue.
  */
 
-import { readFile, writeFile, mkdir, rm, readdir } from 'node:fs/promises';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import path from 'node:path';
-
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '..');
-const DATA_DIR = path.join(ROOT, 'src', 'data');
-const CHAT_DIR = path.join(ROOT, 'src', 'lib', 'chat');
-const TMP = path.join(ROOT, '.chat-check');
-
-async function build() {
-  await rm(TMP, { recursive: true, force: true });
-  await mkdir(path.join(TMP, 'data'), { recursive: true });
-
-  // 1. Data modules — rewrite sibling specifiers to carry the .mjs extension.
-  const dataFiles = (await readdir(DATA_DIR)).filter((f) => f.endsWith('.js'));
-  for (const file of dataFiles) {
-    const source = await readFile(path.join(DATA_DIR, file), 'utf8');
-    const rewritten = source.replace(/from '\.\/([A-Za-z0-9_-]+)'/g, "from './$1.mjs'");
-    await writeFile(path.join(TMP, 'data', file.replace(/\.js$/, '.mjs')), rewritten);
-  }
-
-  // 2. Stand in for require.context with generated static imports.
-  const imports = dataFiles
-    .map((file, i) => `import * as m${i} from './data/${file.replace(/\.js$/, '.mjs')}';`)
-    .join('\n');
-  const list = dataFiles.map((file, i) => `{ file: '${file}', module: m${i} }`).join(',\n  ');
-  await writeFile(
-    path.join(TMP, 'dataModules.mjs'),
-    `${imports}\nexport const MODULES = [\n  ${list},\n];\n`,
-  );
-
-  // 3. knowledge.js — swap the glob loader for the generated list.
-  const knowledge = await readFile(path.join(CHAT_DIR, 'knowledge.js'), 'utf8');
-  const patched = knowledge.replace(
-    /function loadDataModules\(\)[\s\S]*?\n}/,
-    'function loadDataModules() {\n  return MODULES;\n}',
-  );
-  if (patched === knowledge) throw new Error('could not patch loadDataModules — did it get renamed?');
-  await writeFile(
-    path.join(TMP, 'knowledge.mjs'),
-    `import { MODULES } from './dataModules.mjs';\n${patched}`,
-  );
-
-  // 4. search.js imports nothing; persona.js and answer.js need their
-  //    specifiers rewritten. Sibling modules are listed rather than globbed so
-  //    a new file in lib/chat fails loudly here instead of being silently
-  //    left out of the check.
-  await writeFile(path.join(TMP, 'search.mjs'), await readFile(path.join(CHAT_DIR, 'search.js'), 'utf8'));
-
-  const rewrite = (source) =>
-    source
-      .replace(/from '@\/data\/([A-Za-z0-9_-]+)'/g, "from './data/$1.mjs'")
-      .replace(/from '\.\/knowledge'/g, "from './knowledge.mjs'")
-      .replace(/from '\.\/search'/g, "from './search.mjs'")
-      .replace(/from '\.\/persona'/g, "from './persona.mjs'");
-
-  for (const name of ['persona', 'answer']) {
-    await writeFile(
-      path.join(TMP, `${name}.mjs`),
-      rewrite(await readFile(path.join(CHAT_DIR, `${name}.js`), 'utf8')),
-    );
-  }
-
-  return {
-    knowledge: await import(pathToFileURL(path.join(TMP, 'knowledge.mjs')).href),
-    answer: await import(pathToFileURL(path.join(TMP, 'answer.mjs')).href),
-  };
-}
+import { buildChat } from './chat-harness.mjs';
 
 /* ------------------------------------------------------------------ */
+/* Fixtures                                                            */
+/* ------------------------------------------------------------------ */
 
-const FIXTURES = [
-  'What are Sirah’s products?',
-  'How is automation useful for my business?',
-  'How can I scale my business?',
-  'What services do you provide?',
-  'Book a free call',
-  'Do you work with hospitals?',
-  'Can you do OCR on invoices?',
-  'Do you build WhatsApp bots?',
-  'Who is the founder?',
-  'How much does it cost?',
-  'Where are you located?',
-  'What is your process?',
-  'Do you have client testimonials?',
-  'What technology do you use?',
-  'hi',
-  'my name is Riyaz',
-  'thanks',
-  'who are you',
-].map((q) => ({ q, expect: 'answer' }));
+const ANSWER_FIXTURES = [
+  /* ── contact and booking ─────────────────────────────────────────
+   * The phone number is asserted on every route into the contact answer,
+   * because the bug this replaced was not a missing answer — it was the
+   * social_media intent claiming these questions and replying "WhatsApp is
+   * the fastest if you want a person" with a row of links out. `reject`
+   * carries that sentence so it cannot return quietly. */
+  { q: 'how do I contact you', intent: 'contact', expect: '+91 97899 61631', reject: /whatsapp is the fastest/i },
+  { q: 'what is your phone number', intent: 'contact', expect: '+91 97899 61631' },
+  { q: 'give me your email', intent: 'contact', expect: 'support@sirahdigital.in' },
+  { q: 'can I call you', intent: 'contact', expect: '+91 97899 61631' },
+  { q: 'whatsapp number', intent: 'contact', expect: '+91 97899 61631', reject: /wa\.link|instagram|facebook/i },
+  { q: 'where are you located', intent: 'contact', expect: 'Chennai' },
+  { q: 'where is your office', intent: 'contact', expect: 'Pallavaram' },
+  { q: 'how do I get in touch', intent: 'contact', expect: '+91 97899 61631' },
+
+  // Booking must send people to /book. It spent a long time describing a
+  // calendar and linking to /contact, which does not have one.
+  { q: 'Book a free call', intent: 'booking', expect: '45' },
+  { q: 'I want to book a consultation', intent: 'booking', link: '/book' },
+  { q: 'how do I book a demo', intent: 'booking', link: '/book' },
+  { q: 'can I schedule a meeting', intent: 'booking', link: '/book' },
+  { q: 'is the consultation free', intent: 'booking', expect: 'free' },
+  { q: 'I want to talk to someone', intent: 'booking', link: '/book' },
+
+  /* ── who the company is ──────────────────────────────────────────
+   * The first of these was refused as off-topic in production. It is the
+   * plainest question a company website is asked. */
+  { q: 'what does sirah digital do', intent: 'about', expect: 'SIRAH DIGITAL' },
+  { q: 'what is sirah digital', intent: 'about' },
+  { q: 'tell me about your company', intent: 'about' },
+  { q: 'what is your mission', intent: 'about' },
+  { q: 'who is the founder', intent: 'team', expect: 'Mohamed Riyaz' },
+  { q: 'who are your clients', intent: 'clients' },
+  { q: 'do you have client testimonials', intent: 'clients' },
+
+  /* ── the lists ───────────────────────────────────────────────────── */
+  { q: 'What services do you provide?', intent: 'services', expect: '10 services' },
+  { q: 'what solutions do you offer', intent: 'services' },
+  { q: 'Which industries do you work with?', intent: 'industries', expect: '12 sectors' },
+  { q: 'What are Sirah’s products?', intent: 'products' },
+  { q: 'what is your process', intent: 'process' },
+  { q: 'what technology do you use', intent: 'tech-stack' },
+  { q: 'How is automation useful for my business?', intent: 'automation-benefit' },
+  { q: 'How can I scale my business?', intent: 'scale' },
+
+  /* ── capability lookups ──────────────────────────────────────────
+   * All of these were wrong in production, and the reject clauses name the
+   * exact wrong answers: a photo caption, an animation label, an industry
+   * card, an exam-prep product. */
+  { q: 'do you build chatbots', intent: 'capability', expect: 'AI Chatbots & Voice Assistants' },
+  { q: 'do you do voice agents', intent: 'capability', expect: 'AI Chatbots & Voice Assistants' },
+  { q: 'can you build a mobile app', intent: 'capability', expect: 'Custom Web & Mobile Apps', reject: /TNPSC/i },
+  { q: 'do you build websites', intent: 'capability', expect: 'Custom Web & Mobile Apps' },
+  { q: 'do you do crm integration', intent: 'capability', expect: /CRM|Integration/i, reject: /Automotive/i },
+  { q: 'can you automate invoices', intent: 'capability', expect: /OCR|Document/i },
+  { q: 'do you do ocr', intent: 'capability', expect: /OCR/i },
+  { q: 'do you build dashboards', intent: 'capability', expect: /Dashboards|Intelligence/i, reject: /colleague|carousel|3D website/i },
+  { q: 'do you do data entry automation', intent: 'capability', reject: /^Chaos|Autopilot/i },
+  { q: 'can you handle whatsapp automation', intent: 'capability', expect: /WhatsApp/i },
+
+  /* ── industry lookups ────────────────────────────────────────────
+   * "1.08" was the real answer to the real-estate question — the ROI
+   * calculator's automation-fit coefficient, read out as prose. */
+  { q: 'do you work with hospitals', intent: 'industry-fit', expect: 'Healthcare' },
+  { q: 'do you work with schools', intent: 'industry-fit', expect: 'Education' },
+  { q: 'do you work with restaurants', intent: 'industry-fit', expect: 'Hospitality' },
+  { q: 'do you work with real estate', intent: 'industry-fit', expect: 'Real Estate', reject: /1\.0|1\.1/ },
+  { q: 'do you serve manufacturing', intent: 'industry-fit', expect: 'Manufacturing' },
+  { q: 'have you worked with a car dealership', intent: 'industry-fit', expect: 'Automotive' },
+
+  /* ── products, by name ───────────────────────────────────────────
+   * Aura is asserted on the site's own copy, which describes it reading
+   * recordings the handset already made. The CMS description of the same
+   * product says "in real time", which is not how it works — see the note
+   * in src/lib/chat/cms.js. */
+  { q: 'what is aura', intent: 'product', expect: /recordings/i },
+  { q: 'is aura real time', intent: 'product', reject: /multi-agent frameworks/i },
+  { q: 'what is nusi', intent: 'product', expect: /nutrition/i },
+  { q: 'what are analytics agents', intent: 'product', expect: /measurement|analytics/i },
+
+  /* ── pricing ─────────────────────────────────────────────────────── */
+  { q: 'How much does it cost?', intent: 'pricing', expect: 'free' },
+  { q: 'do you have packages', intent: 'pricing' },
+  { q: 'what is your hourly rate', intent: 'pricing' },
+  { q: 'how much does aura cost', intent: 'pricing' },
+  { q: 'is it expensive', intent: 'pricing' },
+
+  /* ── the authored FAQ ────────────────────────────────────────────
+   * Every one of these was an out-of-scope refusal or a wrong retrieval hit
+   * before faq.js existed. The facts asserted are the ones with a source. */
+  { q: 'what are your working hours', intent: 'faq:hours', expect: 'Monday to Saturday' },
+  { q: 'are you open on sunday', intent: 'faq:hours', expect: /Sunday is closed/i },
+  { q: 'do you do seo', intent: 'faq:not-offered', expect: /not on our list/i },
+  { q: 'do you run google ads', intent: 'faq:not-offered' },
+  { q: 'do you do social media marketing', intent: 'faq:not-offered' },
+  { q: 'how long does a project take', intent: 'faq:timeline', expect: '+91 97899 61631' },
+  { q: 'do you provide support after launch', intent: 'faq:support', expect: '24/7' },
+  { q: 'do you offer maintenance', intent: 'faq:support' },
+  { q: 'do you sign an nda', intent: 'faq:legal-terms' },
+  { q: 'who owns the source code', intent: 'faq:legal-terms' },
+  { q: 'what is your refund policy', intent: 'faq:refund-payment' },
+  { q: 'do you offer a free trial', intent: 'faq:trial', expect: /no self-serve trial/i },
+  { q: 'can I try aura', intent: 'faq:trial' },
+  { q: 'are you hiring', intent: 'faq:careers', expect: 'support@sirahdigital.in' },
+  { q: 'do you take interns', intent: 'faq:careers' },
+  { q: 'is my data safe', intent: 'faq:data-privacy', expect: /never sold/i },
+  { q: 'do you use cookies', intent: 'faq:data-privacy' },
+  { q: 'do you work with international clients', intent: 'faq:reach', expect: 'Chennai' },
+  { q: 'can you work remotely', intent: 'faq:reach' },
+  { q: 'how many years of experience do you have', intent: 'faq:experience', expect: '14+' },
+  { q: 'how many clients do you have', intent: 'faq:experience', expect: '50+' },
+  { q: 'how many employees do you have', intent: 'faq:experience' },
+  { q: 'do you speak tamil', intent: 'faq:languages', expect: /Tamil and English/i },
+  { q: 'your office timings', intent: 'faq:hours', expect: 'Monday to Saturday' },
+  { q: 'why should I choose you', intent: 'faq:why-us', expect: '14+' },
+  { q: 'what makes you different', intent: 'faq:why-us' },
+  { q: 'do you have any awards', intent: 'faq:awards', expect: /does not list awards/i },
+
+  /* ── problems described rather than services named ───────────────
+   * People do not arrive asking for "AI Document Processing & OCR". They
+   * arrive saying where the time goes. Each of these was a wrong answer:
+   * the persona menu, the staff list, and an off-topic refusal. */
+  // Both assert what the answer must *not* be rather than pinning an intent:
+  // several handlers answer a problem statement well, and which one wins is a
+  // judgement call that may reasonably change. What may not change is
+  // answering "I can walk you through any of these" — the bot's own menu — or
+  // reciting the staff list because the sentence contained the word "team".
+  { q: 'can you help me reduce manual work', intent: 'automation-benefit', reject: /walk you through any of these/i },
+  { q: 'my team wastes time on data entry', reject: /Mohamed Riyaz/ },
+  { q: 'can you connect my tally to whatsapp', intent: 'capability' },
+  { q: 'do you have experience with wordpress', intent: 'capability' },
+
+  /* ── persona ─────────────────────────────────────────────────────── */
+  { q: 'hi', intent: 'greeting' },
+  { q: 'good morning', intent: 'greeting' },
+  { q: 'my name is Riyaz', intent: 'name_capture', expect: 'Riyaz' },
+  { q: 'thanks', intent: 'thanks' },
+  { q: 'bye', intent: 'bye' },
+  { q: 'who are you', intent: 'bot_identity' },
+  { q: 'are you a bot', intent: 'bot_identity' },
+  { q: 'what can you do', intent: 'capabilities' },
+  // Both were refused as off-topic. A bot that answers "help" with "that is
+  // outside what I can help with" has lost the visitor in one message.
+  { q: 'help', intent: 'capabilities' },
+  { q: '?', intent: 'capabilities' },
+  { q: 'are you on instagram', intent: 'social_media' },
+  { q: 'call me back', intent: 'lead' },
+
+  /* ── typo tolerance ──────────────────────────────────────────────
+   * "contct" is the one that matters. When the navbar came off the index the
+   * word "contact" left the corpus vocabulary, and the spellchecker started
+   * snapping it to "contract" — so "how do I contact you" was answered with
+   * the note about NDAs. See INTENT_VOCAB in answer.js. */
+  { q: 'wat servcies do u provide', intent: 'services' },
+  { q: 'how mch does it cost', intent: 'pricing' },
+  { q: 'contct', intent: 'contact', expect: '+91 97899 61631' },
+  { q: 'tell me abt aura', intent: 'product' },
+
+  /* ── questions carrying two intents ──────────────────────────────
+   * No branching here — first match wins, and these assert which one that is
+   * so the precedence cannot drift silently. */
+  { q: 'what services do you offer and how much do they cost', intent: 'services' },
+  { q: 'i need a chatbot for my clinic, what will it cost', intent: 'pricing' },
+];
 
 /**
- * The other half of the test, and the half that was missing.
+ * Questions that must be turned away.
  *
- * Retrieval always returns its best match, so the only thing standing between
- * an off-topic question and a confident wrong answer is the relevance gate in
- * answer.js. A gate with no test is a gate that quietly opens: these are the
- * questions that must be refused, and they fail the run if they get answered.
+ * Retrieval always returns its best match, so the only thing between an
+ * off-topic question and a confident wrong answer is the relevance gate. A
+ * gate with no test is a gate that quietly opens.
  *
- * They are also what stops the thresholds being tuned by feel. Loosening the
- * gate to rescue one stubborn real question will light these up immediately.
+ * They also stop the thresholds being tuned by feel: loosening the gate to
+ * rescue one stubborn real question lights these up immediately.
  */
-const MUST_REFUSE = [
+const REFUSE_FIXTURES = [
   'can I drink hot water during winter season?',
   'Do you sell pet insurance?',
   'what is the capital of France?',
@@ -129,7 +226,50 @@ const MUST_REFUSE = [
   'who won the cricket world cup?',
   'what is the weather tomorrow?',
   'can you write me a poem about the sea?',
-].map((q) => ({ q, expect: 'refuse' }));
+  'what is the price of gold today?',
+  'how do I fix my car engine?',
+  'tell me a joke about elephants',
+];
+
+/* ------------------------------------------------------------------ */
+/* Running                                                             */
+/* ------------------------------------------------------------------ */
+
+const matches = (pattern, text) =>
+  pattern instanceof RegExp ? pattern.test(text) : String(text).includes(pattern);
+
+/** Everything a fixture is allowed to assert against, as one string. */
+function haystack(reply) {
+  return [
+    reply.text,
+    reply.extra,
+    reply.lead?.title,
+    ...(reply.bullets || []).flatMap((b) => [b.title, b.detail]),
+    ...(reply.links || []).map((l) => l.label),
+    reply.contact && [reply.contact.phone, reply.contact.email, reply.contact.address].join(' '),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+function check(fixture, reply) {
+  const problems = [];
+  const text = haystack(reply);
+
+  if (fixture.intent && reply.intent !== fixture.intent) {
+    problems.push(`intent was "${reply.intent || 'retrieval'}", wanted "${fixture.intent}"`);
+  }
+  if (fixture.expect && !matches(fixture.expect, text)) {
+    problems.push(`missing ${fixture.expect}`);
+  }
+  if (fixture.reject && matches(fixture.reject, text)) {
+    problems.push(`contains ${fixture.reject}, which it must not`);
+  }
+  if (fixture.link && !(reply.links || []).some((l) => l.href === fixture.link)) {
+    problems.push(`no link to ${fixture.link}`);
+  }
+  return problems;
+}
 
 function render(reply) {
   const flag = { high: 'OK  ', low: 'WEAK', none: 'MISS' }[reply.confidence] || '?   ';
@@ -141,53 +281,71 @@ function render(reply) {
   }
   if (reply.extra) lines.push(`  ${reply.extra.slice(0, 160)}`);
   if (reply.contact) lines.push(`  ${reply.contact.email} · ${reply.contact.phone}`);
+  if (reply.links?.length) lines.push(`  [ ${reply.links.map((l) => l.href).join('  ')} ]`);
   return lines.join('\n');
 }
 
-const { knowledge, answer } = await build();
+const chat = await buildChat();
+const { answerQuestion } = chat;
+const { KNOWLEDGE_STATS } = chat.knowledge;
 
 console.log('═══ INDEX ═══');
-console.log(`entries : ${knowledge.KNOWLEDGE_STATS.entries}`);
-console.log(`sources : ${knowledge.KNOWLEDGE_STATS.sources.join(', ')}`);
-console.log(`kinds   : ${knowledge.KNOWLEDGE_STATS.kinds.join(', ')}`);
+console.log(`entries : ${KNOWLEDGE_STATS.entries}`);
+console.log(`sources : ${KNOWLEDGE_STATS.sources.join(', ')}`);
+console.log(`kinds   : ${KNOWLEDGE_STATS.kinds.join(', ')}`);
 
 const custom = process.argv.slice(2);
-const cases = custom.length
-  ? custom.map((q) => ({ q, expect: null }))
-  : [...FIXTURES, ...MUST_REFUSE];
+
+if (custom.length) {
+  console.log('\n═══ ANSWERS ═══');
+  for (const q of custom) {
+    console.log(`\nQ: ${q}`);
+    console.log(render(answerQuestion(q)));
+  }
+  await chat.cleanup();
+  process.exit(0);
+}
 
 console.log('\n═══ ANSWERS ═══');
-let failures = 0;
+const failures = [];
 
-for (const { q, expect } of cases) {
-  const reply = answer.answerQuestion(q);
-  const refused = reply.intent === 'out-of-scope';
+for (const fixture of ANSWER_FIXTURES) {
+  const reply = answerQuestion(fixture.q);
+  const problems = reply.intent === 'out-of-scope' ? ['refused a question it must answer'] : check(fixture, reply);
 
-  // A refusal is a pass or a failure depending entirely on what was asked, so
-  // the verdict compares against the fixture's own expectation rather than
-  // treating "high confidence" as universally good. Answering the hot-water
-  // question confidently is the bug, not the goal.
-  let verdict = '    ';
-  if (expect === 'answer') {
-    const ok = !refused && reply.confidence === 'high';
-    if (!ok) failures += 1;
-    verdict = ok ? 'PASS' : 'FAIL';
-  } else if (expect === 'refuse') {
-    if (!refused) failures += 1;
-    verdict = refused ? 'PASS' : 'FAIL';
+  if (problems.length) {
+    failures.push({ q: fixture.q, problems });
+    console.log(`\n[FAIL] Q: ${fixture.q}`);
+    for (const problem of problems) console.log(`       ${problem}`);
+    console.log(render(reply));
+  } else {
+    console.log(`[PASS] ${fixture.q}  →  ${reply.intent}`);
   }
-
-  console.log(`\n[${verdict}] Q: ${q}`);
-  console.log(render(reply));
 }
 
-if (!custom.length) {
-  const total = cases.length;
-  console.log(
-    `\n═══ ${total - failures}/${total} as expected ` +
-      `(${FIXTURES.length} must answer, ${MUST_REFUSE.length} must refuse) ═══`,
-  );
+console.log('\n═══ REFUSALS ═══');
+for (const q of REFUSE_FIXTURES) {
+  const reply = answerQuestion(q);
+  const refused = reply.intent === 'out-of-scope';
+  if (refused) {
+    console.log(`[PASS] ${q}`);
+  } else {
+    failures.push({ q, problems: [`answered as "${reply.intent || 'retrieval'}" instead of refusing`] });
+    console.log(`\n[FAIL] Q: ${q}`);
+    console.log(render(reply));
+  }
 }
 
-await rm(TMP, { recursive: true, force: true });
-if (failures > 0) process.exitCode = 1;
+const total = ANSWER_FIXTURES.length + REFUSE_FIXTURES.length;
+console.log(
+  `\n═══ ${total - failures.length}/${total} as expected ` +
+    `(${ANSWER_FIXTURES.length} must answer, ${REFUSE_FIXTURES.length} must refuse) ═══`,
+);
+
+if (failures.length) {
+  console.log('\nFailed:');
+  for (const f of failures) console.log(`  ${f.q} — ${f.problems.join('; ')}`);
+}
+
+await chat.cleanup();
+if (failures.length > 0) process.exitCode = 1;

@@ -41,6 +41,48 @@ const NOT_CONTENT = new Set([
   'ROI_DEFAULTS',    // calculator starting values
   'VOLUME_PER_EMPLOYEE',
   'ORBIT_NODES',     // decorative positions
+
+  /*
+   * Decorative and structural exports — added after the bot was caught
+   * answering real questions with them. Each line below is a sentence a
+   * visitor actually received:
+   *
+   *   "do you work with real estate"      -> "1.08"          (ROI_INDUSTRIES)
+   *   "do you do data entry automation"   -> "Chaos"         (SCENES)
+   *   "do you build dashboards"           -> "Reviewing a build
+   *                                           at a colleague's desk."
+   *                                                          (CAROUSEL_CARDS)
+   *
+   * They are not content gaps that a better threshold would have caught. They
+   * are copy written for a picture, a slider or an arithmetic coefficient, and
+   * no phrasing of a question should ever be answered from them. The generic
+   * walker above is still the rule; this is the list of things that are not
+   * prose about the business, and it is the cheaper half of the trade — a
+   * decorative export added later is a wrong answer, not a missing one, so it
+   * is worth naming them.
+   */
+  'SCENES',          // homepage transformation captions: "Chaos", "Autopilot"
+  'CAROUSEL_CARDS',  // photo captions for the about-page carousel
+  'SOCIALS',         // profile links; `path` is raw SVG geometry, not a sentence
+  'NAV_LINKS',       // the navbar
+  'ROI_INDUSTRIES',  // calculator coefficients — automationFit, dealValue
+  'BUSINESS_SIZES',  // calculator bands, whose only text is their own label
+  'COMPANY_STATS',   // read directly by the `stats` intent, which needs value+label
+  'PORTFOLIO_CTA',   // a single button
+  'CHANNEL_URL',     // a YouTube URL
+
+  /*
+   * The step labels under each industry's flow diagram — 84 of them, and each
+   * one a caption of three or four words ("Dispatch — Loads built and
+   * released"). They read as content and index as content, but no visitor's
+   * question is answered by one: they are the rungs of a picture, meaningless
+   * without the diagram around them. Left in, they were 84 short entries in a
+   * ~150-entry corpus, and short entries win BM25's length normalisation.
+   *
+   * The industries themselves answer these questions properly, out of
+   * INDUSTRIES and INDUSTRY_CARDS, which is where the prose is.
+   */
+  'INDUSTRY_WORKFLOWS',
 ]);
 
 // Field names whose values are never prose.
@@ -49,6 +91,13 @@ const NOISE_KEYS = new Set([
   'alt', 'coverAlt', 'imageAlt',
   'accent', 'hover', 'color', 'colour', 'className', 'theme', 'gradient',
   'angle', 'x', 'y', 'z', 'width', 'height', 'duration', 'delay',
+  // `voice` names the typeface a client's wordmark is set in — 'serif',
+  // 'grotesk', 'didone'. It was becoming the summary of every client, so the
+  // bot introduced Al Shifa Hospital as "book".
+  'voice', 'font', 'typeface', 'variant', 'span', 'order', 'priority',
+  // Positions and identifiers. `slug` is still used for titles and URLs below;
+  // it just has no business being matched as prose.
+  'slug', 'id', 'key', 'index',
 ]);
 
 const TITLE_KEYS = ['title', 'name', 'heading', 'label', 'question'];
@@ -79,11 +128,10 @@ const ROUTE_BY_EXPORT = {
   HOME_PRODUCTS: (item) => item.href || '/contact',
   COMPANY: () => '/contact',
   SOCIALS: (item) => item.href || item.url || '/contact',
-  ROI_INDUSTRIES: () => '/services',
-  BUSINESS_SIZES: () => '/services',
-  CAROUSEL_CARDS: () => '/',
-  SCENES: () => '/',
-  NAV_LINKS: (item) => item.href || '/',
+  PRODUCT_DETAILS: (item) => (item.slug ? `/products/${item.slug}` : '/products'),
+  PORTFOLIO_CATEGORIES: () => '/products#client-systems',
+  MEMBER_PROJECTS: () => '/products#client-systems',
+  TESTIMONIALS: () => '/products#client-systems',
 };
 
 /**
@@ -108,10 +156,11 @@ const KIND_BY_EXPORT = {
   LATEST_INSIGHTS: 'Insight',
   HOME_PRODUCTS: 'Product',
   COMPANY: 'About Sirah',
-  ROI_INDUSTRIES: 'ROI calculator',
-  BUSINESS_SIZES: 'ROI calculator',
-  CAROUSEL_CARDS: 'Highlight',
-  SCENES: 'Highlight',
+  PRODUCT_DETAILS: 'Product',
+  PORTFOLIO_CATEGORIES: 'Client work',
+  MEMBER_PROJECTS: 'Client work',
+  INDUSTRY_WORKFLOWS: 'Industry workflow',
+  TESTIMONIALS: 'Testimonial',
 };
 
 function humanizeExportName(name) {
@@ -182,7 +231,36 @@ function looksLikeNoise(value) {
   if (/\.(png|jpe?g|svg|webp|gif|mp4)$/i.test(value)) return true;
   // Tailwind-ish: "text-brand-cyan", "hover:border-brand-cyan/40"
   if (/^[a-z0-9:/[\]-]+$/.test(value) && /-/.test(value) && !/\s/.test(value)) return true;
+
+  // SVG path geometry. data/socials.js carries one `path` per network, and the
+  // field name is not on the noise list because "path" is a perfectly ordinary
+  // word elsewhere. Shape catches it: a move-to command followed by a run of
+  // coordinates, which no sentence looks like.
+  if (/^[MmZzLlHhVvCcSsQqTtAa][\s\d.,-]/.test(value) && /\d/.test(value)) return true;
+
+  // A bare number. ROI_INDUSTRIES is off the index now, but a stray figure
+  // under any field is never an answer to anything — "1.08" was a real reply.
+  if (/^[\d.,%+-]+$/.test(value)) return true;
+
   return false;
+}
+
+/**
+ * Whether a string can stand as the sentence shown under a result.
+ *
+ * Stricter than looksLikeNoise, and deliberately so: the body may contain any
+ * readable fragment, because matching on it costs nothing. The *summary* is
+ * quoted back to the visitor as the answer, so a fragment that is technically
+ * readable but says nothing — a one-word enum value, a repeat of the title —
+ * is worse than having no summary at all, which at least makes the entry
+ * unable to answer on its own.
+ */
+function looksLikeSentence(value, title) {
+  if (!value || looksLikeNoise(value)) return false;
+  if (title && value.trim().toLowerCase() === title.trim().toLowerCase()) return false;
+  // One short word: 'serif', 'grotesk', 'mono', 'caps', 'book', 'didone'.
+  if (!/\s/.test(value) && value.length < 18) return false;
+  return true;
 }
 
 /** Collect every readable string inside a value, depth-limited. */
@@ -219,17 +297,30 @@ function firstString(item, keys) {
   return '';
 }
 
+/** "aura-transcriber" -> "Aura Transcriber". Used when a record has no title. */
+function humanizeSlug(slug) {
+  return String(slug)
+    .replace(/[-_]+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** One indexable record. `body` is what search matches; `summary` is shown. */
 function toEntry(item, exportName, index) {
   const isObject = item && typeof item === 'object' && !Array.isArray(item);
 
   const title = isObject
-    ? firstString(item, TITLE_KEYS)
+    ? // The slug is the fallback ahead of the export name, and it is what
+      // stops twelve INDUSTRY_CARDS all being called "Industry" and five
+      // PRODUCT_DETAILS all being called "Product Details". Those titles were
+      // what the visitor saw under an answer, and they identified nothing.
+      firstString(item, TITLE_KEYS) || (item.slug ? humanizeSlug(item.slug) : '')
     : typeof item === 'string'
       ? item
       : '';
 
-  const summary = isObject ? firstString(item, SUMMARY_KEYS) : '';
+  const declared = isObject ? firstString(item, SUMMARY_KEYS) : '';
+  const summary = looksLikeSentence(declared, title) ? declared : '';
 
   // Everything readable, including the title and any field added later. The
   // title is repeated so a title-word match scores above a body-only match
@@ -246,7 +337,20 @@ function toEntry(item, exportName, index) {
     kind: KIND_BY_EXPORT[exportName] || humanizeExportName(exportName),
     source: exportName,
     title: title || KIND_BY_EXPORT[exportName] || humanizeExportName(exportName),
-    summary: summary || (isObject ? collectText(item)[1] || '' : ''),
+    // The fallback used to be `collectText(item)[1]` — whatever readable string
+    // happened to land second. On CLIENTS that was the `voice` token, so the
+    // bot's answer to "do you work with hospitals" was "Al Shifa Hospital —
+    // book". Pick the longest fragment that actually reads as a sentence, and
+    // accept having no summary when nothing does: an entry with no summary is
+    // barred from answering on its own (see answer.js), which is the correct
+    // outcome for a record that carries nothing to say.
+    summary:
+      summary ||
+      (isObject
+        ? collectText(item)
+            .filter((text) => looksLikeSentence(text, title))
+            .sort((a, b) => b.length - a.length)[0] || ''
+        : ''),
     body,
     url,
   };
@@ -278,7 +382,31 @@ function buildKnowledge() {
         const isLookup =
           values.length > 1 && values.every((v) => v && typeof v === 'object' && !Array.isArray(v));
 
-        if (isLookup) {
+        /*
+         * A lookup whose values are *lists* — INDUSTRY_WORKFLOWS keyed by
+         * industry, MEMBER_PROJECTS keyed by team member. Neither branch below
+         * fitted it: `isLookup` requires object values, so both fell through to
+         * "one object export, one entry" and collapsed. INDUSTRY_WORKFLOWS —
+         * seven workflow steps across twelve industries, eighty-four records —
+         * became a single entry titled "Industry workflow" whose whole summary
+         * was "Booked online or by phone". Forty client projects under
+         * MEMBER_PROJECTS became one entry called "Member Projects".
+         *
+         * Each item is indexed on its own, carrying the key it was filed under
+         * so a step keeps the industry it belongs to.
+         */
+        const isListLookup =
+          values.length > 1 && values.every((v) => Array.isArray(v) && v.length > 0);
+
+        if (isListLookup) {
+          for (const [key, list] of Object.entries(value)) {
+            list.forEach((child, i) => {
+              if (!child || typeof child !== 'object') return;
+              const entry = toEntry({ ...child, group: humanizeSlug(key) }, exportName, `${key}-${i}`);
+              if (entry) entries.push(entry);
+            });
+          }
+        } else if (isLookup) {
           for (const [key, child] of Object.entries(value)) {
             const entry = toEntry({ slug: key, ...child }, exportName, key);
             if (entry) entries.push(entry);

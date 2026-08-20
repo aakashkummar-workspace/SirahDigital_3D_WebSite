@@ -246,7 +246,15 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'capabilities',
-    test: /\b(what can you do|help me|how (can|do) you help|options|menu)\b/i,
+    // The bare-word alternative at the end, because a visitor typing "help" on
+    // its own was getting the out-of-scope refusal — the bot telling the person
+    // asking for help that help is outside what it can help with. Same for a
+    // lone question mark, which is somebody saying "I don't know what to ask".
+    // `help me` was a bare alternative here and it claimed "can you help me
+    // reduce manual work" — a description of a real problem, answered with the
+    // bot's own menu. Only the standalone plea keeps it now; the rest is the
+    // capability intent's, where a problem statement belongs.
+    test: /\b(what can you do|how (can|do) you help|what do you know)\b|^\s*(help|help me|options|menu|\?+|hlp)\s*[.!?]*$/i,
     respond: (ctx, lang) => ({
       text: {
         en: 'I can walk you through any of these - or just ask in your own words.',
@@ -270,25 +278,45 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'social_media',
-    // "whatsapp" alone is not enough: "do you build WhatsApp bots?" is a
-    // question about our services, and answering it with a list of our own
-    // profiles is a non-sequitur. Only treat it as social when nothing in the
-    // sentence suggests they mean building something.
+    /*
+     * Narrowed twice, and the second time is the one that matters.
+     *
+     * "whatsapp" alone was never enough — "do you build WhatsApp bots?" is a
+     * question about our services, and answering it with a list of our own
+     * profiles is a non-sequitur. That guard is still here.
+     *
+     * What it did not catch was the other direction: somebody asking how to
+     * *reach us* who happens to say the word. "whatsapp number", "can I
+     * whatsapp you", "I want to talk to someone" all landed here and got
+     * "WhatsApp is the fastest if you want a person" plus a row of links out
+     * to Facebook, Instagram and YouTube. Asking a company for its number and
+     * being redirected into a messaging app is not an answer to the question,
+     * and the social row made it read like a bot changing the subject.
+     *
+     * So this intent now only fires on questions that are actually about the
+     * profiles — "are you on instagram", "social media", "where can I follow
+     * you". Everything about reaching a human belongs to answer.js's contact
+     * intent, which leads with the phone number and a time to book, and it
+     * gets there because this no longer claims it first.
+     */
     test: (q) =>
-      /\b(social media|follow (you|us)|facebook|instagram|youtube|linkedin)\b/i.test(q) ||
-      (/\bwhatsapp\b/i.test(q) &&
-        !/\b(bot|bots|chatbot|automat\w+|integrat\w+|api|build|develop|set ?up)\b/i.test(q)),
+      // "do you do social media marketing" is a question about our services
+      // — and the answer is no, which faq.js says. Answering it with our own
+      // Instagram link reads as agreement.
+      !/\b(do|does|can|could|will|would) (you|u|sirah)\b[\s\S]{0,30}\b(marketing|management|managing|posting|handle|run|do|offer|provide)\b/i.test(q) &&
+      (/\b(social media|follow (you|us)|your (socials|profiles|handles)|facebook|instagram|youtube|linkedin|twitter)\b/i.test(q) ||
+      // WhatsApp only when the sentence is about the account itself, never
+      // when it is about contacting us or about building something.
+        (/\bwhatsapp\b/i.test(q) &&
+          /\b(page|channel|profile|handle|account|group|community|follow)\b/i.test(q) &&
+          !/\b(bot|bots|chatbot|automat\w+|integrat\w+|api|build|develop|set ?up)\b/i.test(q))),
     respond: () => ({
       text: {
-        en: 'We’re here - WhatsApp is the fastest if you want a person.',
-        ta: 'நாங்கள் இங்கே இருக்கிறோம் - ஒரு நபரிடம் பேச வேண்டுமெனில் WhatsApp தான் வேகமானது.',
+        en: 'We’re on these — worth a follow if you want to see what we ship.',
+        ta: 'நாங்கள் இவற்றில் இருக்கிறோம் — நாங்கள் என்ன உருவாக்குகிறோம் என்பதைப் பார்க்க பின்தொடரலாம்.',
       },
-      links: SOCIALS.map((s) => ({
-        label: s.label,
-        href: s.href,
-        external: true,
-        primary: s.label === 'WhatsApp',
-      })),
+      links: SOCIALS.map((s) => ({ label: s.label, href: s.href, external: true })),
+      followUps: ['How do I contact you?', 'Book a free call'],
     }),
   },
 
@@ -321,7 +349,8 @@ export const PERSONA_INTENTS = [
             en: 'Good talking to you. The consultation is free whenever you want it.',
             ta: 'உங்களுடன் பேசியது மகிழ்ச்சி. ஆலோசனை எப்போதும் இலவசம்.',
           },
-      links: [{ label: 'Book a free consultation', href: '/contact', primary: true }],
+      // /book, not /contact: the calendar this sentence promises is there.
+      links: [{ label: 'Pick a time', href: '/book', primary: true }],
     }),
   },
 
@@ -352,7 +381,17 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'lead',
-    test: /\b(contact me|call me back|reach me|my (email|number)|get in touch|leave (my )?details)\b/i,
+    /*
+     * The visitor offering *their* details, not asking for ours.
+     *
+     * `get in touch` was in here, so "how do I get in touch?" — a request for
+     * the company's phone number — unfolded a name-and-email form instead of
+     * answering. The distinction this intent has to hold is direction: "call
+     * me back" is a lead, "how do I call you" is the contact intent, and the
+     * only thing keeping them apart is that the phrases below all put the
+     * visitor on the receiving end.
+     */
+    test: /\b(contact me|call me back|ring me|reach me|my (email|number|details)|leave (my )?details|take my (number|details))\b/i,
     respond: () => ({
       text: {
         en: 'Happy to pass you to the team. Leave your details and they’ll come back to you.',

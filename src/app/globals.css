@@ -587,6 +587,17 @@ textarea:focus-visible,
   pointer-events: none;
 }
 
+/* opacity:0 hides the launcher; it does not stop it working. The radar rings
+   and the robot's bob are both `infinite`, so behind an open panel they went
+   on animating an invisible element — two composited layers repainting over
+   the WebGL canvas for the entire length of a conversation, which is exactly
+   when the canvas can least afford it. Paused rather than `display:none` so
+   the fade back in on close still has something to animate. */
+.sirah-launcher--hidden .sirah-launcher__img,
+.sirah-launcher--hidden .sirah-launcher__rings i {
+  animation-play-state: paused;
+}
+
 .sirah-launcher__btn {
   display: flex;
   align-items: center;
@@ -609,10 +620,15 @@ textarea:focus-visible,
   /* Darker than the surrounding chrome on purpose: the pill carries two
      accent words at 14px, and the brand violet only clears AA against a
      ground this deep. */
-  background: rgba(11, 9, 26, 0.92);
+  background: rgb(11, 9, 26);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
+  /* Was `backdrop-filter: blur(8px)`, removed for the same reason as the
+     panel's — see the long note on .sirah-panel. This one is smaller and
+     cheaper, but it is on screen on every route from first paint and it
+     repaints on hover, so it was paying the WebGL readback continuously
+     rather than only while the chat was open. It sat behind a 92%-opaque
+     plate, so there was very little of it to lose. */
   transition: border-color 0.25s cubic-bezier(.22,.61,.36,1),
               transform 0.25s cubic-bezier(.22,.61,.36,1);
 }
@@ -728,10 +744,51 @@ textarea:focus-visible,
   height: min(600px, calc(100dvh - 120px));
   border-radius: 20px;
   overflow: hidden;
-  background: rgba(13, 12, 26, 0.94);
+  /* 0.94 with a blur behind it. Opaque now, and see below for why — without
+     the blur, whatever showed through that last 6% would be the raw particle
+     field rather than a smoothed version of it, which reads as shimmer
+     through the panel while you are trying to read an answer. */
+  background: rgb(13, 12, 26);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 32px 80px -24px rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
+
+  /* ── no backdrop-filter here, deliberately ──────────────────────────
+     This was `backdrop-filter: blur(20px)`, and it is the reason the
+     particle field stuttered and flashed whenever the cursor was inside
+     the panel.
+
+     A backdrop-filter has to re-read and re-blur everything painted
+     beneath the element every time that element repaints. Beneath this
+     one is the fixed WebGL canvas from SiteBackground, which repaints
+     every frame — so the blur was re-snapshotting a live framebuffer
+     through a 400x600 rounded mask, and the GPU readback that requires
+     stalls the canvas's own frame. Moving the cursor over the panel
+     fires a hover transition on every link, chip and button it crosses,
+     each one dirtying the panel and forcing another readback. The field
+     lost frames in bursts, and because SirahCanvas clamps its frame
+     delta (`Math.min(delta, 0.05)`), the lost time is not made up: the
+     animation stalls rather than skipping, then jumps when frames land.
+     Stuck and blinking, exactly as reported.
+
+     Navbar.jsx already documents this hazard from the other side — it
+     stays fully transparent at rest specifically so its own
+     backdrop-filter "never composites over the fixed WebGL canvas until
+     there is actually something to sit on". This panel had no such
+     escape: it sits over the canvas the entire time it is open.
+
+     The blur was also doing almost nothing that could be seen. It sat
+     behind a 94%-opaque surface, so at most 6% of it ever reached the
+     eye. Opaque costs that 6% and buys back every dropped frame.
+
+     If a translucent panel is ever wanted again, the cost is only
+     avoidable by making the canvas stop painting underneath it — pause
+     SirahCanvas while the panel is open — not by tuning the blur radius. */
+
+  /* Keeps a hover repaint inside the panel from invalidating anything
+     outside it. Safe here: fixed box, fixed size, no fixed-position
+     descendants to reparent. */
+  contain: layout paint;
+
   opacity: 0;
   visibility: hidden;
   transform: translateY(16px) scale(0.97);

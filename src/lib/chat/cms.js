@@ -186,12 +186,29 @@ function toEntry(doc, spec) {
   const title = pluck(doc, TITLE_KEYS);
   if (!title) return null;
   const resolve = (value) => (typeof value === 'function' ? value(doc) : value);
+  const summary = pluck(doc, SUMMARY_KEYS);
   return {
     kind: resolve(spec.kind),
     source: resolve(spec.source),
     title,
-    summary: pluck(doc, SUMMARY_KEYS),
-    body: collectBody(doc),
+    summary,
+    /*
+     * Title first and twice, matching knowledge.js exactly.
+     *
+     * knowledge.js builds `[title, title, summary, ...rest]` so that a
+     * title-word match outscores a body-only one without a separate
+     * field-weighting pass. This built the body from the record's fields in
+     * whatever order they arrived, so the title appeared once — and the same
+     * service scored differently depending on which index answered.
+     *
+     * That is not a cosmetic difference. "do you build dashboards" found
+     * Business Intelligence Dashboards from the bundle and missed it from the
+     * CMS, because the scoped lookup's threshold sat between the two scores.
+     * Two index builders feeding one ranker have to agree on what a document
+     * is, or every threshold above them is tuned against a corpus that only
+     * exists in development.
+     */
+    body: [title, title, summary, collectBody(doc)].filter(Boolean).join(' . ').slice(0, 4000),
     url: spec.url(doc),
   };
 }
@@ -240,16 +257,52 @@ export async function fetchCmsKnowledge() {
 }
 
 /**
- * Merges CMS entries over the static index, one source at a time.
+ * Merges CMS entries over the static index, one record at a time.
  *
  * Per source, not wholesale: a CMS that has been seeded with services but not
  * yet with team should answer services from the database and team from the
  * bundle. Replacing the whole index the moment one collection returned would
  * silently empty every answer the CMS has no rows for.
+ *
+ * ── and per record within a source, which it did not used to be ──────────
+ * This replaced a source outright: if the CMS returned any product, every
+ * bundled product was dropped. That was correct only while the two agreed, and
+ * they do not. The products collection holds three rows — Aura, Analytics
+ * Agents and NUSI — while src/data/products.js holds five, because TNPSC
+ * Mentors and LexDraft were added to the site and never added to the CMS.
+ *
+ * The visible result was a bot contradicting the page it sits on: /products
+ * renders five products from src/data, and the bot answered "Sirah Digital
+ * builds 3 products of its own". A visitor scrolling past five cards is
+ * entitled to conclude the bot does not know what it is talking about, and on
+ * that question they were right.
+ *
+ * So a CMS record now overrides the bundled record of the same name, and a
+ * bundled record the CMS has never heard of survives. The counts the bot
+ * quotes match the pages again, and an editor's copy change still wins on
+ * every record the CMS actually holds.
+ *
+ * ── the tradeoff, stated plainly ─────────────────────────────────────────
+ * Deleting a row in the CMS no longer removes it from the bot's answers if a
+ * record of that name is still in src/data. That is the honest cost of the
+ * site rendering from one source and the CMS being the other. It is the right
+ * way round for now — the pages are what the visitor can see, and the bot must
+ * not disagree with them — but when the pages move over to reading from the
+ * CMS, this should go back to replacing per source, and the fixtures in
+ * scripts/chat-check.mjs that assert counts will say so loudly.
  */
 export function mergeKnowledge(staticEntries, cms) {
   if (!cms?.entries?.length) return staticEntries;
-  const overridden = cms.sources;
-  const kept = staticEntries.filter((e) => !overridden.has(e.source));
+
+  // Keyed on source and title: the same name under two sources is two
+  // different things, and only a name collision inside one source is the same
+  // record described twice.
+  const key = (entry) => `${entry.source}::${(entry.title || '').trim().toLowerCase()}`;
+  const fromCms = new Set(cms.entries.map(key));
+
+  const kept = staticEntries.filter(
+    (entry) => !cms.sources.has(entry.source) || !fromCms.has(key(entry)),
+  );
+
   return [...cms.entries, ...kept];
 }
