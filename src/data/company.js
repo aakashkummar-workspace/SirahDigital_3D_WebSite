@@ -2,7 +2,10 @@
 // contact page, the sitemap and page metadata — change it here only.
 export const COMPANY = {
   name: 'SIRAH DIGITAL',
-  url: 'https://sirahdigital.in',
+  // Overridable so a staging deploy does not emit production canonicals and
+  // a production sitemap. Drives metadataBase, robots, sitemap and every
+  // page's canonical.
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://sirahdigital.in',
   email: 'support@sirahdigital.in',
   phone: '+91 97899 61631',
   phoneHref: 'tel:+919789961631',

@@ -1,5 +1,6 @@
 import "./globals.css";
 import { COMPANY } from "@/data/company";
+import { SOCIALS } from "@/data/socials";
 
 /**
  * Typefaces are self-hosted, not loaded here.
@@ -67,6 +68,41 @@ export default function RootLayout({ children }) {
       {/* overflow-x-hidden guarantees the "no horizontal scrolling" rule
           holds even if a decorative glow overshoots the viewport. */}
       <body className="bg-space antialiased m-0 p-0 overflow-x-hidden">
+        {/*
+          Organization schema. The site this replaced shipped one and this app
+          did not, which was a straight regression: it is what ties the brand
+          name, the Chennai address and the social profiles together into a
+          single entity for Google, rather than leaving them to be inferred.
+
+          Built from data/company.js and data/socials.js so it cannot drift
+          from the footer and the contact page. sameAs takes profile pages
+          only — the WhatsApp click-to-chat link is a deep link, not a profile,
+          and listing it there says nothing true about identity.
+        */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: COMPANY.name,
+              url: COMPANY.url,
+              logo: `${COMPANY.url}/logo.png`,
+              email: COMPANY.email,
+              telephone: COMPANY.phone,
+              description: COMPANY.blurb,
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: COMPANY.addressOneLine,
+                addressLocality: 'Chennai',
+                addressRegion: 'Tamil Nadu',
+                postalCode: '600044',
+                addressCountry: 'IN',
+              },
+              sameAs: SOCIALS.filter((s) => s.label !== 'WhatsApp').map((s) => s.href),
+            }),
+          }}
+        />
         {children}
       </body>
     </html>

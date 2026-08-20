@@ -1,6 +1,6 @@
 // Persisting a consultation enquiry into the CMS.
 //
-// Server-only: reads CMS_URL and LEAD_INTAKE_SECRET, and must never be imported
+// Server-only: reads CMS_API_BASE and LEAD_INTAKE_SECRET, and must never be imported
 // into a client component — the secret is the whole authorisation for writing to
 // `leads`, and bundling it would hand the internet write access to the CRM.
 //
@@ -10,12 +10,12 @@
 
 import crypto from 'crypto';
 
-const CMS_URL = (process.env.CMS_URL || '').replace(/\/$/, '');
+const CMS_API_BASE = (process.env.CMS_API_BASE || '').replace(/\/$/, '');
 const SECRET = process.env.LEAD_INTAKE_SECRET;
 const IP_SALT = process.env.IP_HASH_SALT;
 
 /** Can an enquiry actually be stored? Both halves are required. */
-export const leadStoreConfigured = Boolean(CMS_URL && SECRET);
+export const leadStoreConfigured = Boolean(CMS_API_BASE && SECRET);
 
 /**
  * Salted SHA-256 of the caller's IP, for abuse investigation only.
@@ -46,7 +46,7 @@ export function hashIp(request) {
 export async function storeLead(lead) {
   if (!leadStoreConfigured) throw new Error('Lead store is not configured.');
 
-  const res = await fetch(`${CMS_URL}/api/lead-intake`, {
+  const res = await fetch(`${CMS_API_BASE}/lead-intake`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

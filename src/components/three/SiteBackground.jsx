@@ -45,12 +45,13 @@ export const BACKGROUND_TINT_EVENT = 'sirah:background-tint';
  *
  * Named rather than inlined because it is not obvious from here that it has
  * to track a route: this read `pathname === '/'`, and when the landing page
- * moved to /hub the comparison silently stopped matching anything. The mark
+ * moved to /hub the comparison silently stopped matching anything (it is
+ * back at '/' now). The mark
  * did not error or warn — every page just got 'dispersed', which is a valid
  * mode, so the logo simply never assembled anywhere and the hero showed bare
  * background texture. If the landing route moves again, it moves here too.
  */
-const LANDING = '/hub';
+const LANDING = '/';
 
 export default function SiteBackground() {
   const pathname = usePathname();

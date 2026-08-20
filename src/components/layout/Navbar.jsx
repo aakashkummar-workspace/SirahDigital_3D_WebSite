@@ -64,13 +64,12 @@ export default function Navbar() {
   }, [pathname]);
 
   // Replaces the old IntersectionObserver scrollspy: with real routes the
-  // current page is simply the current path. startsWith keeps the parent
-  // highlighted on future nested routes such as /services/ai-agents.
-  // The `href === '/'` special case this used to carry is gone with the root
-  // route: no nav link points at '/' any more, so startsWith covers every
-  // entry — and it is what keeps a parent highlighted on a nested route such
-  // as /products/nusi.
-  const isActive = (href) => pathname.startsWith(href);
+  // current page is simply the current path. startsWith is what keeps a
+  // parent highlighted on a nested route such as /products/nusi.
+  //
+  // '/' has to be exact, though. Every path starts with '/', so Home would
+  // otherwise render active on every page of the site.
+  const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   // Small delay on leave so the pointer can travel into the dropdown.
   // `label` rather than `true`: one item open at a time, by name.
@@ -123,7 +122,7 @@ export default function Navbar() {
             from spacing keeps the pill fully detached at that width instead
             of flattening the inset for every viewport. */}
         <nav className="px-4 xl:px-5 h-[72px] flex items-center gap-4 xl:gap-6">
-        <Link href="/hub" className="shrink-0 group" aria-label="Sirah Digital - home">
+        <Link href="/" className="shrink-0 group" aria-label="Sirah Digital - home">
           <BrandLockup size="sm" interactive />
         </Link>
 

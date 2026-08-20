@@ -16,11 +16,11 @@ export default function NotFound() {
           That page moved.
         </h1>
         <p className="mt-6 text-brand-muted max-w-md mx-auto">
-          The site is now split across several pages. Try services, industries, our work, or head back to the start.
+          The site is now split across several pages. Try services, industries, our work, or head back to the homepage.
         </p>
         <div className="mt-10 flex flex-wrap gap-4 justify-center">
-          <PrimaryButton href="/hub">
-            Back to the hub
+          <PrimaryButton href="/">
+            Back to the homepage
           </PrimaryButton>
           <Link
             href="/contact"

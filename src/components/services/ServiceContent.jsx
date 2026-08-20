@@ -71,7 +71,12 @@ export default function ServiceContent({ service, active, registerRef }) {
   return (
     <section
       ref={(el) => { sectionRef.current = el; registerRef(el); }}
-      id={`service-${service.slug}`}
+      /* The bare slug, not `service-${slug}`: every deep link into this page
+         — the navbar dropdown (data/nav.js), the footer's service column, and
+         both chatbot indexes — is built as /services#<slug>. With the prefix
+         those all scrolled nowhere. `aria-labelledby` below uses a distinct
+         `service-title-` prefix, so there is no id collision. */
+      id={service.slug}
       data-index={service.index}
       aria-labelledby={`service-title-${service.slug}`}
       /* 72px navbar + ~56px sticky chip bar + breathing room on mobile; from

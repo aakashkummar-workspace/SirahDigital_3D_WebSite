@@ -12,7 +12,7 @@ export const metadata = {
   title: { absolute: 'Sirah Digital | Intelligent Business Automation Systems' },
   description:
     'We build AI agents, chatbots, workflow automation and custom software that let businesses automate, simplify, and scale. Based in Chennai, serving 10,000+ businesses.',
-  alternates: { canonical: '/hub' },
+  alternates: { canonical: '/' },
 };
 
 export default function HomePage() {

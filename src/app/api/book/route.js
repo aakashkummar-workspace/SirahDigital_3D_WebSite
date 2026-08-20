@@ -99,7 +99,7 @@ export async function POST(request) {
   }
 
   if (!bookingConfigured) {
-    console.error('[book] booking is not configured — CMS_URL / LEAD_INTAKE_SECRET missing');
+    console.error('[book] booking is not configured — CMS_API_BASE / LEAD_INTAKE_SECRET missing');
     return NextResponse.json(
       { ok: false, error: 'Bookings are unavailable just now. Please email support@sirahdigital.in.' },
       { status: 503 },

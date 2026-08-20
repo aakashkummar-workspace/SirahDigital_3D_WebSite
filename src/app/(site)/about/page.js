@@ -3,6 +3,7 @@ import AboutStatement from '@/components/about/AboutStatement';
 import StatBand from '@/components/sections/StatBand';
 import TeamGrid from '@/components/sections/TeamGrid';
 import InsightsSuccessStories from '@/components/sections/InsightsSuccessStories';
+import MethodologyGrid from '@/components/sections/MethodologyGrid';
 import CTABand from '@/components/sections/CTABand';
 import { FOUNDER } from '@/data/team';
 
@@ -27,7 +28,7 @@ export const metadata = {
  *
  *   The client marquee is gone. "Trusted Across Industries" is the hub's
  *   argument to a stranger; on a page about who we are it was a detour
- *   between the hero and the point. It still runs on /hub.
+ *   between the hero and the point. It still runs on the homepage.
  *
  * Order: the hero names him, the figures say what the company has done, the
  * roster shows he is not the whole of it, and the statement closes with what
@@ -53,6 +54,32 @@ export default function AboutPage() {
       <div className="mt-20 md:mt-28">
         <AboutStatement />
       </div>
+
+      {/*
+        How the work runs. This is where /process lands.
+
+        METHODOLOGY has been in data/services.js all along, but the two
+        components that render it were imported by no page at all — so the old
+        site's /process URL redirected here to nothing, the footer's
+        "/about#process" link pointed at an id that did not exist, and both
+        chatbot indexes cited /services for a methodology question /services
+        does not answer. Mounting it here is what makes all three true.
+      */}
+      <section
+        id="process"
+        className="max-w-7xl mx-auto px-6 pt-20 md:pt-28 scroll-mt-28"
+        aria-labelledby="process-title"
+      >
+        <h2 id="process-title" className="text-3xl md:text-4xl font-semibold tracking-tight">
+          How we work
+        </h2>
+        <p className="mt-4 max-w-2xl text-brand-muted">
+          Every engagement runs the same three stages, so you always know which one you are in.
+        </p>
+        <div className="mt-12">
+          <MethodologyGrid />
+        </div>
+      </section>
 
       <div className="mt-4 md:mt-8">
         <InsightsSuccessStories />

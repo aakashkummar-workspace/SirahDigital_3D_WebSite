@@ -64,7 +64,7 @@ const URL_KEYS = ['href', 'url', 'link', 'youtubeUrl'];
 const ROUTE_BY_EXPORT = {
   SERVICES: (item) => (item.slug ? `/services#${item.slug}` : '/services'),
   SERVICE_EXPERIENCE: (item) => (item.slug ? `/services#${item.slug}` : '/services'),
-  METHODOLOGY: () => '/services',
+  METHODOLOGY: () => '/about#process',
   TECHNOLOGIES: () => '/services',
   INDUSTRIES: (item) => (item.slug ? `/industries/${item.slug}` : '/industries'),
   INDUSTRY_INTELLIGENCE: (item) => (item.slug ? `/industries/${item.slug}` : '/industries'),
@@ -81,9 +81,9 @@ const ROUTE_BY_EXPORT = {
   SOCIALS: (item) => item.href || item.url || '/contact',
   ROI_INDUSTRIES: () => '/services',
   BUSINESS_SIZES: () => '/services',
-  CAROUSEL_CARDS: () => '/hub',
-  SCENES: () => '/hub',
-  NAV_LINKS: (item) => item.href || '/hub',
+  CAROUSEL_CARDS: () => '/',
+  SCENES: () => '/',
+  NAV_LINKS: (item) => item.href || '/',
 };
 
 /**
@@ -239,7 +239,7 @@ function toEntry(item, exportName, index) {
   if (!body.trim()) return null;
 
   const route = ROUTE_BY_EXPORT[exportName];
-  const url = (isObject && firstString(item, URL_KEYS)) || (route ? route(isObject ? item : {}) : '/hub');
+  const url = (isObject && firstString(item, URL_KEYS)) || (route ? route(isObject ? item : {}) : '/');
 
   return {
     id: `${exportName}:${(isObject && (item.slug || item.id)) || index}`,

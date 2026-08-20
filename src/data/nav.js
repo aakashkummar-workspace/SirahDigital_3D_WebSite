@@ -1,13 +1,16 @@
 import { SERVICES } from './services';
 import { HOME_PRODUCTS } from './products';
 import { TEAM } from './team';
+import { INDUSTRIES } from './industries';
 
 // The site's route map. Navbar and Footer both read from here, so adding a
 // page is a single edit rather than three.
 export const NAV_LINKS = [
-  // The landing page is /hub, not /. The root redirects to it — see
-  // next.config.js. Nothing in the app should link to '/' and take that hop.
-  { label: 'Hub', href: '/hub' },
+  // The landing page is the root itself. It is the URL on every business
+  // card, backlink and WhatsApp forward the old site accumulated, so it
+  // renders rather than redirects — see next.config.js, where /hub is now
+  // the one pointing here.
+  { label: 'Home', href: '/' },
   {
     label: 'Services',
     href: '/services',
@@ -51,7 +54,7 @@ export const NAV_LINKS = [
 
 // Every crawlable route, with the priority hints the sitemap uses.
 export const ROUTES = [
-  { path: '/hub', priority: 1.0, changeFrequency: 'weekly' },
+  { path: '/', priority: 1.0, changeFrequency: 'weekly' },
   { path: '/services', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/products', priority: 0.9, changeFrequency: 'monthly' },
   // Spread rather than listed, so a fourth product needs no edit here.
@@ -61,6 +64,15 @@ export const ROUTES = [
     changeFrequency: 'monthly',
   })),
   { path: '/industries', priority: 0.8, changeFrequency: 'monthly' },
+  // One per sector. These were missing entirely, which left twelve
+  // statically-generated pages — each with its own metadata and the longest
+  // tail on the site — discoverable only by crawling the gallery. Spread, so
+  // a new sector needs no edit here. Below /industries, above the team pages.
+  ...INDUSTRIES.map(({ slug }) => ({
+    path: `/industries/${slug}`,
+    priority: 0.6,
+    changeFrequency: 'monthly',
+  })),
   // No /work entry — it redirects to /products, and a sitemap should not
   // advertise a URL that 301s.
   { path: '/about', priority: 0.7, changeFrequency: 'monthly' },
@@ -86,7 +98,7 @@ export const ROUTES = [
 // never sent to the server, so this cannot be a next.config redirect — the
 // homepage resolves it on the client instead. See components/AnchorRedirect.
 export const LEGACY_ANCHORS = {
-  '#hub': '/hub',
+  '#hub': '/',
   '#offer': '/services',
   '#industries': '/industries',
   '#work': '/products#client-systems',

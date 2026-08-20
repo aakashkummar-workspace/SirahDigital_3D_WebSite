@@ -10,7 +10,7 @@
  *
  * This module fetches the same content over Payload's REST API at request
  * time, normalises it into the entry shape knowledge.js produces, and hands it
- * to answerQuestion. Server-only — it reads CMS_URL and must never reach a
+ * to answerQuestion. Server-only — it reads CMS_API_BASE and must never reach a
  * browser.
  *
  * ── how it stays fresh, with no CMS changes ──────────────────────────────
@@ -23,7 +23,7 @@
  * make that work.
  *
  * ── degradation ──────────────────────────────────────────────────────────
- * Every failure path returns null and is dropped: no CMS_URL, a refused
+ * Every failure path returns null and is dropped: no CMS_API_BASE, a refused
  * connection, a non-200, a timeout, a shape that does not parse. The caller
  * merges what came back over the static index per source, so a CMS that is
  * asleep, half-seeded or unreachable costs nothing — the bot answers from the
@@ -31,7 +31,7 @@
  * because a free-tier CMS is cold-starting is worse than a slightly stale one.
  */
 
-const CMS_URL = process.env.CMS_URL;
+const CMS_API_BASE = process.env.CMS_API_BASE;
 const TIMEOUT_MS = 5000;
 const PER_PAGE = 200;
 
@@ -156,7 +156,7 @@ const COLLECTIONS = [
  * what keeps this from breaking on the next field rename.
  */
 const GLOBALS = [
-  { path: 'methodology', tag: 'methodology', source: 'METHODOLOGY', kind: 'How we work', url: () => '/services' },
+  { path: 'methodology', tag: 'methodology', source: 'METHODOLOGY', kind: 'How we work', url: () => '/about#process' },
   { path: 'site-settings', tag: 'site-settings', source: 'COMPANY', kind: 'About Sirah', url: () => '/contact' },
 ];
 
@@ -165,9 +165,9 @@ const GLOBALS = [
 /* ------------------------------------------------------------------ */
 
 async function get(path, tag) {
-  if (!CMS_URL) return null;
+  if (!CMS_API_BASE) return null;
   try {
-    const res = await fetch(`${CMS_URL}/api/${path}`, {
+    const res = await fetch(`${CMS_API_BASE}/${path}`, {
       headers: { Accept: 'application/json' },
       // The tag is what /api/revalidate already invalidates on a CMS save.
       // The revalidate window is the backstop for a webhook that never lands.
@@ -205,7 +205,7 @@ function toEntry(doc, spec) {
  * lets the caller fall back to the bundle per source rather than wholesale.
  */
 export async function fetchCmsKnowledge() {
-  if (!CMS_URL) return { entries: [], sources: new Set(), ok: false };
+  if (!CMS_API_BASE) return { entries: [], sources: new Set(), ok: false };
 
   const collectionJobs = COLLECTIONS.map(async (spec) => {
     const json = await get(`${spec.path}?limit=${PER_PAGE}&depth=0`, spec.tag);

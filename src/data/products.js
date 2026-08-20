@@ -9,7 +9,7 @@
  *   title        the product name — the loudest thing in its entry
  *   description  two lines at the width the homepage column gives it, so
  *                roughly 85 characters. This is the line a reader actually
- *                sees under the product name on /hub — the tagline in
+ *                sees under the product name on the homepage — the tagline in
  *                productDetails.js is shorter and belongs to the product's
  *                own page, and the summary there is the paragraph. Keep the
  *                nouns concrete; this is also the page's meta description

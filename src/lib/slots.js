@@ -10,14 +10,14 @@
 //   GET  /api/public/slots   open times, no auth, nothing personal on it
 //   POST /api/public/book    claims a slot, creates the event, writes the booking
 
-const CMS_URL = (process.env.CMS_URL || '').replace(/\/$/, '');
+const CMS_API_BASE = (process.env.CMS_API_BASE || '').replace(/\/$/, '');
 const SECRET = process.env.LEAD_INTAKE_SECRET;
 
 /** Can times be shown at all? Reading needs only a reachable CMS. */
-export const slotsConfigured = Boolean(CMS_URL);
+export const slotsConfigured = Boolean(CMS_API_BASE);
 
 /** Can a booking actually be made? Writing needs the shared secret too. */
-export const bookingConfigured = Boolean(CMS_URL && SECRET);
+export const bookingConfigured = Boolean(CMS_API_BASE && SECRET);
 
 /**
  * The open times, soonest first.
@@ -32,7 +32,7 @@ export async function listOpenSlots({ days = 45 } = {}) {
   if (!slotsConfigured) return [];
 
   try {
-    const res = await fetch(`${CMS_URL}/api/public/slots?days=${days}`, {
+    const res = await fetch(`${CMS_API_BASE}/public/slots?days=${days}`, {
       // Availability changes the moment somebody books, so a cached response is
       // a response that offers a time which has already gone.
       cache: 'no-store',
@@ -67,7 +67,7 @@ export async function claimSlot({ slotId, name, email, phone }) {
   }
 
   try {
-    const res = await fetch(`${CMS_URL}/api/public/book`, {
+    const res = await fetch(`${CMS_API_BASE}/public/book`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
