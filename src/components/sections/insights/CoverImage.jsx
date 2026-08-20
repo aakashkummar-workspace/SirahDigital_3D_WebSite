@@ -17,44 +17,16 @@ import Image from 'next/image';
  * long block. No accent colour appears anywhere in them.
  */
 
-/*
- * Two sets, because a placeholder is defined by its distance from the page,
- * not by its own value. On dark, every stop sits clearly *above* #16142C so
- * the card reads as an object rather than a hole; on white the same logic
- * runs the other way — the stops sit below #FFFFFF, in the cool greys the
- * rest of the light theme is built from, so a row of them reads as a row of
- * waiting frames rather than five dark slabs punched into the page.
- *
- * Selected by the --cover-set custom property so the choice happens in CSS
- * and no component has to subscribe to the theme to render a placeholder.
- * The geometry — the off-centre focal point, the 115%/85% spread — is shared,
- * which is what keeps the same card recognisable across a theme switch.
- */
-const SPOTS = [
-  '26% 16%', '72% 20%', '45% 78%', '80% 70%', '15% 62%',
+// Every stop sits clearly above the page's own #16142C, so a card reads as a
+// deliberate object rather than a hole in the background. They stay neutral —
+// the tonal spread is what a photograph would occupy, not an accent.
+const PLACEHOLDERS = [
+  'radial-gradient(115% 85% at 26% 16%, #363165 0%, #272348 52%, #1F1C3B 100%)',
+  'radial-gradient(115% 85% at 72% 20%, #322D5D 0%, #242044 52%, #1C1937 100%)',
+  'radial-gradient(115% 85% at 45% 78%, #3A3470 0%, #2A2650 52%, #211E42 100%)',
+  'radial-gradient(115% 85% at 80% 70%, #2E2955 0%, #211E3F 52%, #1A1733 100%)',
+  'radial-gradient(115% 85% at 15% 62%, #343061 0%, #262246 52%, #1E1B39 100%)',
 ];
-
-const DARK_STOPS = [
-  ['#363165', '#272348', '#1F1C3B'],
-  ['#322D5D', '#242044', '#1C1937'],
-  ['#3A3470', '#2A2650', '#211E42'],
-  ['#2E2955', '#211E3F', '#1A1733'],
-  ['#343061', '#262246', '#1E1B39'],
-];
-
-const LIGHT_STOPS = [
-  ['#EEF0F7', '#E4E7F1', '#D8DCEA'],
-  ['#ECEFF6', '#E1E5F0', '#D5D9E8'],
-  ['#F0F1F8', '#E6E9F3', '#DADEEC'],
-  ['#EAEDF5', '#DFE3EE', '#D3D8E6'],
-  ['#EFF1F7', '#E5E8F2', '#D9DDEB'],
-];
-
-const ramp = (stops) => SPOTS.map((at, i) =>
-  `radial-gradient(115% 85% at ${at}, ${stops[i][0]} 0%, ${stops[i][1]} 52%, ${stops[i][2]} 100%)`);
-
-const PLACEHOLDERS = ramp(DARK_STOPS);
-const PLACEHOLDERS_LIGHT = ramp(LIGHT_STOPS);
 
 // The zoom lives here rather than on the card so the frame stays put and only
 // the picture moves — the same behaviour once real photographs are in place.
@@ -86,15 +58,8 @@ export default function CoverImage({ src, alt = '', tone = 0 }) {
   return (
     <span
       aria-hidden="true"
-      className={`${ZOOM} cover-plate`}
-      style={{
-        // Both plates ride on the element; --cover-plate picks one. The
-        // light block in globals.css is what flips it, so the choice is
-        // resolved before paint rather than after hydration.
-        '--cover-dark': PLACEHOLDERS[tone % PLACEHOLDERS.length],
-        '--cover-light': PLACEHOLDERS_LIGHT[tone % PLACEHOLDERS_LIGHT.length],
-        background: 'var(--cover-plate, var(--cover-dark))',
-      }}
+      className={ZOOM}
+      style={{ background: PLACEHOLDERS[tone % PLACEHOLDERS.length] }}
     />
   );
 }

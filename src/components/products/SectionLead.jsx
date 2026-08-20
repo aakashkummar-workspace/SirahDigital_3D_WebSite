@@ -24,7 +24,7 @@ export default function SectionLead({ title, subtitle, id }) {
       <Reveal y={14} duration={640}>
         <h2
           id={id}
-          className="text-[clamp(1.5rem,1.15rem+1.3vw,2.125rem)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink"
+          className="text-[clamp(1.5rem,1.15rem+1.3vw,2.125rem)] font-semibold leading-[1.15] tracking-[-0.025em] text-white"
         >
           {title}
         </h2>

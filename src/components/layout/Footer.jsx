@@ -46,10 +46,10 @@ const COLUMNS = [
 export default function Footer() {
   const year = new Date().getFullYear();
   const muted = 'text-brand-muted';
-  const link = 'text-brand-muted hover:text-ink';
+  const link = 'text-brand-muted hover:text-white';
 
   return (
-    <footer className="theme-invert relative z-10 border-t pointer-events-auto bg-[var(--footer-surface)] border-ink/5 backdrop-blur-xl">
+    <footer className="relative z-10 border-t pointer-events-auto bg-space-deep/90 border-white/5 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Brand + four link columns + contact. The brand column keeps its
             wider share; the rest divide what is left evenly. Six tracks at
@@ -65,7 +65,7 @@ export default function Footer() {
 
             <Link
               href="/contact"
-              className="mt-6 inline-flex items-center text-sm font-semibold text-ink hover:text-brand-blue transition-colors gap-1"
+              className="mt-6 inline-flex items-center text-sm font-semibold text-white hover:text-brand-blue transition-colors gap-1"
             >
               Book Free Consultation →
             </Link>
@@ -78,7 +78,7 @@ export default function Footer() {
                   aria-label={s.label}
                   target={s.href.startsWith('http') ? '_blank' : undefined}
                   rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  className="w-10 h-10 rounded-lg grid place-items-center transition-colors border border-ink/10 text-brand-muted hover:text-ink hover:border-ink/30"
+                  className="w-10 h-10 rounded-lg grid place-items-center transition-colors border border-white/10 text-slate-300 hover:text-white hover:border-white/30"
                 >
                   <SocialIcon path={s.path} />
                 </a>
@@ -89,7 +89,7 @@ export default function Footer() {
           {/* Link columns */}
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h4 className="font-semibold text-ink">{col.title}</h4>
+              <h4 className="font-semibold text-white">{col.title}</h4>
               <ul className="mt-4 space-y-1">
                 {col.links.map((l) => (
                   <li key={l.label}>
@@ -102,22 +102,22 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-semibold text-ink">Contact</h4>
+            <h4 className="font-semibold text-white">Contact</h4>
             <ul className="mt-4 space-y-1">
               <li>
                 <a href={`mailto:${COMPANY.email}`} className={`flex items-center min-h-[44px] gap-3 text-sm transition-colors ${link}`}>
-                  <MailIcon className="w-4 h-4 shrink-0 text-brand-subtle" />
+                  <MailIcon className="w-4 h-4 shrink-0 text-slate-400" />
                   {COMPANY.email}
                 </a>
               </li>
               <li>
                 <a href={COMPANY.phoneHref} className={`flex items-center min-h-[44px] gap-3 text-sm transition-colors ${link}`}>
-                  <PhoneIcon className="w-4 h-4 shrink-0 text-brand-subtle" />
+                  <PhoneIcon className="w-4 h-4 shrink-0 text-slate-400" />
                   {COMPANY.phone}
                 </a>
               </li>
               <li className={`flex items-start gap-3 pt-3 text-sm ${muted}`}>
-                <PinIcon className="w-4 h-4 mt-0.5 shrink-0 text-brand-subtle" />
+                <PinIcon className="w-4 h-4 mt-0.5 shrink-0 text-slate-400" />
                 <address className="not-italic leading-relaxed">
                   {COMPANY.address.map((line) => (
                     <span key={line} className="block">{line}</span>
@@ -130,7 +130,7 @@ export default function Footer() {
       </div>
 
       {/* Legal bar */}
-      <div className="border-t border-ink/5">
+      <div className="border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className={`text-sm ${muted}`}>© {year} {COMPANY.name}. All rights reserved.</p>
           <div className="flex gap-8">

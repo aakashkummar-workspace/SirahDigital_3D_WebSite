@@ -22,9 +22,9 @@ export const NODE_COUNT = 8;
 export const VIEW = 400;
 const C = VIEW / 2;
 
-const INDIGO = 'rgb(var(--c-indigo))';
-const PURPLE = 'rgb(var(--c-purple))';
-const CYAN = 'rgb(var(--c-cyan))';
+const INDIGO = '#6366F1';
+const PURPLE = '#A855F7';
+const CYAN = '#22D3EE';
 
 // Place a node on an ellipse around the centre. Deterministic — no random.
 const onRing = (i, count, rx, ry = rx, phaseDeg = -90) => {
@@ -190,9 +190,8 @@ export function DetailLayer({ kind, accent, run, idBase }) {
           const x = 156 + i * 11;
           return (
             <rect
-              key={i} x={x} y={200 - 34} width="5" rx="2.5" height="68"
+              key={i} x={x} y={200 - 34} width="5" rx="2.5" height="68" fill={accent}
               style={{
-                fill: accent,
                 transformOrigin: `${x + 2.5}px 200px`,
                 transform: `scaleY(${run ? h : h * 0.45})`,
                 animation: run ? `wave ${1 + (i % 4) * 0.22}s ease-in-out ${i * 60}ms infinite` : undefined,
@@ -208,14 +207,23 @@ export function DetailLayer({ kind, accent, run, idBase }) {
   if (kind === 'dashboard') {
     return (
       <g>
-        <rect x="92" y="112" width="216" height="180" rx="10" fill="none" strokeOpacity="0.22" strokeWidth="1.6" style={{ stroke: accent }} />
-        <path d="M108 264 L156 226 L204 238 L252 190 L300 152" fill="none" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" pathLength="1" style={{ strokeDasharray: 1, strokeDashoffset: run ? 0 : 1, transition: 'stroke-dashoffset 1500ms cubic-bezier(.22,.61,.36,1)', stroke: accent }} />
-        <path d="M108 264 L156 226 L204 238 L252 190 L300 152 L300 292 L108 292 Z" fillOpacity={run ? 0.14 : 0} style={{ transition: 'fill-opacity 1100ms ease 400ms', fill: accent }} />
+        <rect x="92" y="112" width="216" height="180" rx="10" fill="none" stroke={accent} strokeOpacity="0.22" strokeWidth="1.6" />
+        <path
+          d="M108 264 L156 226 L204 238 L252 190 L300 152"
+          fill="none" stroke={accent} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"
+          pathLength="1"
+          style={{ strokeDasharray: 1, strokeDashoffset: run ? 0 : 1, transition: 'stroke-dashoffset 1500ms cubic-bezier(.22,.61,.36,1)' }}
+        />
+        <path
+          d="M108 264 L156 226 L204 238 L252 190 L300 152 L300 292 L108 292 Z"
+          fill={accent} fillOpacity={run ? 0.14 : 0}
+          style={{ transition: 'fill-opacity 1100ms ease 400ms' }}
+        />
         {[0.4, 0.62, 0.5, 0.78, 0.66].map((h, i) => (
           <rect
             key={i} x={110 + i * 40} y={292 - h * 40} width="18" rx="3"
-            height={run ? h * 40 : 3} fillOpacity="0.4"
-            style={{ fill: CYAN, transition: `height 850ms cubic-bezier(.22,.61,.36,1) ${300 + i * 80}ms, y 850ms cubic-bezier(.22,.61,.36,1) ${300 + i * 80}ms` }}
+            height={run ? h * 40 : 3} fill={CYAN} fillOpacity="0.4"
+            style={{ transition: `height 850ms cubic-bezier(.22,.61,.36,1) ${300 + i * 80}ms, y 850ms cubic-bezier(.22,.61,.36,1) ${300 + i * 80}ms` }}
           />
         ))}
       </g>
@@ -225,16 +233,16 @@ export function DetailLayer({ kind, accent, run, idBase }) {
   if (kind === 'document') {
     return (
       <g>
-        <rect x="112" y="104" width="122" height="196" rx="9" fillOpacity="0.07" strokeOpacity="0.14" strokeWidth="1.6" style={{ fill: INDIGO, stroke: "rgb(var(--c-text))" }} />
+        <rect x="112" y="104" width="122" height="196" rx="9" fill={INDIGO} fillOpacity="0.07" stroke="#FFFFFF" strokeOpacity="0.14" strokeWidth="1.6" />
         {[0, 1, 2, 3, 4].map((i) => (
-          <rect key={i} x="156" y={128 + i * 38} width={i % 2 ? 54 : 66} height="6" rx="3" fillOpacity="0.2" style={{ fill: "rgb(var(--c-text))" }} />
+          <rect key={i} x="156" y={128 + i * 38} width={i % 2 ? 54 : 66} height="6" rx="3" fill="#FFFFFF" fillOpacity="0.2" />
         ))}
         {run && (
           <g>
-            <rect x="112" y="104" width="122" height="2.6" style={{ fill: accent }}>
+            <rect x="112" y="104" width="122" height="2.6" fill={accent}>
               <animate attributeName="y" values="108;296;108" dur="4.2s" repeatCount="indefinite" />
             </rect>
-            <rect x="112" y="104" width="122" height="30" fillOpacity="0.13" style={{ fill: accent }}>
+            <rect x="112" y="104" width="122" height="30" fill={accent} fillOpacity="0.13">
               <animate attributeName="y" values="108;296;108" dur="4.2s" repeatCount="indefinite" />
             </rect>
           </g>
@@ -247,12 +255,16 @@ export function DetailLayer({ kind, accent, run, idBase }) {
     return (
       <g>
         {[-82, -42, 0, 42, 82].map((dy) => (
-          <ellipse key={dy} cx={C} cy={C + dy} rx={Math.sqrt(Math.max(0, 124 * 124 - dy * dy))} ry="15" fill="none" strokeOpacity="0.2" strokeWidth="1.6" style={{ stroke: accent }} />
+          <ellipse
+            key={dy} cx={C} cy={C + dy}
+            rx={Math.sqrt(Math.max(0, 124 * 124 - dy * dy))} ry="15"
+            fill="none" stroke={accent} strokeOpacity="0.2" strokeWidth="1.6"
+          />
         ))}
         <g style={{ transformOrigin: `${C}px ${C}px` }}>
           {run && <animateTransform attributeName="transform" type="rotate" from={`0 ${C} ${C}`} to={`360 ${C} ${C}`} dur="30s" repeatCount="indefinite" />}
           {[30, 62].map((rx) => (
-            <ellipse key={rx} cx={C} cy={C} rx={rx} ry="124" fill="none" strokeOpacity="0.16" strokeWidth="1.6" style={{ stroke: accent }} />
+            <ellipse key={rx} cx={C} cy={C} rx={rx} ry="124" fill="none" stroke={accent} strokeOpacity="0.16" strokeWidth="1.6" />
           ))}
         </g>
       </g>

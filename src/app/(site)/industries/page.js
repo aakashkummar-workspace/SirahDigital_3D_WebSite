@@ -31,13 +31,13 @@ export default function IndustriesPage() {
       <section className="mx-auto w-full max-w-[1280px] px-6 pb-16 pt-20 md:pb-20 md:pt-28">
         <div className="max-w-[760px]">
           <Reveal duration={700} y={12}>
-            <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-ink/40">
+            <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-white/40">
               Industries
             </span>
           </Reveal>
 
           <Reveal delay={120} duration={700} y={24}>
-            <h1 className="mt-7 text-balance text-[clamp(2rem,1.1rem+2.9vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.03em] text-ink">
+            <h1 className="mt-7 text-balance text-[clamp(2rem,1.1rem+2.9vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.03em] text-white">
               Automation, shaped around your industry.
             </h1>
           </Reveal>

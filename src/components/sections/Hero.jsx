@@ -39,7 +39,7 @@ export default function Hero() {
       // the navbar, and another 96px on top of that pushed the second CTA
       // below the fold on a 667px screen. The generous spacing the brief asks
       // for is still there from sm up, where there is room for it.
-      className="ambient-orbs relative flex min-h-[calc(100svh-72px)] items-start overflow-hidden pt-12 sm:pt-24 lg:items-center lg:pt-0"
+      className="relative flex min-h-[calc(100svh-72px)] items-start overflow-hidden pt-12 sm:pt-24 lg:items-center lg:pt-0"
     >
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6">
         {/* Capped well under the grid: at this measure the heading reads as a
@@ -48,7 +48,7 @@ export default function Hero() {
             what gives the particle mark somewhere to sit. */}
         <div className="max-w-[520px]">
           <Reveal duration={700} y={12}>
-            <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-ink/40">
+            <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-white/40">
               {COMPANY.name}
             </span>
           </Reveal>
@@ -61,7 +61,7 @@ export default function Hero() {
                 fill from leaving "scale." alone on the last line. */}
             <h1
               id="hero-title"
-              className="mt-8 text-pretty text-[clamp(2.5rem,1.15rem+3.5vw,3.375rem)] font-bold leading-[0.98] tracking-[-0.03em] text-ink"
+              className="mt-8 text-pretty text-[clamp(2.5rem,1.15rem+3.5vw,3.375rem)] font-bold leading-[0.98] tracking-[-0.03em] text-white"
             >
               {COMPANY.tagline}
             </h1>

@@ -28,7 +28,7 @@ export default function ConfigPanel({ input, set, accent, derived }) {
 
   return (
     <div className="min-w-0">
-      <h2 className="text-[12px] font-semibold uppercase tracking-[0.22em] text-ink/45">
+      <h2 className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/45">
         Your business
       </h2>
 
@@ -91,7 +91,7 @@ export default function ConfigPanel({ input, set, accent, derived }) {
       {/* What the model assumed rather than asked for. Stated plainly — a
           reader who disagrees with these can discount the result accordingly,
           which they cannot do if the derivation is invisible. */}
-      <p className="mt-9 max-w-[46ch] text-[12px] leading-relaxed text-ink/40">
+      <p className="mt-9 max-w-[46ch] text-[12px] leading-relaxed text-white/40">
         Lead, call and document volumes are estimated from your team size - about{' '}
         {derived.monthlyLeads.toLocaleString('en-US')} leads,{' '}
         {derived.monthlyCalls.toLocaleString('en-US')} calls and{' '}

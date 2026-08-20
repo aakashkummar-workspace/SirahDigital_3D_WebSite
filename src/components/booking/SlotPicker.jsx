@@ -126,7 +126,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
    */
   if (!days.length) {
     return (
-      <div className="rounded-xl border border-ink/10 p-6">
+      <div className="rounded-xl border border-white/10 p-6">
         <p className="text-fluid-sm text-brand-muted">
           There are no free times on the calendar at the moment.
         </p>
@@ -162,7 +162,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
           type="button"
           onClick={() => scrollRail(-1)}
           aria-label="Earlier dates"
-          className="absolute left-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-ink/15 bg-space text-ink/70 transition-colors hover:border-ink/30 hover:text-ink sm:flex"
+          className="absolute left-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-space text-white/70 transition-colors hover:border-white/30 hover:text-white sm:flex"
         >
           ‹
         </button>
@@ -185,15 +185,15 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
                   'flex min-h-[72px] w-[68px] shrink-0 snap-start flex-col items-center justify-center gap-0.5 ' +
                   'rounded-xl border transition-colors ' +
                   (isOpen
-                    ? 'border-brand-blue bg-brand-blue/15 text-ink'
-                    : 'border-ink/10 text-ink/70 hover:border-ink/25 hover:text-ink')
+                    ? 'border-brand-blue bg-brand-blue/15 text-white'
+                    : 'border-white/10 text-white/70 hover:border-white/25 hover:text-white')
                 }
               >
-                <span className="text-[0.7rem] uppercase tracking-wide text-ink/45">
+                <span className="text-[0.7rem] uppercase tracking-wide text-white/45">
                   {DAYS_SHORT[weekday]}
                 </span>
                 <span className="text-[1.05rem] font-semibold leading-none">{d}</span>
-                <span className="text-[0.68rem] text-ink/40">{MONTHS_SHORT[m - 1]}</span>
+                <span className="text-[0.68rem] text-white/40">{MONTHS_SHORT[m - 1]}</span>
               </button>
             );
           })}
@@ -203,7 +203,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
           type="button"
           onClick={() => scrollRail(1)}
           aria-label="Later dates"
-          className="absolute right-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-ink/15 bg-space text-ink/70 transition-colors hover:border-ink/30 hover:text-ink sm:flex"
+          className="absolute right-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-space text-white/70 transition-colors hover:border-white/30 hover:text-white sm:flex"
         >
           ›
         </button>
@@ -211,7 +211,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
 
       {/* ── Times for the selected day ─────────────────────────────────── */}
       {openParts && (
-        <p className="mt-5 text-[0.8rem] font-medium text-ink/70">
+        <p className="mt-5 text-[0.8rem] font-medium text-white/70">
           {DAYS_LONG[openParts.weekday]} {openParts.d} {MONTHS_LONG[openParts.m - 1]}
         </p>
       )}
@@ -237,7 +237,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
                 'min-h-[44px] rounded-lg border px-2 text-[14px] transition-colors ' +
                 (isSel
                   ? 'border-brand-blue bg-brand-blue text-white'
-                  : 'border-ink/15 text-ink/80 hover:border-ink/30 hover:text-ink')
+                  : 'border-white/15 text-white/80 hover:border-white/30 hover:text-white')
               }
             >
               {formatTime(slot.local_time)}
@@ -249,7 +249,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
       {/* The zone is stated once, here, rather than on every button. Every slot
           carries the same one, and repeating it forty times is noise — but
           omitting it entirely is how somebody abroad books 3pm their time. */}
-      <p className="mt-3 text-[0.78rem] text-ink/45">
+      <p className="mt-3 text-[0.78rem] text-white/45">
         All times{' '}
         {slots[0]?.time_zone === 'Asia/Kolkata' ? 'India Standard Time (IST)' : slots[0]?.time_zone}.
       </p>
@@ -264,7 +264,7 @@ export default function SlotPicker({ value, onChange, refreshKey = 0, onAvailabi
         * thing read before committing.
         */}
       {selected && openParts && (
-        <p className="mt-5 rounded-xl border border-brand-blue/40 bg-brand-blue/10 px-4 py-3 text-[0.85rem] text-ink">
+        <p className="mt-5 rounded-xl border border-brand-blue/40 bg-brand-blue/10 px-4 py-3 text-[0.85rem] text-white">
           Selected:{' '}
           <span className="font-semibold">
             {DAYS_LONG[openParts.weekday]} {openParts.d} {MONTHS_LONG[openParts.m - 1]}

@@ -67,24 +67,23 @@ export default function TechnologyOrbit() {
         <svg viewBox="0 0 800 600" className="absolute inset-0 w-full h-full" aria-hidden="true">
           <defs>
             <radialGradient id={`${uid}-core`}>
-              <stop offset="0%" stopOpacity="0.7" style={{ stopColor: "rgb(var(--c-indigo))" }} />
-              <stop offset="70%" stopOpacity="0.1" style={{ stopColor: "rgb(var(--c-indigo))" }} />
-              <stop offset="100%" stopOpacity="0" style={{ stopColor: "rgb(var(--c-indigo))" }} />
+              <stop offset="0%" stopColor="#6366F1" stopOpacity="0.7" />
+              <stop offset="70%" stopColor="#6366F1" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
             </radialGradient>
           </defs>
 
-          <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" strokeOpacity="0.07" style={{ stroke: 'rgb(var(--c-ink))' }} />
-          <ellipse cx={CX} cy={CY} rx={RX * 0.62} ry={RY * 0.62} fill="none" strokeOpacity="0.05" style={{ stroke: 'rgb(var(--c-ink))' }} />
+          <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" stroke="white" strokeOpacity="0.07" />
+          <ellipse cx={CX} cy={CY} rx={RX * 0.62} ry={RY * 0.62} fill="none" stroke="white" strokeOpacity="0.05" />
 
           {/* spokes from the centre, each carrying a travelling pulse */}
           {NODES.map((n, i) => (
             <g key={n.name}>
-              <line x1={CX} y1={CY} x2={n.x} y2={n.y} strokeOpacity="0.11" strokeWidth="1" style={{ stroke: 'rgb(var(--c-ink))' }} />
+              <line x1={CX} y1={CY} x2={n.x} y2={n.y} stroke="white" strokeOpacity="0.11" strokeWidth="1" />
               <line
                 x1={CX} y1={CY} x2={n.x} y2={n.y}
-                strokeWidth="2" strokeLinecap="round" strokeDasharray="10 150"
+                stroke={n.accent} strokeWidth="2" strokeLinecap="round" strokeDasharray="10 150"
                 style={{
-                  stroke: n.accent,
                   animation: run ? `flow ${3 + i * 0.3}s linear ${i * 0.22}s infinite` : undefined,
                   opacity: shown ? 1 : 0,
                   transition: 'opacity 900ms ease',
@@ -100,7 +99,7 @@ export default function TechnologyOrbit() {
               <line
                 key={`ring-${n.name}`}
                 x1={n.x} y1={n.y} x2={next.x} y2={next.y}
-                strokeOpacity="0.07" strokeWidth="1" style={{ stroke: 'rgb(var(--c-ink))' }}
+                stroke="white" strokeOpacity="0.07" strokeWidth="1"
                 style={{ opacity: shown ? 1 : 0, transition: `opacity 900ms ease ${i * 60}ms` }}
               />
             );
@@ -109,15 +108,15 @@ export default function TechnologyOrbit() {
           {/* nodes */}
           {NODES.map((n, i) => (
             <g key={`node-${n.name}`} style={{ opacity: shown ? 1 : 0, transition: `opacity 700ms ease ${200 + i * 70}ms` }}>
-              <circle cx={n.x} cy={n.y} r="26" fillOpacity="0.1" style={{ fill: n.accent }} />
-              <circle cx={n.x} cy={n.y} r="9" style={{ fill: n.accent }}>
+              <circle cx={n.x} cy={n.y} r="26" fill={n.accent} fillOpacity="0.1" />
+              <circle cx={n.x} cy={n.y} r="9" fill={n.accent}>
                 {run && <animate attributeName="r" values="9;11.5;9" dur={`${2.4 + i * 0.25}s`} repeatCount="indefinite" />}
               </circle>
               <text
                 x={n.anchor === 'end' ? n.x - 24 : n.anchor === 'start' ? n.x + 24 : n.x}
                 y={n.anchor === 'middle' ? (n.y < CY ? n.y - 30 : n.y + 38) : n.y + 6}
                 textAnchor={n.anchor}
-                className="fill-ink font-semibold"
+                className="fill-white font-semibold"
                 style={{ fontSize: 19 }}
               >
                 {n.name}
@@ -126,28 +125,28 @@ export default function TechnologyOrbit() {
           ))}
 
           {/* centre */}
-          <circle cx={CX} cy={CY} r="62" fillOpacity="0.14" strokeOpacity="0.45" style={{ fill: "rgb(var(--c-indigo))", stroke: "rgb(var(--c-indigo))" }} />
-          <text x={CX} y={CY - 4} textAnchor="middle" className="fill-ink font-extrabold" style={{ fontSize: 21 }}>SIRAH</text>
-          <text x={CX} y={CY + 20} textAnchor="middle" className="font-extrabold" style={{ fontSize: 21, fill: 'rgb(var(--c-purple))' }}>DIGITAL</text>
+          <circle cx={CX} cy={CY} r="62" fill="#6366F1" fillOpacity="0.14" stroke="#6366F1" strokeOpacity="0.45" />
+          <text x={CX} y={CY - 4} textAnchor="middle" className="fill-white font-extrabold" style={{ fontSize: 21 }}>SIRAH</text>
+          <text x={CX} y={CY + 20} textAnchor="middle" className="font-extrabold" style={{ fontSize: 21, fill: '#A855F7' }}>DIGITAL</text>
         </svg>
       </div>
 
       {/* ── Mobile: the same relationship as a threaded list ────────────── */}
       <div className="sm:hidden mt-14 relative">
-        <span aria-hidden="true" className="absolute left-[7px] top-4 bottom-4 w-px bg-ink/10" />
+        <span aria-hidden="true" className="absolute left-[7px] top-4 bottom-4 w-px bg-white/10" />
         <span
           aria-hidden="true"
           className="absolute left-[7px] top-4 bottom-4 w-px"
           style={{
-            background: 'rgb(var(--c-cyan))',
+            background: '#22D3EE',
             opacity: shown ? 0.8 : 0,
             transition: 'opacity 1s ease',
           }}
         />
         <p className="relative flex items-center gap-4 pb-6">
-          <span className="w-[15px] h-[15px] rounded-full shrink-0" style={{ background: 'rgb(var(--c-indigo))' }} />
+          <span className="w-[15px] h-[15px] rounded-full shrink-0" style={{ background: '#6366F1' }} />
           <span className="text-fluid-base font-extrabold">
-            <span className="text-ink">SIRAH </span>
+            <span className="text-white">SIRAH </span>
             <span className="text-brand-purple">DIGITAL</span>
           </span>
         </p>

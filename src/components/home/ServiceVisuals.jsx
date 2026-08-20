@@ -12,16 +12,16 @@ import React from 'react';
  * and `reduced` to fall back to a static composition.
  */
 
-const INDIGO = 'rgb(var(--c-indigo))';
-const PURPLE = 'rgb(var(--c-purple))';
-const CYAN = 'rgb(var(--c-cyan))';
+const INDIGO = '#6366F1';
+const PURPLE = '#A855F7';
+const CYAN = '#22D3EE';
 
 const Defs = ({ id }) => (
   <defs>
     <linearGradient id={`${id}-stroke`} x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0%" style={{ stopColor: CYAN }} />
-      <stop offset="55%" style={{ stopColor: INDIGO }} />
-      <stop offset="100%" style={{ stopColor: PURPLE }} />
+      <stop offset="0%" stopColor={CYAN} />
+      <stop offset="55%" stopColor={INDIGO} />
+      <stop offset="100%" stopColor={PURPLE} />
     </linearGradient>
   </defs>
 );
@@ -42,23 +42,23 @@ export function AgentVisual({ active, reduced }) {
 
       {/* orbit rails */}
       {satellites.map((s, i) => (
-        <circle key={i} cx="180" cy="180" r={s.r} fill="none" strokeOpacity="0.07" style={{ stroke: 'rgb(var(--c-ink))' }} />
+        <circle key={i} cx="180" cy="180" r={s.r} fill="none" stroke="white" strokeOpacity="0.07" />
       ))}
 
       {/* figure: head, shoulders, spine — built from strokes and nodes */}
       <g className={run ? 'animate-float-y' : undefined} style={{ transformOrigin: '180px 180px' }}>
         <circle cx="180" cy="128" r="34" fill="none" stroke="url(#agent-stroke)" strokeWidth="2" />
-        <circle cx="180" cy="128" r="34" fillOpacity="0.09" style={{ fill: INDIGO }} />
+        <circle cx="180" cy="128" r="34" fill={INDIGO} fillOpacity="0.09" />
         <path d="M128 246c8-34 26-52 52-52s44 18 52 52" fill="none" stroke="url(#agent-stroke)" strokeWidth="2" strokeLinecap="round" />
         <path d="M180 162v32" stroke="url(#agent-stroke)" strokeWidth="2" strokeLinecap="round" />
 
         {/* facial / neural nodes */}
         {[[168, 120], [192, 120], [180, 140], [162, 134], [198, 134]].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="3" style={{ fill: CYAN }}>
+          <circle key={i} cx={x} cy={y} r="3" fill={CYAN}>
             {run && <animate attributeName="opacity" values="0.35;1;0.35" dur={`${2 + i * 0.35}s`} repeatCount="indefinite" />}
           </circle>
         ))}
-        <path d="M168 120L180 140L192 120M162 134L180 140L198 134" fill="none" strokeOpacity="0.4" strokeWidth="1" style={{ stroke: CYAN }} />
+        <path d="M168 120L180 140L192 120M162 134L180 140L198 134" fill="none" stroke={CYAN} strokeOpacity="0.4" strokeWidth="1" />
       </g>
 
       {/* orbiting satellites */}
@@ -74,8 +74,8 @@ export function AgentVisual({ active, reduced }) {
               repeatCount="indefinite"
             />
           )}
-          <circle cx={180 + s.r} cy="180" r={s.size} style={{ fill: s.color }} />
-          <circle cx={180 + s.r} cy="180" r={s.size * 2.6} fillOpacity="0.16" style={{ fill: s.color }} />
+          <circle cx={180 + s.r} cy="180" r={s.size} fill={s.color} />
+          <circle cx={180 + s.r} cy="180" r={s.size * 2.6} fill={s.color} fillOpacity="0.16" />
         </g>
       ))}
     </svg>
@@ -92,8 +92,8 @@ export function ChatbotVisual({ active, reduced }) {
       <Defs id="bot" />
 
       {/* listening rings */}
-      <circle cx="180" cy="180" r="128" fill="none" strokeOpacity="0.07" style={{ stroke: 'rgb(var(--c-ink))' }} />
-      <circle cx="180" cy="180" r="96" fill="none" strokeOpacity="0.05" style={{ stroke: 'rgb(var(--c-ink))' }} />
+      <circle cx="180" cy="180" r="128" fill="none" stroke="white" strokeOpacity="0.07" />
+      <circle cx="180" cy="180" r="96" fill="none" stroke="white" strokeOpacity="0.05" />
 
       {/* waveform */}
       <g>
@@ -122,15 +122,15 @@ export function ChatbotVisual({ active, reduced }) {
 
       {/* conversation markers */}
       <g opacity="0.9">
-        <rect x="52" y="86" width="74" height="30" rx="15" fillOpacity="0.16" strokeOpacity="0.4" style={{ fill: INDIGO, stroke: INDIGO }} />
-        <rect x="234" y="252" width="74" height="30" rx="15" fillOpacity="0.14" strokeOpacity="0.4" style={{ fill: CYAN, stroke: CYAN }} />
+        <rect x="52" y="86" width="74" height="30" rx="15" fill={INDIGO} fillOpacity="0.16" stroke={INDIGO} strokeOpacity="0.4" />
+        <rect x="234" y="252" width="74" height="30" rx="15" fill={CYAN} fillOpacity="0.14" stroke={CYAN} strokeOpacity="0.4" />
         {[68, 82, 96].map((cx, i) => (
-          <circle key={i} cx={cx} cy="101" r="3.5" style={{ fill: INDIGO }}>
+          <circle key={i} cx={cx} cy="101" r="3.5" fill={INDIGO}>
             {run && <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" begin={`${i * 0.2}s`} repeatCount="indefinite" />}
           </circle>
         ))}
         {[250, 264, 278].map((cx, i) => (
-          <circle key={i} cx={cx} cy="267" r="3.5" style={{ fill: CYAN }}>
+          <circle key={i} cx={cx} cy="267" r="3.5" fill={CYAN}>
             {run && <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" begin={`${0.6 + i * 0.2}s`} repeatCount="indefinite" />}
           </circle>
         ))}
@@ -161,7 +161,7 @@ export function WorkflowVisual({ active, reduced }) {
         const p = `M${nodes[a].x} ${nodes[a].y} Q ${(nodes[a].x + nodes[b].x) / 2} ${(nodes[a].y + nodes[b].y) / 2 - 26} ${nodes[b].x} ${nodes[b].y}`;
         return (
           <g key={i}>
-            <path d={p} fill="none" strokeOpacity="0.12" strokeWidth="1.5" style={{ stroke: 'rgb(var(--c-ink))' }} />
+            <path d={p} fill="none" stroke="white" strokeOpacity="0.12" strokeWidth="1.5" />
             <path
               d={p}
               fill="none"
@@ -177,8 +177,8 @@ export function WorkflowVisual({ active, reduced }) {
 
       {nodes.map((n, i) => (
         <g key={i}>
-          <circle cx={n.x} cy={n.y} r={n.r * 2.4} fillOpacity="0.12" style={{ fill: n.c }} />
-          <circle cx={n.x} cy={n.y} r={n.r} style={{ fill: n.c }}>
+          <circle cx={n.x} cy={n.y} r={n.r * 2.4} fill={n.c} fillOpacity="0.12" />
+          <circle cx={n.x} cy={n.y} r={n.r} fill={n.c}>
             {run && <animate attributeName="r" values={`${n.r};${n.r * 1.18};${n.r}`} dur={`${2.4 + i * 0.3}s`} repeatCount="indefinite" />}
           </circle>
         </g>
@@ -233,7 +233,12 @@ export function DashboardVisual({ active, reduced }) {
                 transition: 'stroke-dashoffset 1800ms cubic-bezier(.22,.61,.36,1)',
               }}
             />
-            <path d="M4 92 L56 68 L108 76 L160 40 L212 52 L264 20 L316 28 L316 110 L4 110 Z" fillOpacity={run ? 0.14 : 0} style={{ transition: 'fill-opacity 1400ms ease 400ms', fill: INDIGO }} />
+            <path
+              d="M4 92 L56 68 L108 76 L160 40 L212 52 L264 20 L316 28 L316 110 L4 110 Z"
+              fill={INDIGO}
+              fillOpacity={run ? 0.14 : 0}
+              style={{ transition: 'fill-opacity 1400ms ease 400ms' }}
+            />
           </svg>
 
           {/* bars */}
@@ -258,7 +263,7 @@ export function DashboardVisual({ active, reduced }) {
               aria-hidden="true"
               className="pointer-events-none absolute inset-y-0 w-1/3"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgb(var(--c-ink) / .06), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent)',
                 animation: 'sweep 5s ease-in-out infinite',
               }}
             />

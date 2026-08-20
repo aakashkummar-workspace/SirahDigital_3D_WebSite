@@ -36,9 +36,9 @@ import { PrimaryButton } from '@/components/ui/Button';
  */
 
 const FIELD =
-  'peer w-full rounded-xl border border-ink/[0.18] bg-ink/[0.02] px-4 pt-6 pb-2 ' +
-  'text-[0.95rem] text-ink outline-none transition-all duration-300 ease-brand ' +
-  'hover:border-ink/20 focus:border-brand-blue/60 focus:bg-ink/[0.04] ' +
+  'peer w-full rounded-xl border border-white/[0.18] bg-white/[0.02] px-4 pt-6 pb-2 ' +
+  'text-[0.95rem] text-white outline-none transition-all duration-300 ease-brand ' +
+  'hover:border-white/20 focus:border-brand-blue/60 focus:bg-white/[0.04] ' +
   'focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)]';
 // No autofill styling here on purpose — globals.css already pins the autofilled
 // background and text colour for every input on the site, with !important, so
@@ -50,10 +50,10 @@ const FIELD =
 // with no JS at all.
 const LABEL =
   'pointer-events-none absolute left-4 top-2 origin-left text-[0.7rem] font-medium uppercase ' +
-  'tracking-[0.12em] text-ink/40 transition-all duration-300 ease-brand ' +
+  'tracking-[0.12em] text-white/40 transition-all duration-300 ease-brand ' +
   'peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 ' +
   'peer-placeholder-shown:text-[0.95rem] peer-placeholder-shown:tracking-normal ' +
-  'peer-placeholder-shown:normal-case peer-placeholder-shown:text-ink/35 ' +
+  'peer-placeholder-shown:normal-case peer-placeholder-shown:text-white/35 ' +
   'peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-[0.7rem] ' +
   'peer-focus:uppercase peer-focus:tracking-[0.12em] peer-focus:text-brand-blue';
 
@@ -62,10 +62,10 @@ const LABEL =
 // only changes weight.
 const AREA_LABEL =
   'pointer-events-none absolute left-4 top-2 text-[0.7rem] font-medium uppercase ' +
-  'tracking-[0.12em] text-ink/40 transition-all duration-300 ease-brand ' +
+  'tracking-[0.12em] text-white/40 transition-all duration-300 ease-brand ' +
   'peer-placeholder-shown:top-5 peer-placeholder-shown:text-[0.95rem] ' +
   'peer-placeholder-shown:tracking-normal peer-placeholder-shown:normal-case ' +
-  'peer-placeholder-shown:text-ink/35 ' +
+  'peer-placeholder-shown:text-white/35 ' +
   'peer-focus:top-2 peer-focus:text-[0.7rem] peer-focus:uppercase ' +
   'peer-focus:tracking-[0.12em] peer-focus:text-brand-blue';
 
@@ -106,9 +106,9 @@ const CHIP =
   'inline-flex min-h-[44px] items-center rounded-full border px-4 text-[0.875rem] ' +
   'font-medium transition-all duration-300 ease-brand';
 const CHIP_OFF =
-  'border-ink/[0.22] bg-ink/[0.02] text-ink/60 hover:border-ink/35 hover:text-ink';
+  'border-white/[0.22] bg-white/[0.02] text-white/60 hover:border-white/35 hover:text-white';
 const CHIP_ON =
-  'border-brand-blue/70 bg-brand-blue/[0.14] text-ink';
+  'border-brand-blue/70 bg-brand-blue/[0.14] text-white';
 
 function Field({ id, label, type = 'text', required = false, value, onChange, autoComplete }) {
   return (
@@ -194,7 +194,7 @@ export default function ContactForm() {
   if (status === 'sent') {
     return (
       <div id="contact-form" className="scroll-mt-28">
-        <p className="mb-2 text-fluid-base font-semibold text-ink">
+        <p className="mb-2 text-fluid-base font-semibold text-white">
           Thanks{form.firstName ? `, ${form.firstName}` : ''} - one last step.
         </p>
         <p className="mb-8 text-fluid-sm leading-relaxed text-brand-muted">
@@ -248,8 +248,8 @@ export default function ContactForm() {
       />
 
       <fieldset className="pt-1">
-        <legend className="text-[0.7rem] font-medium uppercase tracking-[0.12em] text-ink/40">
-          Which product are you interested in? <span className="normal-case tracking-normal text-ink/30">(optional)</span>
+        <legend className="text-[0.7rem] font-medium uppercase tracking-[0.12em] text-white/40">
+          Which product are you interested in? <span className="normal-case tracking-normal text-white/30">(optional)</span>
         </legend>
         <div className="mt-3 flex flex-wrap gap-2.5">
           {INTEREST_OPTIONS.map((option) => {
@@ -292,7 +292,7 @@ export default function ContactForm() {
         * that same constant as the proof of what was on screen, and two copies
         * of it would eventually disagree.
         */}
-      <label className="flex cursor-pointer items-start gap-3 pt-1 text-[0.8rem] leading-relaxed text-ink/55">
+      <label className="flex cursor-pointer items-start gap-3 pt-1 text-[0.8rem] leading-relaxed text-white/55">
         <input
           type="checkbox"
           name="consent"

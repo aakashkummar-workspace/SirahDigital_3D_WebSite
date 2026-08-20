@@ -21,12 +21,12 @@ export function Slider({ def, value, accent, onChange }) {
   return (
     <div className="min-w-0">
       <div className="flex items-baseline justify-between gap-4">
-        <label htmlFor={id} className="text-[13px] leading-snug text-ink/60">
+        <label htmlFor={id} className="text-[13px] leading-snug text-white/60">
           {def.label}
         </label>
         <output
           htmlFor={id}
-          className="shrink-0 text-[19px] font-semibold tabular-nums leading-none text-ink"
+          className="shrink-0 text-[19px] font-semibold tabular-nums leading-none text-white"
         >
           {display}
         </output>
@@ -49,7 +49,7 @@ export function Slider({ def, value, accent, onChange }) {
       />
 
       {def.hint && (
-        <p id={`${id}-hint`} className="-mt-1 text-[12px] leading-snug text-ink/40">
+        <p id={`${id}-hint`} className="-mt-1 text-[12px] leading-snug text-white/40">
           {def.hint}
         </p>
       )}
@@ -61,7 +61,7 @@ export function Select({ label, value, options, accent, onChange }) {
   const id = useId().replace(/:/g, '');
   return (
     <div className="min-w-0">
-      <label htmlFor={id} className="block text-[13px] text-ink/60">
+      <label htmlFor={id} className="block text-[13px] text-white/60">
         {label}
       </label>
       <select

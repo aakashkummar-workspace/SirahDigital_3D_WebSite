@@ -60,11 +60,11 @@
   isolation: isolate;
   /* Under the image, so a slow connection shows the page's own ground rather
      than a white flash. Also what the no-image fallback renders on. */
-  background-color: rgb(var(--c-space));
+  background-color: #0b0e17;
   /* States the edge between the navbar's ground and the photograph, now that
      the two sit next to each other rather than overlapping. Paired with the
      hairline .stage::after draws at the other end. */
-  border-top: 1px solid rgb(var(--c-ink) / 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /*
@@ -168,7 +168,7 @@
   right: 0;
   bottom: 0;
   height: 1px;
-  background: rgb(var(--c-ink) / 0.08);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 
@@ -198,7 +198,7 @@
   font-weight: 500;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgb(var(--c-ink) / 0.55);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .title {
@@ -208,7 +208,7 @@
   font-weight: 700;
   line-height: 1.03;
   letter-spacing: -0.03em;
-  color: rgb(var(--c-text));
+  color: #ffffff;
   text-wrap: balance;
 }
 
@@ -217,7 +217,7 @@
  * surname, so the two blocks read as one page.
  */
 .name {
-  background: var(--grad-heading);
+  background: linear-gradient(120deg, #ffffff 0%, #c7d2fe 40%, #7dd3fc 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -226,8 +226,8 @@
 
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
   .name {
-    color: var(--grad-heading-solid);
-    -webkit-text-fill-color: var(--grad-heading-solid);
+    color: #7dd3fc;
+    -webkit-text-fill-color: #7dd3fc;
   }
 }
 
@@ -238,7 +238,7 @@
   line-height: 1.7;
   /* Deliberately under the headline's white: this is the second thing read,
      and against a photograph the hierarchy has to come from value. */
-  color: rgb(var(--c-ink) / 0.74);
+  color: rgba(255, 255, 255, 0.74);
 }
 
 .actions {

@@ -20,7 +20,7 @@ import { SCENE_MS } from '@/data/transformation';
 export default function SceneProgress({ accent, running }) {
   return (
     <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] overflow-hidden">
-      <div className="absolute inset-0 bg-ink/[0.06]" />
+      <div className="absolute inset-0 bg-white/[0.06]" />
       <div
         className="absolute inset-0 origin-left"
         style={{

@@ -57,7 +57,7 @@ export default function IndustryPage({ params }) {
       <div className="mx-auto max-w-[860px] px-6">
         <Link
           href="/industries"
-          className="inline-flex items-center gap-2 text-fluid-sm font-medium text-brand-muted transition-colors hover:text-ink"
+          className="inline-flex items-center gap-2 text-fluid-sm font-medium text-brand-muted transition-colors hover:text-white"
         >
           <span aria-hidden="true">←</span> Industries
         </Link>
@@ -68,7 +68,7 @@ export default function IndustryPage({ params }) {
               {detail.tagline}
             </p>
           )}
-          <h1 className="mt-4 text-fluid-2xl font-bold leading-[1.1] tracking-tight text-ink">
+          <h1 className="mt-4 text-fluid-2xl font-bold leading-[1.1] tracking-tight text-white">
             {industry.title}
           </h1>
           <p className="mt-6 max-w-[640px] text-fluid-base leading-relaxed text-brand-muted">
@@ -85,8 +85,8 @@ export default function IndustryPage({ params }) {
 
       <div className="mx-auto max-w-[860px] px-6">
       {detail?.metric && (
-        <p className="mt-12 flex items-baseline gap-4 border-t border-ink/10 pt-8">
-          <span className="text-fluid-2xl font-bold leading-none tracking-tight text-ink">
+        <p className="mt-12 flex items-baseline gap-4 border-t border-white/10 pt-8">
+          <span className="text-fluid-2xl font-bold leading-none tracking-tight text-white">
             {detail.metric.value}
           </span>
           <span className="text-fluid-sm text-brand-muted">{detail.metric.label}</span>
@@ -95,7 +95,7 @@ export default function IndustryPage({ params }) {
 
       {detail?.outcomes?.length > 0 && (
         <section className="mt-14">
-          <h2 className="text-fluid-lg font-semibold tracking-tight text-ink">What we build</h2>
+          <h2 className="text-fluid-lg font-semibold tracking-tight text-white">What we build</h2>
           <ul className="mt-6 grid gap-x-10 gap-y-4 sm:grid-cols-2">
             {detail.outcomes.map((outcome) => (
               <li key={outcome} className="flex gap-3 text-fluid-sm leading-relaxed text-brand-muted">
@@ -111,7 +111,7 @@ export default function IndustryPage({ params }) {
       )}
 
       {detail?.guarantee && (
-        <p className="mt-14 border-l-2 border-brand-cyan pl-6 text-fluid-base leading-relaxed text-ink">
+        <p className="mt-14 border-l-2 border-brand-cyan pl-6 text-fluid-base leading-relaxed text-white">
           {detail.guarantee}
         </p>
       )}
@@ -125,7 +125,7 @@ export default function IndustryPage({ params }) {
             {detail.stack.map((tool) => (
               <li
                 key={tool}
-                className="rounded-full border border-ink/10 px-3.5 py-1.5 text-fluid-xs text-brand-muted"
+                className="rounded-full border border-white/10 px-3.5 py-1.5 text-fluid-xs text-brand-muted"
               >
                 {tool}
               </li>
@@ -134,7 +134,7 @@ export default function IndustryPage({ params }) {
         </section>
       )}
 
-      <div className="mt-16 border-t border-ink/10 pt-10">
+      <div className="mt-16 border-t border-white/10 pt-10">
         {/* Was a hand-rolled bordered pill with its own hover colour — the
             same control .btn-secondary already describes, so it uses that. */}
         <SecondaryButton href="/contact" arrow>

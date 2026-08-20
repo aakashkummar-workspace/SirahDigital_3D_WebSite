@@ -159,52 +159,51 @@
   --font-sans: 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
   --font-display: 'Zodiak Numerals', 'Cormorant Garamond', Georgia, serif;
 
+  --space: #0b0e17;
+  --space-deep: #070910;
+  --space-raised: #111522;
+  --indigo: #6366f1;
+  --purple: #a855f7;
+  --cyan: #38bdf8;
+  --text: #ffffff;
+  --muted: #94a3b8;
+
   /*
-   * The theme switch lives on <html> as `data-theme`, set by the boot script
-   * in app/layout.js before first paint. Everything below is downstream of
-   * that one attribute.
+   * The CTA palette. Every primary button, and every accent that sits next
+   * to one, is drawn from these four and nothing else.
+   *
+   * They are new rather than reused because the two that were already here
+   * are the wrong colours for the job: --purple is #a855f7, a step lighter
+   * and pinker than the violet the logo and the hero particle field are
+   * built on, and --cyan is not in the brand at all. Pointing the buttons at
+   * the existing tokens would have quietly restated the same mismatch.
+   *
+   * -- one thing to know about these ------------------------------------
+   * White type on the resting pair does not reach WCAG AA. Measured against
+   * white, at the 15px/600 a button label is set at (so 4.5:1 is the bar):
+   *
+   *     #3b82f6  3.68:1   FAIL      #2563eb  5.17:1   pass
+   *     #8b5cf6  4.23:1   FAIL      #7c3aed  5.70:1   pass
+   *
+   * The -deep pair — which the brief specifies as the HOVER end — is the one
+   * that passes, so as specified the button is compliant only while the
+   * pointer is on it, and the state most visitors see is the failing one.
+   *
+   * The resting values are kept because they are the brand's, and swapping a
+   * brand colour is not a call to make silently. The fix, if it is wanted, is
+   * to move each value one line up: set --brand-blue to #2563eb and
+   * --brand-violet to #7c3aed, then pick a darker pair for the -deep hover.
+   * Nothing else has to change — every button, the skip link, the chat send
+   * control and the chat panel's own primaries all read these four.
+   *
+   * #8b5cf6 is also below AA as TEXT on the page ground (4.24:1), which is
+   * why links and menu items use --brand-blue (4.88:1) and go to white on
+   * hover rather than to violet.
    */
-}
-
-/* ---------------------------------------------------------------------- */
-/* Palette                                                                 */
-/*                                                                         */
-/* Two blocks of the same token names, in RGB channel triplets. Channels   */
-/* rather than hex because Tailwind composes them as                       */
-/* `rgb(var(--c-x) / <alpha-value>)`, and `rgb(#16142C / .8)` is not CSS — */
-/* a hex-valued variable would silently kill every `/opacity` modifier on  */
-/* the site, and there are well over a hundred of them.                    */
-/*                                                                         */
-/* `:root` carries dark as well as [data-theme=dark] so the palette is     */
-/* complete before the boot script runs and during the server-rendered     */
-/* frame. The light block must stay *after* it: both selectors match       */
-/* <html> at identical specificity, so source order is the only thing      */
-/* deciding which wins.                                                    */
-/* ---------------------------------------------------------------------- */
-
-:root,
-[data-theme='dark'] {
-  color-scheme: dark;
-
-  --c-space: 22 20 44;           /* #16142C  ground                       */
-  --c-space-deep: 16 14 32;      /* #100E20  one step back                */
-  --c-space-raised: 29 26 56;    /* #1D1A38  one step forward             */
-
-  --c-indigo: 99 102 241;        /* #6366F1                               */
-  --c-purple: 168 85 247;        /* #A855F7                               */
-  --c-cyan: 34 211 238;          /* #22D3EE  highlight, decorative        */
-
-  --c-text: 255 255 255;         /* #FFFFFF  primary                      */
-  --c-muted: 203 213 225;        /* #CBD5E1  secondary                    */
-  --c-subtle: 148 163 184;       /* #94A3B8  tertiary                     */
-
-  --c-blue: 59 130 246;          /* #3B82F6  CTA, resting                 */
-  --c-violet: 139 92 246;        /* #8B5CF6  CTA, resting                 */
-  --c-blue-deep: 37 99 235;      /* #2563EB  CTA, hover                   */
-  --c-violet-deep: 124 58 237;   /* #7C3AED  CTA, hover                   */
-
-  /* The contrast channel. See the `ink` note in tailwind.config.js. */
-  --c-ink: 255 255 255;
+  --brand-blue: #3b82f6;
+  --brand-blue-deep: #2563eb;
+  --brand-violet: #8b5cf6;
+  --brand-violet-deep: #7c3aed;
 
   /*
    * The focus ring, one step lighter than --brand-blue on purpose: the ring
@@ -213,193 +212,6 @@
    * 7.2:1 against the page and still clearly not the button's fill.
    */
   --focus-ring: #60a5fa;
-
-  /*
-   * Elevation, dark. A card lifts by getting *lighter* — a few per cent of
-   * white over the ground — and casts almost nothing, because a shadow on a
-   * near-black page is invisible anyway.
-   */
-  --surface-glass: rgba(255, 255, 255, 0.04);
-  --surface-glass-strong: rgba(255, 255, 255, 0.06);
-  --surface-glass-border: rgba(255, 255, 255, 0.10);
-  --shadow-card: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
-  --shadow-lift: 0 30px 70px -32px rgba(0, 0, 0, 0.9);
-
-  /* Chrome surfaces needing an exact alpha the token ramp cannot express. */
-  --nav-surface: rgb(22 20 44 / 0.8);
-  --nav-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --menu-surface: rgb(11 14 23 / 0.95);
-  --footer-surface: rgb(16 14 32 / 0.9);
-
-  /* Decorative depth behind sections. Additive light on a dark ground. */
-  --orb-purple: rgba(168, 85, 247, 0.16);
-  --orb-blue: rgba(56, 189, 248, 0.12);
-
-  /*
-   * Clip-text headline gradient, and the flat colour to fall back to where
-   * background-clip: text is unsupported. Declared here rather than in the
-   * two modules that use it because the light version is not a recolour of
-   * the dark one — dark runs white into periwinkle into sky, which is three
-   * shades of "barely visible on white", so light runs the ink into the two
-   * brand accents instead and travels in the opposite direction.
-   */
-  --grad-heading: linear-gradient(120deg, #ffffff 0%, #c7d2fe 42%, #7dd3fc 100%);
-  --grad-heading-solid: #ffffff;
-
-  /* Two module-owned elevations that were hardcoded black. */
-  --shadow-panel: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
-  --shadow-frame: 0 34px 64px -34px rgba(0, 0, 0, 0.8);
-}
-
-[data-theme='light'] {
-  color-scheme: light;
-
-  --c-space: 255 255 255;        /* #FFFFFF  ground, pure white           */
-  --c-space-deep: 241 245 249;   /* #F1F5F9  alternate section            */
-  --c-space-raised: 248 250 252; /* #F8FAFC  secondary section            */
-
-  --c-indigo: 79 70 229;         /* #4F46E5                               */
-  --c-purple: 147 51 234;        /* #9333EA                               */
-  /*
-   * Highlight resolves to the primary blue here, not to a cyan. #22D3EE on
-   * white measures 1.65:1 — it does not survive the ground change, and every
-   * `text-brand-cyan` on the site would have become unreadable rather than
-   * merely off-brand. Decoration that genuinely wants a cyan in both themes
-   * carries its own hex instead of this token.
-   */
-  --c-cyan: 37 99 235;           /* #2563EB                               */
-
-  --c-text: 15 23 42;            /* #0F172A  primary   17.9:1 on white    */
-  --c-muted: 71 85 105;          /* #475569  secondary  7.5:1             */
-  --c-subtle: 100 116 139;       /* #64748B  tertiary   4.8:1             */
-
-  /*
-   * Light runs the -deep pair as its *resting* state and steps darker still
-   * on hover. That is the opposite of dark's direction, and deliberate:
-   * white type on #3B82F6 is 3.68:1 and on #8B5CF6 is 4.23:1, both below AA,
-   * where #2563EB (5.17:1) and #7C3AED (5.70:1) pass. On a white page there
-   * is no ground darkness to borrow legibility from, so the button has to
-   * carry all of it on its own fill.
-   */
-  --c-blue: 37 99 235;           /* #2563EB  CTA, resting                 */
-  --c-violet: 124 58 237;        /* #7C3AED  CTA, resting                 */
-  --c-blue-deep: 29 78 216;      /* #1D4ED8  CTA, hover                   */
-  --c-violet-deep: 109 40 217;   /* #6D28D9  CTA, hover                   */
-
-  --c-ink: 15 23 42;
-
-  --focus-ring: #2563eb;
-
-  /*
-   * Elevation, light. Inverted in kind and not merely in value: a card can
-   * no longer lift by being lighter than a white page, so it lifts on a
-   * soft wide shadow instead, and its border carries a trace of the brand
-   * purple rather than a neutral grey.
-   */
-  --surface-glass: rgba(255, 255, 255, 0.7);
-  --surface-glass-strong: rgba(255, 255, 255, 0.85);
-  --surface-glass-border: rgba(124, 58, 237, 0.12);
-  --shadow-card: 0 10px 40px rgba(15, 23, 42, 0.06);
-  --shadow-lift: 0 18px 50px rgba(15, 23, 42, 0.10);
-
-  --nav-surface: rgba(255, 255, 255, 0.85);
-  --nav-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.10);
-  --menu-surface: rgba(255, 255, 255, 0.95);
-  /* The footer stays dark on both themes — see .theme-invert below. */
-  --footer-surface: #0f172a;
-
-  /* Tint, not glow: roughly half the dark alphas, and nothing additive. */
-  --orb-purple: rgba(124, 58, 237, 0.125);
-  --orb-blue: rgba(37, 99, 235, 0.085);
-
-  --grad-heading: linear-gradient(120deg, #0f172a 0%, #4f46e5 45%, #7c3aed 100%);
-  --grad-heading-solid: #0f172a;
-
-  --shadow-panel: 0 24px 60px -34px rgba(15, 23, 42, 0.16);
-  --shadow-frame: 0 20px 44px -26px rgba(15, 23, 42, 0.14);
-}
-
-/*
- * A dark island inside the light theme.
- *
- * The footer is specified dark on both themes, which makes it the one region
- * where the page ground and the local ground disagree. Rather than teaching
- * its markup a second palette, this re-points the same token names inside the
- * subtree — so every `text-ink/70`, `border-ink/10` and `text-brand-muted`
- * the footer already carries keeps meaning what it meant, and keeps working
- * untouched.
- *
- * The accents are lifted a step from their light-theme values because they
- * are now sitting on #0F172A rather than on white. #7C3AED against that
- * ground is 3.13:1, below AA for the link text it would be used for;
- * #A78BFA is 6.6:1.
- */
-[data-theme='light'] .theme-invert {
-  color-scheme: dark;
-
-  --c-space: 15 23 42;
-  --c-space-deep: 2 6 23;
-  --c-space-raised: 30 41 59;
-
-  --c-indigo: 129 140 248;       /* #818CF8   6.0:1 on #0F172A            */
-  --c-purple: 192 132 252;       /* #C084FC   6.8:1                       */
-  --c-cyan: 34 211 238;          /* #22D3EE   9.9:1                       */
-
-  --c-text: 255 255 255;
-  --c-muted: 203 213 225;        /* #CBD5E1  12.0:1                       */
-  --c-subtle: 148 163 184;       /* #94A3B8   7.0:1                       */
-
-  --c-blue: 96 165 250;          /* #60A5FA   7.0:1                       */
-  --c-violet: 167 139 250;       /* #A78BFA   6.6:1                       */
-  --c-blue-deep: 147 197 253;    /* #93C5FD   9.9:1                       */
-  --c-violet-deep: 196 181 253;  /* #C4B5FD   9.7:1                       */
-
-  --c-ink: 255 255 255;
-
-  --focus-ring: #60a5fa;
-
-  --surface-glass: rgba(255, 255, 255, 0.04);
-  --surface-glass-strong: rgba(255, 255, 255, 0.06);
-  --surface-glass-border: rgba(255, 255, 255, 0.10);
-  --shadow-card: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
-  --shadow-lift: 0 30px 70px -32px rgba(0, 0, 0, 0.9);
-
-  --grad-heading: linear-gradient(120deg, #ffffff 0%, #c7d2fe 42%, #7dd3fc 100%);
-  --grad-heading-solid: #ffffff;
-
-  --shadow-panel: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
-  --shadow-frame: 0 34px 64px -34px rgba(0, 0, 0, 0.8);
-}
-
-/*
- * Legacy aliases.
- *
- * These names predate the token system and are still referenced by a handful
- * of CSS modules and inline styles. Routing them through the channel vars is
- * what stops those call sites from pinning themselves to dark.
- *
- * Two of them had quietly drifted from their Tailwind counterparts while both
- * existed — --space was #0b0e17 against a #16142C `bg-space`, and --cyan was
- * #38bdf8 against a #22D3EE `brand-cyan`. One source closes that. The
- * rendered ground does not move, because the utility was winning on <body>
- * all along.
- *
- * --muted points at --c-subtle rather than --c-muted on purpose: its value
- * was #94A3B8, which is the tertiary step, not the secondary one.
- */
-:root {
-  --space: rgb(var(--c-space));
-  --space-deep: rgb(var(--c-space-deep));
-  --space-raised: rgb(var(--c-space-raised));
-  --indigo: rgb(var(--c-indigo));
-  --purple: rgb(var(--c-purple));
-  --cyan: rgb(var(--c-cyan));
-  --text: rgb(var(--c-text));
-  --muted: rgb(var(--c-subtle));
-  --brand-blue: rgb(var(--c-blue));
-  --brand-blue-deep: rgb(var(--c-blue-deep));
-  --brand-violet: rgb(var(--c-violet));
-  --brand-violet-deep: rgb(var(--c-violet-deep));
 }
 
 /*
@@ -1294,14 +1106,14 @@ textarea:focus-visible,
     90deg,
     var(--accent, #6366f1) 0%,
     var(--accent, #6366f1) var(--fill, 50%),
-    rgb(var(--c-ink) / 0.09) var(--fill, 50%),
-    rgb(var(--c-ink) / 0.09) 100%
+    rgba(255, 255, 255, 0.09) var(--fill, 50%),
+    rgba(255, 255, 255, 0.09) 100%
   );
 }
 .roi-range::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: rgb(var(--c-ink) / 0.09);
+  background: rgba(255, 255, 255, 0.09);
 }
 .roi-range::-moz-range-progress {
   height: 6px;
@@ -1342,7 +1154,7 @@ textarea:focus-visible,
   background-position: right 14px center;
   background-size: 18px;
 }
-.roi-select option { background-color: rgb(var(--c-space)); color: rgb(var(--c-text)); }
+.roi-select option { background-color: #16142c; color: #ffffff; }
 
 /* Steam off a coffee cup — rises, drifts, thins out. */
 @keyframes steam-rise {
@@ -1487,13 +1299,13 @@ textarea:autofill {
   font-size: 0.8125rem;
   line-height: 1.9;
   letter-spacing: -0.005em;
-  color: rgb(var(--c-ink) / 0.62);
+  color: rgba(255, 255, 255, 0.62);
   white-space: nowrap;
 }
 
 .flow__arrow {
   margin: 0 8px;
-  color: rgb(var(--c-ink) / 0.24);
+  color: rgba(255, 255, 255, 0.24);
   transition: color 240ms cubic-bezier(.22, .61, .36, 1);
 }
 
@@ -1517,7 +1329,7 @@ textarea:autofill {
 /* ---------------------------------------------------------------------- */
 
 .ind-card {
-  border-color: rgb(var(--c-ink) / 0.07);
+  border-color: rgba(255, 255, 255, 0.07);
   background-color: rgba(0, 0, 0, 0.28);
   transition: transform 240ms cubic-bezier(.22, .61, .36, 1),
               border-color 240ms cubic-bezier(.22, .61, .36, 1),
@@ -1546,18 +1358,18 @@ textarea:autofill {
 @media (hover: hover) {
   .ind-card:hover {
     transform: translateY(-3px);
-    border-color: rgb(var(--c-ink) / 0.16);
+    border-color: rgba(255, 255, 255, 0.16);
     background-color: rgba(0, 0, 0, 0.36);
   }
   .ind-card:hover .ind-card__media { opacity: 0.15; }
-  .ind-card:hover .flow__arrow { color: rgb(var(--c-ink) / 0.5); }
-  .ind-card:hover .ind-card__go { color: rgb(var(--c-ink) / 0.92); }
+  .ind-card:hover .flow__arrow { color: rgba(255, 255, 255, 0.5); }
+  .ind-card:hover .ind-card__go { color: rgba(255, 255, 255, 0.92); }
   .ind-card:hover .ind-card__go-arrow { transform: translateX(4px); }
 }
 
 .ind-card:focus-visible {
   transform: translateY(-3px);
-  border-color: rgb(var(--c-ink) / 0.16);
+  border-color: rgba(255, 255, 255, 0.16);
   background-color: rgba(0, 0, 0, 0.36);
   /* The global ring rounds itself to 4px, which cuts the corners off a card
      built on a 14px radius. Colour and width stay the site's. */
@@ -1565,8 +1377,8 @@ textarea:autofill {
   outline-offset: 4px;
 }
 .ind-card:focus-visible .ind-card__media { opacity: 0.15; }
-.ind-card:focus-visible .flow__arrow { color: rgb(var(--c-ink) / 0.5); }
-.ind-card:focus-visible .ind-card__go { color: rgb(var(--c-ink) / 0.92); }
+.ind-card:focus-visible .flow__arrow { color: rgba(255, 255, 255, 0.5); }
+.ind-card:focus-visible .ind-card__go { color: rgba(255, 255, 255, 0.92); }
 .ind-card:focus-visible .ind-card__go-arrow { transform: translateX(4px); }
 
 /* ---------------------------------------------------------------------- */
@@ -1591,7 +1403,7 @@ textarea:autofill {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.32em;
-  color: rgb(var(--c-ink) / 0.38);
+  color: rgba(255, 255, 255, 0.38);
 }
 
 /*
@@ -1608,7 +1420,7 @@ textarea:autofill {
   grid-template-columns: 1fr;
   gap: 28px;
   padding: 36px 0;
-  border-top: 1px solid rgb(var(--c-ink) / 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   transition: border-color 240ms cubic-bezier(.22, .61, .36, 1);
 }
 
@@ -1626,7 +1438,7 @@ textarea:autofill {
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.14em;
-  color: rgb(var(--c-ink) / 0.28);
+  color: rgba(255, 255, 255, 0.28);
 }
 
 .work-row__title {
@@ -1641,7 +1453,7 @@ textarea:autofill {
 .work-row__industry {
   margin-top: 6px;
   font-size: 0.8125rem;
-  color: rgb(var(--c-ink) / 0.42);
+  color: rgba(255, 255, 255, 0.42);
 }
 
 .work-row__desc {
@@ -1680,7 +1492,7 @@ textarea:autofill {
   margin-top: 8px;
   font-size: 0.8125rem;
   line-height: 1.5;
-  color: rgb(var(--c-ink) / 0.45);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 /* In-development rows carry this instead of a metric. Sized as a label
@@ -1688,7 +1500,7 @@ textarea:autofill {
 .work-row__phase {
   font-size: 0.8125rem;
   line-height: 1.5;
-  color: rgb(var(--c-ink) / 0.45);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .work-row__go {
@@ -1698,7 +1510,7 @@ textarea:autofill {
   margin-top: 22px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: rgb(var(--c-ink) / 0.55);
+  color: rgba(255, 255, 255, 0.55);
   transition: color 240ms cubic-bezier(.22, .61, .36, 1);
 }
 
@@ -1714,23 +1526,23 @@ textarea:autofill {
  * the keyboard equivalents sit outside the gate.
  */
 @media (hover: hover) {
-  .work-row--link:hover { border-color: rgb(var(--c-ink) / 0.14); }
+  .work-row--link:hover { border-color: rgba(255, 255, 255, 0.14); }
   .work-row--link:hover .work-row__title { transform: translateX(3px); }
   .work-row--link:hover .work-row__metric { color: #ffffff; }
-  .work-row--link:hover .work-row__go { color: rgb(var(--c-ink) / 0.95); }
+  .work-row--link:hover .work-row__go { color: rgba(255, 255, 255, 0.95); }
   .work-row--link:hover .work-row__go-arrow { transform: translateX(4px); }
-  .work-row--link:hover .flow__arrow { color: rgb(var(--c-ink) / 0.5); }
+  .work-row--link:hover .flow__arrow { color: rgba(255, 255, 255, 0.5); }
 }
 
 .work-row--link:focus-visible {
-  border-color: rgb(var(--c-ink) / 0.14);
+  border-color: rgba(255, 255, 255, 0.14);
   border-radius: 6px;
   outline-offset: 6px;
 }
 .work-row--link:focus-visible .work-row__title { transform: translateX(3px); }
-.work-row--link:focus-visible .work-row__go { color: rgb(var(--c-ink) / 0.95); }
+.work-row--link:focus-visible .work-row__go { color: rgba(255, 255, 255, 0.95); }
 .work-row--link:focus-visible .work-row__go-arrow { transform: translateX(4px); }
-.work-row--link:focus-visible .flow__arrow { color: rgb(var(--c-ink) / 0.5); }
+.work-row--link:focus-visible .flow__arrow { color: rgba(255, 255, 255, 0.5); }
 
 /* ---------------------------------------------------------------------- */
 /* Buttons — the site's one primary treatment                              */
@@ -1815,7 +1627,7 @@ textarea:autofill {
   padding: 0 1.75rem;
   border: none;
   border-radius: 999px;
-  background-color: rgb(var(--c-ink) / 0.04);
+  background-color: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(20px);
   color: #ffffff;
   /* Deliberately none. The brief's double drop-shadow read as a glow, and a
@@ -1873,7 +1685,7 @@ textarea:autofill {
 @media (hover: hover) {
   .btn-primary:hover {
     transform: translateY(var(--btn-lift));
-    background-color: rgb(var(--c-ink) / 0.08);
+    background-color: rgba(255, 255, 255, 0.08);
   }
   .btn-primary:hover::before { opacity: 1; }
 }
@@ -1883,7 +1695,7 @@ textarea:autofill {
    disabled to anyone driving the page from the keyboard. */
 .btn-primary:focus-visible {
   transform: translateY(var(--btn-lift));
-  background-color: rgb(var(--c-ink) / 0.08);
+  background-color: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   outline-offset: 4px;
 }
@@ -1904,7 +1716,7 @@ textarea:autofill {
   .btn-primary:disabled:hover,
   .btn-primary[aria-disabled='true']:hover {
     transform: translateY(0);
-    background-color: rgb(var(--c-ink) / 0.04);
+    background-color: rgba(255, 255, 255, 0.04);
   }
   .btn-primary:disabled:hover::before,
   .btn-primary[aria-disabled='true']:hover::before { opacity: 0.9; }
@@ -1927,10 +1739,10 @@ textarea:autofill {
 .btn-secondary,
 .btn-outline {
   padding: 0 1.625rem;
-  border: 1px solid rgb(var(--c-ink) / 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  background-color: rgb(var(--c-ink) / 0.04);
-  color: rgb(var(--c-text));
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
   backdrop-filter: blur(20px);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -1938,15 +1750,15 @@ textarea:autofill {
 @media (hover: hover) {
   .btn-secondary:hover,
   .btn-outline:hover {
-    background-color: rgb(var(--c-ink) / 0.08);
-    border-color: rgb(var(--c-ink) / 0.25);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 }
 
 .btn-secondary:focus-visible,
 .btn-outline:focus-visible {
-  background-color: rgb(var(--c-ink) / 0.08);
-  border-color: rgb(var(--c-ink) / 0.25);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
   border-radius: 999px;
   outline-offset: 4px;
 }
@@ -1954,21 +1766,21 @@ textarea:autofill {
 /* The tertiary: a bare text link, for the quiet second action in a row that
    already has a filled primary. No fill, so nothing to restyle here. */
 .btn-ghost {
-  color: rgb(var(--c-ink) / 0.55);
+  color: rgba(255, 255, 255, 0.55);
   transition: color 0.3s ease;
 }
 
 .btn-arrow { transition: transform 220ms cubic-bezier(.22, .61, .36, 1); }
 
 @media (hover: hover) {
-  .btn-ghost:hover { color: rgb(var(--c-ink) / 0.95); }
+  .btn-ghost:hover { color: rgba(255, 255, 255, 0.95); }
   .btn-primary:hover .btn-arrow,
   .btn-secondary:hover .btn-arrow,
   .btn-ghost:hover .btn-arrow,
   .btn-outline:hover .btn-arrow { transform: translateX(4px); }
 }
 
-.btn-ghost:focus-visible { color: rgb(var(--c-ink) / 0.95); }
+.btn-ghost:focus-visible { color: rgba(255, 255, 255, 0.95); }
 .btn-primary:focus-visible .btn-arrow,
 .btn-secondary:focus-visible .btn-arrow,
 .btn-ghost:focus-visible .btn-arrow,
@@ -2094,7 +1906,7 @@ textarea:autofill {
 .cmark {
   display: block;
   white-space: nowrap;
-  color: rgb(var(--c-ink) / 0.74);
+  color: rgba(255, 255, 255, 0.74);
   transition:
     color 300ms cubic-bezier(0.22, 0.61, 0.36, 1),
     opacity 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -2364,8 +2176,8 @@ a.cmark { cursor: pointer; }
 .wf-card {
   height: 100%;
   border-radius: 16px;
-  border: 1px solid rgb(var(--c-ink) / 0.08);
-  background: rgb(var(--c-ink) / 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(6px);
   box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.8);
   transition: transform 300ms cubic-bezier(.22, .61, .36, 1),
@@ -2379,7 +2191,7 @@ a.cmark { cursor: pointer; }
 .wf-item:hover .wf-card {
   transform: translateY(-4px);
   border-color: rgba(34, 211, 238, 0.42);
-  background: rgb(var(--c-ink) / 0.055);
+  background: rgba(255, 255, 255, 0.055);
   box-shadow: 0 20px 44px -22px rgba(34, 211, 238, 0.4);
 }
 .wf-item:hover .wf-icon { transform: rotate(3deg); }
@@ -2401,353 +2213,3 @@ a.cmark { cursor: pointer; }
   92%  { opacity: 1; }
   100% { transform: translateY(1700%); opacity: 0; }
 }
-
-/* ====================================================================== */
-/* Light theme — the cases that differ in kind, not merely in value        */
-/*                                                                         */
-/* Almost nothing needs to be here. A token that swaps by itself is the    */
-/* better tool, and the palette above already carries several hundred call */
-/* sites across without a single override. What lands in this block is the */
-/* short list of treatments whose *mechanism* is wrong on a white ground:  */
-/* a ring that should be a fill, a glow that should be a shadow, a filter  */
-/* that inverts the wrong way, a plate made of black.                      */
-/* ====================================================================== */
-
-/* ---------------------------------------------------------------------- */
-/* The primary button                                                      */
-/*                                                                         */
-/* On dark it is glass with a gradient rim: 4% white, and the brand blue    */
-/* into violet surviving only as a masked 1px edge. That treatment needs a  */
-/* dark ground to sit on — the glass has nothing to hold back on white, and */
-/* a 1px rim around a white pill is not a call to action.                   */
-/*                                                                         */
-/* Light fills it instead. Same gradient, same angle, now the face rather   */
-/* than the edge, and ::before is switched off because a rim drawn under a  */
-/* filled face is invisible work.                                           */
-/* ---------------------------------------------------------------------- */
-[data-theme='light'] .btn-primary {
-  background-color: transparent;
-  background-image: linear-gradient(
-    135deg,
-    rgb(var(--c-blue)) 0%,
-    rgb(var(--c-violet)) 100%
-  );
-  color: #ffffff;
-  /* A grounding hairline plus one soft brand-tinted throw. Not a glow —
-     a glow on white reads as a rendering artefact rather than as depth. */
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08),
-              0 8px 24px -12px rgba(37, 99, 235, 0.45);
-  transition: background-image 0.3s ease, box-shadow 0.3s ease,
-              transform 0.3s ease;
-}
-[data-theme='light'] .btn-primary::before { opacity: 0; }
-
-@media (hover: hover) {
-  [data-theme='light'] .btn-primary:hover {
-    background-color: transparent;
-    background-image: linear-gradient(
-      135deg,
-      rgb(var(--c-blue-deep)) 0%,
-      rgb(var(--c-violet-deep)) 100%
-    );
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.10),
-                0 14px 32px -14px rgba(37, 99, 235, 0.55);
-  }
-  [data-theme='light'] .btn-primary:hover::before { opacity: 0; }
-}
-
-[data-theme='light'] .btn-primary:focus-visible {
-  background-color: transparent;
-  background-image: linear-gradient(
-    135deg,
-    rgb(var(--c-blue-deep)) 0%,
-    rgb(var(--c-violet-deep)) 100%
-  );
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.10),
-              0 14px 32px -14px rgba(37, 99, 235, 0.55);
-}
-[data-theme='light'] .btn-primary:focus-visible::before { opacity: 0; }
-
-@media (hover: hover) {
-  [data-theme='light'] .btn-primary:disabled:hover,
-  [data-theme='light'] .btn-primary[aria-disabled='true']:hover {
-    background-color: transparent;
-    background-image: linear-gradient(
-      135deg,
-      rgb(var(--c-blue)) 0%,
-      rgb(var(--c-violet)) 100%
-    );
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08),
-                0 8px 24px -12px rgba(37, 99, 235, 0.45);
-  }
-}
-
-/* ---------------------------------------------------------------------- */
-/* The secondary                                                           */
-/*                                                                         */
-/* `ink` at 4% over white is a plate you have to look for. On a white page  */
-/* the second action wants a real edge instead: white face, a slate border  */
-/* that is visible without competing, and the page's own grey on hover.     */
-/* ---------------------------------------------------------------------- */
-[data-theme='light'] .btn-secondary,
-[data-theme='light'] .btn-outline {
-  background-color: #ffffff;
-  border-color: #cbd5e1;
-  color: rgb(var(--c-text));
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-@media (hover: hover) {
-  [data-theme='light'] .btn-secondary:hover,
-  [data-theme='light'] .btn-outline:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
-  }
-}
-
-[data-theme='light'] .btn-secondary:focus-visible,
-[data-theme='light'] .btn-outline:focus-visible {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-}
-
-/*
- * The tertiary. `ink` at 55% lands on #838890 over white — 3.9:1, which is
- * under AA for what is, in the end, a text link. The secondary text step is
- * 7.5:1 and reads as the same weight of quiet.
- */
-[data-theme='light'] .btn-ghost { color: rgb(var(--c-muted)); }
-@media (hover: hover) {
-  [data-theme='light'] .btn-ghost:hover { color: rgb(var(--c-text)); }
-}
-[data-theme='light'] .btn-ghost:focus-visible { color: rgb(var(--c-text)); }
-
-/* ---------------------------------------------------------------------- */
-/* Autofill                                                                */
-/*                                                                         */
-/* The dark rules above are `!important` and pin an inset shadow the width  */
-/* of the field — necessary, because Chrome's autofill wash cannot be       */
-/* overridden any other way. That makes them the one place on the site that */
-/* a token cannot reach, so light needs its own copy at equal weight.       */
-/* ---------------------------------------------------------------------- */
-[data-theme='light'] input:-webkit-autofill,
-[data-theme='light'] input:-webkit-autofill:hover,
-[data-theme='light'] input:-webkit-autofill:focus,
-[data-theme='light'] input:-webkit-autofill:active,
-[data-theme='light'] textarea:-webkit-autofill,
-[data-theme='light'] textarea:-webkit-autofill:hover,
-[data-theme='light'] textarea:-webkit-autofill:focus,
-[data-theme='light'] select:-webkit-autofill,
-[data-theme='light'] select:-webkit-autofill:hover,
-[data-theme='light'] select:-webkit-autofill:focus {
-  -webkit-text-fill-color: #0f172a;
-  -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
-  box-shadow: 0 0 0 1000px #f8fafc inset !important;
-  caret-color: #0f172a;
-}
-
-[data-theme='light'] input:autofill,
-[data-theme='light'] textarea:autofill {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-/* ---------------------------------------------------------------------- */
-/* Industry cards                                                          */
-/*                                                                         */
-/* The dark plate is a wash of *black* on purpose — the particle field runs */
-/* behind the grid and the card knocks it back under the type without       */
-/* hiding it in the gaps. On white there is nothing to knock back, and 28%  */
-/* black would be a grey slab, so the plate inverts to the glass surface    */
-/* and picks up the shadow that carries elevation here.                     */
-/* ---------------------------------------------------------------------- */
-[data-theme='light'] .ind-card {
-  background-color: var(--surface-glass);
-  border-color: var(--surface-glass-border);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-card);
-  transition: transform 240ms cubic-bezier(.22, .61, .36, 1),
-              border-color 240ms cubic-bezier(.22, .61, .36, 1),
-              background-color 240ms cubic-bezier(.22, .61, .36, 1),
-              box-shadow 240ms cubic-bezier(.22, .61, .36, 1);
-}
-
-@media (hover: hover) {
-  [data-theme='light'] .ind-card:hover {
-    background-color: var(--surface-glass-strong);
-    border-color: rgba(124, 58, 237, 0.28);
-    box-shadow: var(--shadow-lift);
-  }
-}
-
-[data-theme='light'] .ind-card:focus-visible {
-  background-color: var(--surface-glass-strong);
-  border-color: rgba(124, 58, 237, 0.28);
-  box-shadow: var(--shadow-lift);
-}
-
-/*
- * The sector photograph. At 9% over black it is a suggestion; at 9% over
- * white it is nothing at all. Lifted slightly and pulled back in contrast so
- * it stays a texture rather than becoming a picture.
- */
-[data-theme='light'] .ind-card__media {
-  opacity: 0.13;
-  filter: grayscale(1) contrast(0.8);
-}
-@media (hover: hover) {
-  [data-theme='light'] .ind-card:hover .ind-card__media { opacity: 0.2; }
-}
-[data-theme='light'] .ind-card:focus-visible .ind-card__media { opacity: 0.2; }
-
-/* The workflow card's throw is tuned against a near-black page. */
-[data-theme='light'] .wf-card {
-  box-shadow: var(--shadow-card);
-}
-
-/* ---------------------------------------------------------------------- */
-/* Client wordmarks                                                        */
-/*                                                                         */
-/* `brightness(0) invert(1)` crushes any logo to black and then flips it to */
-/* white — the one filter on the site that is *defined* by the ground it    */
-/* sits on. Light keeps the crush and drops the flip.                       */
-/* ---------------------------------------------------------------------- */
-[data-theme='light'] .cmark-logo {
-  filter: grayscale(1) brightness(0);
-  opacity: 0.62;
-}
-
-/* ---------------------------------------------------------------------- */
-/* Ambient depth                                                           */
-/*                                                                         */
-/* Two blurred orbs and nothing else. Attach to any `position: relative`    */
-/* section that needs the page to stop feeling flat; it paints behind its   */
-/* content, ignores the pointer, and is inert under reduced-transparency    */
-/* because it never moves.                                                  */
-/*                                                                         */
-/* The alphas are deliberately at the edge of visible. Anything stronger    */
-/* stops being depth and starts being a background colour, which is what    */
-/* the section rhythm is for.                                               */
-/* ---------------------------------------------------------------------- */
-.ambient-orbs { position: relative; isolation: isolate; }
-
-.ambient-orbs::before,
-.ambient-orbs::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  border-radius: 9999px;
-  pointer-events: none;
-}
-
-.ambient-orbs::before {
-  width: min(1100px, 90vw);
-  aspect-ratio: 1;
-  top: -30%;
-  left: -18%;
-  background: radial-gradient(circle, var(--orb-purple) 0%, transparent 68%);
-  filter: blur(60px);
-}
-
-.ambient-orbs::after {
-  width: min(700px, 70vw);
-  aspect-ratio: 1;
-  right: -14%;
-  bottom: -24%;
-  background: radial-gradient(circle, var(--orb-blue) 0%, transparent 66%);
-  filter: blur(50px);
-}
-
-/* ---------------------------------------------------------------------- */
-/* Card surface                                                            */
-/*                                                                         */
-/* One class for the glassmorphism the light spec asks for, expressed in    */
-/* tokens so the dark theme gets its own version of the same idea rather    */
-/* than a light card in a dark page. Use it where a component would         */
-/* otherwise hand-roll `bg-ink/[0.04] border-ink/10`.                        */
-/* ---------------------------------------------------------------------- */
-.surface-card {
-  background-color: var(--surface-glass);
-  border: 1px solid var(--surface-glass-border);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-card);
-  transition: background-color 300ms cubic-bezier(.22, .61, .36, 1),
-              border-color 300ms cubic-bezier(.22, .61, .36, 1),
-              box-shadow 300ms cubic-bezier(.22, .61, .36, 1);
-}
-
-@media (hover: hover) {
-  .surface-card--interactive:hover {
-    background-color: var(--surface-glass-strong);
-    box-shadow: var(--shadow-lift);
-  }
-}
-
-/* ---------------------------------------------------------------------- */
-/* Section rhythm                                                          */
-/*                                                                         */
-/* Light alternates white against #F8FAFC so a long page reads as bands     */
-/* rather than as one sheet. Dark has never needed that — the particle      */
-/* field is doing the same job — so on dark these resolve to the ground     */
-/* itself and change nothing.                                               */
-/* ---------------------------------------------------------------------- */
-.section-alt,
-.section-alt-strong { position: relative; }
-
-/*
- * Painted by a pseudo-element rather than by background-color, because most
- * of these sections carry their own max-width — HomeProductsBlock is capped
- * at 1440 — and a background on the element itself would produce a centred
- * stripe rather than a band. 100vw off the centre line is edge-to-edge
- * whatever the section is sized to. Safe against a horizontal scrollbar
- * because <body> is overflow-x-hidden.
- */
-.section-alt::before,
-.section-alt-strong::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.section-alt::before { background-color: rgb(var(--c-space-raised)); }
-.section-alt-strong::before { background-color: rgb(var(--c-space-deep)); }
-
-/*
- * The deepest band is the one place the tertiary text step stops working:
- * #64748B on #F1F5F9 measures 4.34:1, just under AA, where the same colour on
- * white is 4.76:1. Rather than darkening the band or the token everywhere,
- * tertiary is promoted to the secondary step inside it — 6.9:1, and visually
- * still the quiet one next to #0F172A.
- */
-[data-theme='light'] .section-alt-strong { --c-subtle: 71 85 105; }
-
-/* Dark has never needed the rhythm — the particle field is doing that job —
-   so the band is simply absent there. */
-[data-theme='dark'] .section-alt::before,
-[data-theme='dark'] .section-alt-strong::before { display: none; }
-
-/*
- * Navigation links, light only.
- *
- * The spec sends these to the brand violet on hover. Dark keeps sending them
- * to white, and that is not an oversight: #8B5CF6 against the page ground is
- * 4.24:1, which is why they went to white there to begin with. On #FFFFFF the
- * same family measures 5.70:1 and the spec is free to have what it asked for.
- */
-[data-theme='light'] .nav-link:hover { color: rgb(var(--c-violet)); }
-
-/*
- * Insight-card placeholder plates.
- *
- * CoverImage renders both ramps onto the element as custom properties and
- * this picks which one paints. Doing it here rather than in the component
- * keeps the card free of a theme subscription — there can be a dozen of them
- * on /about — and gets the right plate into the server-rendered frame.
- */
-[data-theme='light'] .cover-plate { --cover-plate: var(--cover-light); }

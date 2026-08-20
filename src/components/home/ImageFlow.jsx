@@ -377,7 +377,7 @@ export default function ImageFlow() {
       /* clip rather than hidden: it stops the outermost frames pushing the
          page sideways without creating a scroll container, and unlike hidden
          it leaves the vertical axis genuinely visible. */
-      className="section-alt relative py-20 md:py-28 [overflow-x:clip]"
+      className="relative py-20 md:py-28 [overflow-x:clip]"
     >
       <div className="mx-auto max-w-[1400px] px-6">
         <div

@@ -6,8 +6,6 @@ import { SERVICE_EXPERIENCE } from '@/data/serviceExperience';
 import { STATE_ACCENT } from './VisualizationStates';
 import { useReducedMotion } from '@/hooks/useMediaQuery';
 import { BACKGROUND_TINT_EVENT } from '@/components/three/SiteBackground';
-import useTheme from '@/hooks/useTheme';
-import { resolveCssColor } from '@/lib/theme';
 
 const NAV_OFFSET = 72;
 // Breathing room between the sticky navbar and the pinned rail. The reference
@@ -47,24 +45,13 @@ export default function PinnedExperience() {
   }, []);
 
   const activeService = SERVICE_EXPERIENCE[active] ?? SERVICE_EXPERIENCE[0];
-  const accent = STATE_ACCENT[activeService.visual] || 'rgb(var(--c-cyan))';
-
-  /*
-   * The accent is a token expression, and its destination is WebGL — which is
-   * outside the cascade and cannot read one. Resolved to a hex here, against
-   * the live theme, and re-resolved when the theme changes: the same token
-   * names a different colour in each palette, so a value captured under dark
-   * would keep tinting the field long after the page went white.
-   */
-  const { theme } = useTheme();
+  const accent = STATE_ACCENT[activeService.visual] || '#22D3EE';
 
   useEffect(() => {
     window.dispatchEvent(
-      new CustomEvent(BACKGROUND_TINT_EVENT, {
-        detail: { accent: resolveCssColor(accent), energy: reduced ? 0 : 1 },
-      })
+      new CustomEvent(BACKGROUND_TINT_EVENT, { detail: { accent, energy: reduced ? 0 : 1 } })
     );
-  }, [accent, reduced, theme]);
+  }, [accent, reduced]);
   useEffect(() => () => {
     window.dispatchEvent(new CustomEvent(BACKGROUND_TINT_EVENT, { detail: null }));
   }, []);
@@ -92,7 +79,7 @@ export default function PinnedExperience() {
         <span
           aria-hidden="true"
           className="absolute inset-x-0 top-full h-8 pointer-events-none"
-          style={{ background: `linear-gradient(180deg, rgb(var(--c-space) / .85), rgb(var(--c-space) / 0))` }}
+          style={{ background: 'linear-gradient(180deg, rgba(22,20,44,.85), rgba(22,20,44,0))' }}
         />
       </div>
 
@@ -107,7 +94,7 @@ export default function PinnedExperience() {
         <span
           aria-hidden="true"
           className="absolute inset-x-0 top-full h-10 pointer-events-none"
-          style={{ background: `linear-gradient(180deg, rgb(var(--c-space) / .85), rgb(var(--c-space) / 0))` }}
+          style={{ background: 'linear-gradient(180deg, rgba(22,20,44,.85), rgba(22,20,44,0))' }}
         />
       </div>
 

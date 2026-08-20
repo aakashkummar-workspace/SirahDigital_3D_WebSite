@@ -39,7 +39,7 @@ export default function ContactPage() {
     <>
       <section className="mx-auto max-w-6xl px-6 pt-20">
         <Reveal>
-          <span className="block text-fluid-xs font-semibold uppercase tracking-[0.3em] text-ink/35">
+          <span className="block text-fluid-xs font-semibold uppercase tracking-[0.3em] text-white/35">
             Get in touch
           </span>
         </Reveal>
@@ -49,7 +49,7 @@ export default function ContactPage() {
             as="h1"
             text="Let’s discuss your next AI project."
             stagger={45}
-            className="mt-5 max-w-3xl text-fluid-3xl font-bold leading-[1.08] tracking-tight text-ink"
+            className="mt-5 max-w-3xl text-fluid-3xl font-bold leading-[1.08] tracking-tight text-white"
           />
         </Reveal>
 

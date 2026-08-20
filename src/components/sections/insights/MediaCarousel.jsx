@@ -34,9 +34,9 @@ function ArrowButton({ side, onClick, disabled, label }) {
       aria-label={label}
       data-cursor="nav"
       className={`hidden lg:grid absolute top-[42%] -translate-y-1/2 z-10 place-items-center
-        w-12 h-12 rounded-full border border-ink/12 bg-space-deep/80 text-ink/70
+        w-12 h-12 rounded-full border border-white/12 bg-space-deep/80 text-white/70
         transition-all duration-300 ease-brand
-        hover:border-ink/30 hover:text-ink
+        hover:border-white/30 hover:text-white
         disabled:opacity-0 disabled:pointer-events-none
         ${isLeft ? 'left-0 -translate-x-1/2' : 'right-0 translate-x-1/2'}`}
     >
@@ -89,7 +89,7 @@ export default function MediaCarousel({ title, items, exploreUrl }) {
 
   return (
     <section aria-labelledby={headingId}>
-      <h3 id={headingId} className="text-fluid-xl font-semibold tracking-tight text-ink">
+      <h3 id={headingId} className="text-fluid-xl font-semibold tracking-tight text-white">
         {title}
       </h3>
 

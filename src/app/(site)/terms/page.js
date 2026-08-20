@@ -43,13 +43,13 @@ export default function TermsPage() {
       <section className="max-w-3xl mx-auto px-6 py-16">
         <p className="text-sm text-gray-500">
           Last updated {new Date().getFullYear()}. Questions?{' '}
-          <a href={`mailto:${COMPANY.email}`} className="text-brand-blue transition-colors hover:text-ink">{COMPANY.email}</a>
+          <a href={`mailto:${COMPANY.email}`} className="text-brand-blue transition-colors hover:text-white">{COMPANY.email}</a>
         </p>
 
         <div className="mt-12 space-y-10">
           {SECTIONS.map((s) => (
             <div key={s.heading}>
-              <h2 className="text-xl font-bold text-ink">{s.heading}</h2>
+              <h2 className="text-xl font-bold text-white">{s.heading}</h2>
               <p className="mt-3 leading-relaxed text-brand-muted">{s.body}</p>
             </div>
           ))}

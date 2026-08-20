@@ -20,7 +20,7 @@ import { INDUSTRIES } from './industries';
  * neighbouring rail entries never share a colour.
  */
 
-const ACCENTS = ['rgb(var(--c-cyan))', 'rgb(var(--c-indigo))', 'rgb(var(--c-purple))'];
+const ACCENTS = ['#22D3EE', '#6366F1', '#A855F7'];
 
 const INTELLIGENCE = [
   {

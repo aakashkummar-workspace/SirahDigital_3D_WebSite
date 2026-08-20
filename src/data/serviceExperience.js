@@ -79,12 +79,12 @@ export const SERVICE_EXPERIENCE = EXPERIENCE.map((item, i) => {
  * server and client render.
  */
 export const TECHNOLOGIES = [
-  { name: 'Next.js', accent: 'rgb(var(--c-cyan))' },
-  { name: 'OpenAI', accent: 'rgb(var(--c-indigo))' },
-  { name: 'Claude', accent: 'rgb(var(--c-purple))' },
-  { name: 'Gemini', accent: 'rgb(var(--c-cyan))' },
-  { name: 'Supabase', accent: 'rgb(var(--c-indigo))' },
-  { name: 'Docker', accent: 'rgb(var(--c-purple))' },
-  { name: 'WhatsApp', accent: 'rgb(var(--c-cyan))' },
-  { name: 'AWS', accent: 'rgb(var(--c-indigo))' },
+  { name: 'Next.js', accent: '#22D3EE' },
+  { name: 'OpenAI', accent: '#6366F1' },
+  { name: 'Claude', accent: '#A855F7' },
+  { name: 'Gemini', accent: '#22D3EE' },
+  { name: 'Supabase', accent: '#6366F1' },
+  { name: 'Docker', accent: '#A855F7' },
+  { name: 'WhatsApp', accent: '#22D3EE' },
+  { name: 'AWS', accent: '#6366F1' },
 ];

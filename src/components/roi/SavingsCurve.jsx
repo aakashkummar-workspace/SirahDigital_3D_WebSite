@@ -40,10 +40,10 @@ export default function SavingsCurve({ annualBenefit, accent }) {
   return (
     <section aria-labelledby="roi-curve-title" className="min-w-0">
       <div className="flex items-baseline justify-between gap-4">
-        <h3 id="roi-curve-title" className="text-[13px] text-ink/60">
+        <h3 id="roi-curve-title" className="text-[13px] text-white/60">
           Potential savings over 12 months
         </h3>
-        <p className="shrink-0 text-[15px] font-semibold tabular-nums text-ink">
+        <p className="shrink-0 text-[15px] font-semibold tabular-nums text-white">
           {money(annualBenefit)}
         </p>
       </div>
@@ -57,30 +57,30 @@ export default function SavingsCurve({ annualBenefit, accent }) {
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopOpacity="0.16" style={{ stopColor: accent }} />
-            <stop offset="100%" stopOpacity="0" style={{ stopColor: accent }} />
+            <stop offset="0%" stopColor={accent} stopOpacity="0.16" />
+            <stop offset="100%" stopColor={accent} stopOpacity="0" />
           </linearGradient>
         </defs>
 
         {/* Baseline only — no gridlines. It anchors the curve without turning
             the figure into a chart. */}
-        <line x1="0" y1={H} x2={W} y2={H} style={{ stroke: 'rgb(var(--c-ink) / 0.10)' }} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        <line x1="0" y1={H} x2={W} y2={H} stroke="rgba(255,255,255,0.10)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
 
         <path className={s.curveArea} d={area} fill={`url(#${gradientId})`} />
         <path
           className={s.curvePath}
           d={line}
           fill="none"
+          stroke={accent}
           strokeWidth="1.5"
           strokeLinecap="round"
           // Without this the non-uniform viewBox scaling stretches the stroke
           // horizontally and the line reads thicker at the right-hand end.
           vectorEffect="non-scaling-stroke"
-          style={{ stroke: accent }}
         />
       </svg>
 
-      <div className="mt-3 flex items-center justify-between text-[12px] text-ink/35">
+      <div className="mt-3 flex items-center justify-between text-[12px] text-white/35">
         <span>Month 1</span>
         <span>Month 12</span>
       </div>

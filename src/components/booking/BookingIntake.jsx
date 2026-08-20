@@ -116,8 +116,8 @@ export default function BookingIntake() {
 
   if (state === 'done') {
     return (
-      <div className="rounded-xl border border-ink/10 p-6">
-        <p className="text-fluid-base font-medium text-ink">
+      <div className="rounded-xl border border-white/10 p-6">
+        <p className="text-fluid-base font-medium text-white">
           You are booked{form.firstName ? `, ${form.firstName}` : ''}.
         </p>
         <p className="mt-3 max-w-[52ch] text-fluid-sm leading-relaxed text-brand-muted">
@@ -128,7 +128,7 @@ export default function BookingIntake() {
             button that was clicked — so what is shown is what was actually
             written to the calendar. */}
         {confirmed?.startAt && (
-          <p className="mt-4 text-fluid-sm text-ink/55">
+          <p className="mt-4 text-fluid-sm text-white/55">
             {new Intl.DateTimeFormat('en-GB', {
               weekday: 'long', day: 'numeric', month: 'long',
               hour: 'numeric', minute: '2-digit', hour12: true,
@@ -143,13 +143,13 @@ export default function BookingIntake() {
   }
 
   const field =
-    'w-full rounded-xl border border-ink/10 bg-ink/5 px-4 py-3 text-[15px] text-ink ' +
-    'placeholder:text-ink/35 outline-none transition-colors focus:border-brand-blue';
+    'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[15px] text-white ' +
+    'placeholder:text-white/35 outline-none transition-colors focus:border-brand-blue';
 
   return (
     <form onSubmit={onSubmit} className="max-w-[560px] space-y-8">
       <fieldset className="space-y-4 border-0 p-0">
-        <legend className="mb-4 text-[0.78rem] uppercase tracking-[0.14em] text-ink/40">
+        <legend className="mb-4 text-[0.78rem] uppercase tracking-[0.14em] text-white/40">
           1 · Your details
         </legend>
 
@@ -197,7 +197,7 @@ export default function BookingIntake() {
           />
           {/* Says what the number is for. A required phone field with no stated
               purpose reads as data harvesting and is the field people abandon. */}
-          <p className="mt-2 text-[0.78rem] leading-relaxed text-ink/45">
+          <p className="mt-2 text-[0.78rem] leading-relaxed text-white/45">
             We send your booking confirmation here, a reminder the day before, and the joining link
             an hour before the call.
           </p>
@@ -230,7 +230,7 @@ export default function BookingIntake() {
       </fieldset>
 
       <fieldset className="border-0 p-0">
-        <legend className="mb-4 text-[0.78rem] uppercase tracking-[0.14em] text-ink/40">
+        <legend className="mb-4 text-[0.78rem] uppercase tracking-[0.14em] text-white/40">
           2 · Pick a time
         </legend>
         <SlotPicker
@@ -242,7 +242,7 @@ export default function BookingIntake() {
       </fieldset>
 
       <div className="space-y-4">
-        <label className="flex cursor-pointer items-start gap-3 text-[0.8rem] leading-relaxed text-ink/55">
+        <label className="flex cursor-pointer items-start gap-3 text-[0.8rem] leading-relaxed text-white/55">
           <input
             type="checkbox"
             name="consent"

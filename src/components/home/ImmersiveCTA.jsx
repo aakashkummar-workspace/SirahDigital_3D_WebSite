@@ -23,7 +23,7 @@ export default function ImmersiveCTA() {
     <section
       ref={ref}
       aria-labelledby="cta-title"
-      className="section-alt relative min-h-[45vh] flex flex-col items-center justify-center text-center px-6 py-20 border-t border-ink/10"
+      className="relative min-h-[45vh] flex flex-col items-center justify-center text-center px-6 py-20 border-t border-white/10"
     >
       {/* Copy */}
       <div
@@ -40,12 +40,12 @@ export default function ImmersiveCTA() {
           as="h2"
           text="Ready to automate the busywork?"
           stagger={50}
-          className="text-fluid-3xl font-bold tracking-tight leading-[1.05] text-ink"
+          className="text-fluid-3xl font-bold tracking-tight leading-[1.05] text-white"
         />
 
         <Link
           href="/contact"
-          className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-ink hover:text-brand-blue transition-colors duration-300"
+          className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-white hover:text-brand-blue transition-colors duration-300"
         >
           <span>Book Free Consultation</span>
           <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />

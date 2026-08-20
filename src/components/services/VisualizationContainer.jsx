@@ -38,7 +38,7 @@ export default function VisualizationContainer({
   const reduced = useReducedMotion();
   const uid = useId().replace(/:/g, '');
   const target = STATES[state] || STATES['ai-core'];
-  const accent = STATE_ACCENT[state] || 'rgb(var(--c-indigo))';
+  const accent = STATE_ACCENT[state] || '#6366F1';
 
   const rootRef = useRef(null);
   const coreRef = useRef(null);
@@ -186,7 +186,7 @@ export default function VisualizationContainer({
       <div
         aria-hidden="true"
         className="absolute inset-[2%] -z-10 rounded-full blur-2xl"
-        style={{ background: `radial-gradient(closest-side, rgb(var(--c-space-deep) / .88), rgb(var(--c-space-deep) / 0) 78%)` }}
+        style={{ background: 'radial-gradient(closest-side, rgba(16,14,32,.88), rgba(16,14,32,0) 78%)' }}
       />
 
       <svg
@@ -197,23 +197,29 @@ export default function VisualizationContainer({
       >
         {/* orbit rails — radii morph between configurations */}
         {[0, 1, 2].map((i) => (
-          <circle key={`ring-${i}`} ref={setRing(i)} cx={VIEW / 2} cy={VIEW / 2} r="100" fill="none" strokeWidth="1.6" opacity="0.1" style={{ stroke: "rgb(var(--c-text))" }} />
+          <circle
+            key={`ring-${i}`} ref={setRing(i)} cx={VIEW / 2} cy={VIEW / 2}
+            r="100" fill="none" stroke="#FFFFFF" strokeWidth="1.6" opacity="0.1"
+          />
         ))}
 
         {/* mesh links between neighbouring nodes */}
         {[...Array(NODE_COUNT)].map((_, i) => (
-          <line key={`mesh-${i}`} ref={setMesh(i)} strokeWidth="1.4" opacity="0" style={{ transition: 'stroke 900ms ease', stroke: "rgb(var(--c-text))" }} />
+          <line
+            key={`mesh-${i}`} ref={setMesh(i)}
+            stroke="#FFFFFF" strokeWidth="1.4" opacity="0"
+            style={{ transition: 'stroke 900ms ease' }}
+          />
         ))}
 
         {/* spokes from the core, each carrying a travelling data packet */}
         {[...Array(NODE_COUNT)].map((_, i) => (
           <g key={`spoke-${i}`}>
-            <line ref={setSpoke(i)} strokeOpacity="0.28" strokeWidth="1.6" opacity="0" style={{ transition: 'stroke 900ms ease', stroke: accent }} />
+            <line ref={setSpoke(i)} stroke={accent} strokeOpacity="0.28" strokeWidth="1.6" opacity="0" style={{ transition: 'stroke 900ms ease' }} />
             <line
               ref={setPacket(i)}
-              strokeWidth="2.6" strokeLinecap="round" strokeDasharray="9 120" opacity="0"
+              stroke={accent} strokeWidth="2.6" strokeLinecap="round" strokeDasharray="9 120" opacity="0"
               style={{
-                stroke: accent,
                 transition: 'stroke 900ms ease',
                 animation: alive ? `flow ${2200 + i * 240}ms linear ${i * 160}ms infinite` : undefined,
               }}
@@ -222,7 +228,11 @@ export default function VisualizationContainer({
         ))}
 
         {/* core */}
-        <circle ref={coreRef} cx={VIEW / 2} cy={VIEW / 2} r="46" fillOpacity="0.3" strokeOpacity="0.85" strokeWidth="2" style={{ transition: 'fill 900ms ease, stroke 900ms ease', fill: accent, stroke: accent }} />
+        <circle
+          ref={coreRef} cx={VIEW / 2} cy={VIEW / 2} r="46"
+          fill={accent} fillOpacity="0.3" stroke={accent} strokeOpacity="0.85" strokeWidth="2"
+          style={{ transition: 'fill 900ms ease, stroke 900ms ease' }}
+        />
         {/* the detail that cannot morph, cross-faded over the skeleton */}
         {Object.entries(STATES).map(([key, cfg]) => {
           const on = key === state;
@@ -248,7 +258,10 @@ export default function VisualizationContainer({
 
         {/* nodes, on top of everything they connect */}
         {[...Array(NODE_COUNT)].map((_, i) => (
-          <circle key={`node-${i}`} ref={setNode(i)} opacity="0" style={{ transition: 'fill 900ms ease', fill: target.nodes[i]?.color || accent }}>
+          <circle
+            key={`node-${i}`} ref={setNode(i)} fill={target.nodes[i]?.color || accent} opacity="0"
+            style={{ transition: 'fill 900ms ease' }}
+          >
           </circle>
         ))}
       </svg>

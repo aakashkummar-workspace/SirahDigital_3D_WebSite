@@ -32,13 +32,13 @@ export default function MediaCard({ item, tone = 0 }) {
         className="interactive-hover group block transition-transform duration-500 ease-brand hover:-translate-y-1.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
       >
         {/* the cover — the whole point of the card */}
-        <div className="relative overflow-hidden rounded-[24px] bg-space-raised aspect-[16/10] transition-shadow duration-500 ease-brand group-hover:shadow-lift">
+        <div className="relative overflow-hidden rounded-[24px] bg-space-raised aspect-[16/10] transition-shadow duration-500 ease-brand group-hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,.8)]">
           <CoverImage src={item.cover} alt={item.coverAlt || ''} tone={tone} />
           {/* hairline, not a border: keeps the cover's edge readable against
               the page without drawing a box around every card */}
           <span
             aria-hidden="true"
-            className="absolute inset-0 rounded-[24px] ring-1 ring-inset ring-ink/10"
+            className="absolute inset-0 rounded-[24px] ring-1 ring-inset ring-white/10"
           />
 
           {/*
@@ -62,16 +62,16 @@ export default function MediaCard({ item, tone = 0 }) {
           >
             <span
               className="grid place-items-center w-16 h-16 rounded-full
-                bg-black/45 backdrop-blur-sm ring-1 ring-ink/40
-                shadow-card
+                bg-black/45 backdrop-blur-sm ring-1 ring-white/40
+                shadow-[0_8px_30px_-8px_rgba(0,0,0,.9)]
                 transition-all duration-500 ease-brand
-                group-hover:scale-[1.08] group-hover:bg-black/55 group-hover:ring-ink/70
+                group-hover:scale-[1.08] group-hover:bg-black/55 group-hover:ring-white/70
                 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             >
               {/* Nudged right by 2px: a triangle centred on its bounding box
                   looks left-of-centre inside a circle, because its mass sits
                   toward the flat edge. */}
-              <svg viewBox="0 0 24 24" className="w-6 h-6 translate-x-[2px] fill-ink">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 translate-x-[2px] fill-white">
                 <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.3-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z" />
               </svg>
             </span>
@@ -89,7 +89,7 @@ export default function MediaCard({ item, tone = 0 }) {
          * intended behaviour: the clamp is what keeps one long title from
          * pushing its card taller than the rest of the row.
          */}
-        <p className="mt-5 text-fluid-base font-semibold leading-snug text-ink line-clamp-3">
+        <p className="mt-5 text-fluid-base font-semibold leading-snug text-white line-clamp-3">
           {item.title}
         </p>
       </a>

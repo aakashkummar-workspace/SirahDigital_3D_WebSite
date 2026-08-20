@@ -21,9 +21,9 @@ import { ArrowRightIcon } from '@/components/ui/icons';
  * unreadable at phone width, so it is not simply scaled down.
  */
 
-const LIVE = 'rgb(var(--c-cyan))';    // Highlight — running in production
-const BUILD = 'rgb(var(--c-purple))';   // Secondary Accent — in development
-const CORE = 'rgb(var(--c-indigo))';    // Primary Accent — the core itself
+const LIVE = '#22D3EE';    // Highlight — running in production
+const BUILD = '#A855F7';   // Secondary Accent — in development
+const CORE = '#6366F1';    // Primary Accent — the core itself
 
 const SYSTEMS = [
   ...PRODUCTION_PROJECTS.map((p) => ({
@@ -72,7 +72,7 @@ function Detail({ system }) {
       <p className="text-fluid-xs font-mono uppercase tracking-[0.3em]" style={{ color: system.color }}>
         {system.status} · {system.tech}
       </p>
-      <p className="mt-3 text-fluid-lg font-bold text-ink">{system.title}</p>
+      <p className="mt-3 text-fluid-lg font-bold text-white">{system.title}</p>
       <p className="mt-2 text-fluid-sm font-semibold" style={{ color: system.color }}>{system.outcome}</p>
       <p className="mt-3 text-fluid-sm leading-relaxed text-brand-muted max-w-xl">{system.desc}</p>
     </div>
@@ -111,15 +111,15 @@ export default function MissionControl() {
         <svg viewBox="0 0 900 620" className="absolute inset-0 w-full h-full overflow-visible" aria-hidden="true">
           <defs>
             <radialGradient id={`${uid}-core`}>
-              <stop offset="0%" stopOpacity="0.85" style={{ stopColor: CORE }} />
-              <stop offset="70%" stopOpacity="0.12" style={{ stopColor: CORE }} />
-              <stop offset="100%" stopOpacity="0" style={{ stopColor: CORE }} />
+              <stop offset="0%" stopColor={CORE} stopOpacity="0.85" />
+              <stop offset="70%" stopColor={CORE} stopOpacity="0.12" />
+              <stop offset="100%" stopColor={CORE} stopOpacity="0" />
             </radialGradient>
           </defs>
 
           {/* core aura + rails — sized to sit inside the ring of nodes */}
           {[88, 128, 168].map((r, i) => (
-            <circle key={r} cx={CX} cy={CY} r={r} fill="none" strokeOpacity={0.07 - i * 0.015} style={{ stroke: 'rgb(var(--c-ink))' }} />
+            <circle key={r} cx={CX} cy={CY} r={r} fill="none" stroke="white" strokeOpacity={0.07 - i * 0.015} />
           ))}
 
           {/* connections, with data travelling out to each system */}
@@ -129,15 +129,15 @@ export default function MissionControl() {
             const on = selected === i;
             return (
               <g key={s.slug}>
-                <path d={d} fill="none" strokeOpacity={on ? 0.28 : 0.12} strokeWidth="1.5" style={{ transition: 'stroke-opacity 400ms', stroke: 'rgb(var(--c-ink))' }} />
+                <path d={d} fill="none" stroke="white" strokeOpacity={on ? 0.28 : 0.12} strokeWidth="1.5" style={{ transition: 'stroke-opacity 400ms' }} />
                 <path
                   d={d}
                   fill="none"
+                  stroke={s.color}
                   strokeWidth={on ? 2.5 : 1.8}
                   strokeLinecap="round"
                   strokeDasharray="12 190"
                   style={{
-                    stroke: s.color,
                     animation: active && !reduced ? `flow ${2.8 + i * 0.45}s linear ${i * 0.35}s infinite` : undefined,
                     opacity: active ? 1 : 0,
                     transition: 'opacity 900ms ease, stroke-width 300ms ease',
@@ -148,10 +148,10 @@ export default function MissionControl() {
           })}
 
           {/* the core */}
-          <circle cx={CX} cy={CY} r="62" fillOpacity="0.1" style={{ fill: CORE }} />
-          <circle cx={CX} cy={CY} r="42" fillOpacity="0.22" strokeOpacity="0.55" style={{ fill: CORE, stroke: CORE }} />
-          <text x={CX} y={CY - 4} textAnchor="middle" className="fill-ink font-bold" style={{ fontSize: 17 }}>AI</text>
-          <text x={CX} y={CY + 16} textAnchor="middle" className="fill-ink/60" style={{ fontSize: 12, letterSpacing: 2 }}>CORE</text>
+          <circle cx={CX} cy={CY} r="62" fill={CORE} fillOpacity="0.1" />
+          <circle cx={CX} cy={CY} r="42" fill={CORE} fillOpacity="0.22" stroke={CORE} strokeOpacity="0.55" />
+          <text x={CX} y={CY - 4} textAnchor="middle" className="fill-white font-bold" style={{ fontSize: 17 }}>AI</text>
+          <text x={CX} y={CY + 16} textAnchor="middle" className="fill-white/60" style={{ fontSize: 12, letterSpacing: 2 }}>CORE</text>
         </svg>
 
         {/* System nodes as real buttons, positioned over the stage.
@@ -196,7 +196,7 @@ export default function MissionControl() {
                 </span>
                 <span
                   className="text-fluid-sm font-semibold whitespace-nowrap transition-colors duration-300"
-                  style={{ color: on ? 'rgb(var(--c-text))' : 'rgb(var(--c-muted))' }}
+                  style={{ color: on ? '#FFFFFF' : '#CBD5E1' }}
                 >
                   {s.label}
                 </span>
@@ -215,7 +215,7 @@ export default function MissionControl() {
       {/* ================= Mobile / tablet: tap-to-expand bus ============== */}
       <ul className="lg:hidden mt-14 relative">
         {/* vertical bus the systems hang off */}
-        <span aria-hidden="true" className="absolute left-[13px] top-3 bottom-3 w-px bg-ink/10" />
+        <span aria-hidden="true" className="absolute left-[13px] top-3 bottom-3 w-px bg-white/10" />
         <span
           aria-hidden="true"
           className="absolute left-[13px] top-3 bottom-3 w-px"
@@ -231,7 +231,7 @@ export default function MissionControl() {
             <span className="absolute inset-0 rounded-full blur-md" style={{ background: CORE, opacity: 0.6 }} />
             <span className="relative w-4 h-4 rounded-full" style={{ background: CORE }} />
           </span>
-          <span className="text-fluid-sm font-mono uppercase tracking-[0.3em] text-ink/70">AI Core</span>
+          <span className="text-fluid-sm font-mono uppercase tracking-[0.3em] text-white/70">AI Core</span>
         </li>
 
         {SYSTEMS.map((s, i) => {
@@ -255,7 +255,7 @@ export default function MissionControl() {
                     style={{ width: on ? 15 : 11, height: on ? 15 : 11, background: s.color }}
                   />
                 </span>
-                <span className="flex-1 text-fluid-base font-semibold" style={{ color: on ? 'rgb(var(--c-text))' : 'rgb(var(--c-muted))' }}>
+                <span className="flex-1 text-fluid-base font-semibold" style={{ color: on ? '#FFFFFF' : '#CBD5E1' }}>
                   {s.label}
                 </span>
                 <span
@@ -283,7 +283,7 @@ export default function MissionControl() {
       <div className="mt-14 flex justify-center lg:justify-start">
         <Link
           href="/work"
-          className="inline-flex items-center gap-2 min-h-[44px] px-7 py-3 rounded-full font-medium text-brand-muted hover:text-ink bg-ink/5 hover:bg-ink/10 transition-colors"
+          className="inline-flex items-center gap-2 min-h-[44px] px-7 py-3 rounded-full font-medium text-brand-muted hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
         >
           See the full deployment hub
           <ArrowRightIcon />

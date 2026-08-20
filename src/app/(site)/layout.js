@@ -18,7 +18,7 @@ import ChatWidget from '@/components/layout/ChatWidget';
  */
 export default function SiteLayout({ children }) {
   return (
-    <div className="relative min-h-screen font-sans selection:bg-brand-indigo/30 text-brand-text bg-space transition-colors duration-300 ease-brand">
+    <div className="relative min-h-screen font-sans selection:bg-brand-indigo/30 text-brand-text bg-space">
       {/* First tab stop: jump past the navigation straight to the content. */}
       <a href="#main" className="skip-link">Skip to content</a>
 

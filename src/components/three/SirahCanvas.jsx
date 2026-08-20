@@ -37,49 +37,6 @@ const LOGO_COLOR_TO = '#7e22ce';
 // Lower this to darken the whole mark without touching its hues.
 const COLOR_GAIN = 1.0;
 
-/*
- * The light-theme ramp.
- *
- * On dark the field takes its colour from logo.png itself, and the sampler
- * that reads it is written to *avoid* pale pixels — it scores saturation up
- * and near-white down, so what survives is the azure arrow, the royal blue
- * top, the magenta bowl and the near-black navy foot. That is exactly the
- * right instinct on a #16142C ground and exactly the wrong one on #FFFFFF:
- * the azure end of that spread lands at roughly 1.6:1 against white, and a
- * third of the mark simply disappears.
- *
- * So light does not recolour the sampled values, it replaces them. Four
- * stops walked along the same bottom-left-to-arrow diagonal the flat logo
- * uses, all of them chosen to hold against white. The mark keeps its shape
- * and its direction of travel; only the pigment changes.
- */
-const LIGHT_RAMP = ['#2563EB', '#4F46E5', '#7C3AED', '#9333EA'].map((h) => new THREE.Color(h));
-
-/**
- * Position on the mark -> colour, for the light ramp.
- *
- * `t` is the same diagonal buildLogoGeometry bakes into its vertex colours,
- * so the two treatments agree about which end of the shape is which. The
- * segment lerp is plain rather than eased: four stops across one diagonal is
- * already a short interval, and easing it puts a visible band at each joint.
- */
-function makeBrandRamp(bbox) {
-  const { min, max } = bbox;
-  const spanX = max.x - min.x || 1;
-  const spanY = max.y - min.y || 1;
-  const last = LIGHT_RAMP.length - 1;
-
-  return (x, y, out) => {
-    const tx = (x - min.x) / spanX;
-    const ty = (y - min.y) / spanY;
-    const t = THREE.MathUtils.clamp((tx + (1 - ty)) / 2, 0, 1);
-
-    const f = t * last;
-    const i = Math.min(last - 1, Math.floor(f));
-    return out.copy(LIGHT_RAMP[i]).lerp(LIGHT_RAMP[i + 1], f - i);
-  };
-}
-
 /* ------------------------------------------------------------------ */
 /* Reading the real gradient out of the logo artwork                    */
 /* ------------------------------------------------------------------ */
@@ -211,41 +168,19 @@ export function Sirah3DLogoShape({ darkMode, scale = 0.6 }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Hit testing: is the cursor actually on the mark?                     */
+/* The mark as a particle cloud that opens as the page is scrolled and  */
+/* comes back together on the way up.                                   */
 /* ------------------------------------------------------------------ */
 
-// Standard even-odd test against the traced outline.
-function pointInPolygon(x, y, poly) {
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
-
-// The ribbon is thin, so an exact test feels fussy. Treat "near an edge" as a
-// hit too, which gives the cursor a forgiving margin around the mark.
-function nearPolygon(x, y, poly, margin) {
-  const m2 = margin * margin;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
-    const dx = xj - xi, dy = yj - yi;
-    const len2 = dx * dx + dy * dy || 1e-6;
-    let t = ((x - xi) * dx + (y - yi) * dy) / len2;
-    t = t < 0 ? 0 : t > 1 ? 1 : t;
-    const px = x - (xi + t * dx), py = y - (yi + t * dy);
-    if (px * px + py * py < m2) return true;
-  }
-  return false;
-}
-
-/* ------------------------------------------------------------------ */
-/* The mark as a particle cloud that scatters when the cursor touches   */
-/* it and reassembles when the cursor moves away.                       */
-/* ------------------------------------------------------------------ */
+/*
+ * There were two polygon hit-tests here — pointInPolygon and nearPolygon,
+ * with a TOUCH_MARGIN of 0.35 shape units of forgiveness around the outline —
+ * used to burst the cloud open while the cursor was on the mark. They are
+ * gone, along with the scatter they drove; see the long note in useFrame for
+ * the feedback loop that made hovering the logo judder. Nothing else called
+ * them, so they went with it rather than sitting unreferenced.
+ */
 const LOGO_SCALE = 0.72;     // a touch larger than the mark's original sizing
-const TOUCH_MARGIN = 0.35;   // forgiveness around the ribbon, in shape units
 
 // How far the cloud throws itself when it disperses. Sized to overflow the
 // viewport at the depth it settles to, so the dots reach every corner.
@@ -280,9 +215,8 @@ const BURST_SPAN_MIN = 0.9;
  * scroll position, this says how fast it gets there.
  *
  * Only the scroll-driven opening is slowed. Everything else keeps the
- * original rate — the cursor burst has to feel like a direct response to the
- * pointer, the reassembly on the way back up would read as sluggish if it
- * lagged, and the fixed goals of 'dispersed' and 'assembled' are entrances
+ * original rate — the reassembly on the way back up would read as sluggish if
+ * it lagged, and the fixed goals of 'dispersed' and 'assembled' are entrances
  * rather than gestures.
  */
 const BURST_EASE = 1.1;    // scrolling down, cloud opening
@@ -334,10 +268,6 @@ const SHIMMER_OPACITY = 0.12;
  * slightly less of it behind the headline and this is the whole of that
  * change — no scrim, no gradient, just less of the cloud. */
 const FIELD_OPACITY = 0.88;
-// Light's equivalent. Lower, not higher: on white the particles are the dark
-// element, so they gain contrast from the ground rather than losing it, and
-// the density that read as a cloud on near-black reads as noise here.
-const LIGHT_FIELD_OPACITY = 0.62;
 
 /* Below this the hero stacks and there is no column beside the copy for the
  * mark to sit in. Matches Tailwind's lg, which is where Hero.jsx switches
@@ -352,7 +282,7 @@ const DROP_FRACTION = 0.52;   // of the half-viewport, downward
  *   'assembled' — a section has claimed it; hold the mark together regardless
  *                 of scroll position
  */
-function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0, theme = 'dark' }) {
+function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0 }) {
   const pointsRef = useRef();
   const materialRef = useRef();
   const scatter = useRef(0);          // 0 = assembled, 1 = fully scattered
@@ -362,8 +292,8 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
   // the page, so it needs the whole scroll, not the part the burst uses.
   const scrollFull = useRef(0);
   const ribbon = useRef(0);           // 0 = no band, 1 = solid band
+  // Read only for the lean. It no longer decides whether the cloud opens.
   const pointer = useRef({ x: 0, y: 0, seen: false });
-  const local = useMemo(() => new THREE.Vector3(), []);
   const pixels = useLogoPixels();
 
   // Presentation state for the assembled mark. These are the eased *base*
@@ -415,13 +345,10 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     if (pixels === null) {
       return { positions: new Float32Array(0), targets: null, bursts: null, stagger: null, colors: new Float32Array(0), count: 0 };
     }
-    const isLight = theme === 'light';
-    // The artwork sampler is skipped entirely on light — see LIGHT_RAMP.
-    const sampleArt = isLight ? null : makeLogoSampler(pixels);
+    const sampleArt = makeLogoSampler(pixels);
     const geo = buildLogoGeometry();
     geo.computeBoundingBox();
     const c = geo.boundingBox.getCenter(new THREE.Vector3());
-    const rampArt = isLight ? makeBrandRamp(geo.boundingBox) : null;
 
     // Sampling the geometry's *vertices* would only ever give the outline —
     // the extruded caps are triangulated straight from the contour, so they
@@ -469,12 +396,11 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
       // pos is still in the shape's own coordinates here, which is exactly
       // what LOGO_PX maps back into the artwork.
       if (sampleArt) sampleArt(pos.x, pos.y, col);
-      else if (rampArt) rampArt(pos.x, pos.y, col);
       colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
     }
     geo.dispose();
     return { positions: new Float32Array(targets), targets, bursts, stagger, colors, count: n };
-  }, [pixels, theme]);
+  }, [pixels]);
 
   /**
    * Where each particle goes when the cloud forms the band.
@@ -533,42 +459,60 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     const d = Math.min(delta, 0.05);
     const time = state.clock.elapsedTime;
 
-    // Where is the cursor on the plane the mark sits in?
-    let touching = false;
-    if (pointer.current.seen) {
-      const cam = state.camera;
-      const halfH = Math.tan((cam.fov * Math.PI) / 360) * cam.position.z;
-      const halfW = halfH * (state.size.width / state.size.height);
-      local.set(pointer.current.x * halfW, pointer.current.y * halfH, 0);
-      pts.worldToLocal(local);
-      const sx = local.x / LOGO_SCALE, sy = local.y / LOGO_SCALE;
-      touching = pointInPolygon(sx, sy, LOGO_OUTER) || nearPolygon(sx, sy, LOGO_OUTER, TOUCH_MARGIN);
-    }
-
-    // Eased gently in both directions so it drifts apart rather than snapping.
-    //
-    // In 'scroll' mode whichever wants it more open wins: the cursor sitting
-    // on the mark, or how far down the page you have scrolled. 'assembled'
-    // deliberately ignores both — a section that has claimed the background
-    // is nowhere near the top of the page, so scroll scatter would otherwise
-    // hold the cloud permanently open.
+    /*
+     * Scatter is the scroll's business and nothing else's.
+     *
+     * ── what used to be here, and why it had to go ─────────────────────
+     * The cursor used to burst the cloud open: a hit test against the traced
+     * outline set `touchGoal = 1` while the pointer was on the mark, and the
+     * goal was `Math.max(scrollGoal, touchGoal)`. Held still over the logo
+     * for about a second, the field would judder — stalling, half-opening,
+     * pulling back — rather than settling either way.
+     *
+     * It was a feedback loop, and a tight one. The hit test ran
+     * `pts.worldToLocal()`, but `pts.position`, `.rotation` and `.scale` are
+     * all written at the *end* of this same function, out of `scatter`. So
+     * the test asked "is the cursor on the mark?" against a matrix that
+     * scatter had just moved:
+     *
+     *   cursor on the mark  ->  touching  ->  goal 1  ->  scatter rises
+     *   scatter rising      ->  the mark slides out of the hero slot
+     *                           (offset scales by 1 - s) and retreats
+     *                           (position.z = -s * 3.4)
+     *   mark moved away     ->  not touching  ->  goal 0  ->  scatter falls
+     *   scatter falling     ->  the mark slides back under the cursor  ->
+     *
+     * — and round again, indefinitely, at whatever period the ease implied.
+     * The delay before it showed up was the loop winding up. Two things then
+     * made it read as confusion rather than a clean wobble: the parallax lean
+     * perturbs the same matrix a second time, on its own faster ease, and the
+     * rate below flipped between BURST_EASE and SETTLE_EASE every cycle as
+     * touchGoal flipped, so each half-swing ran at a different speed.
+     *
+     * No threshold or hysteresis fixes that honestly. The hit test is a
+     * function of the thing it controls, and the only stable version of it is
+     * one that does not exist. The cursor keeps its lean — that reads off
+     * `pointer` directly and feeds back into nothing — and the cloud now
+     * opens for exactly one reason, which is the one the page can see.
+     *
+     * Eased gently in both directions so it drifts apart rather than
+     * snapping. 'assembled' ignores the scroll deliberately: a section that
+     * has claimed the background is nowhere near the top of the page, so
+     * scroll scatter would otherwise hold the cloud permanently open.
+     */
     const m = modeRef.current;
     const scrollGoal = scrollScatter.current;
-    const touchGoal = touching ? 1 : 0;
     const goal =
       m === 'dispersed' ? 1
         : m === 'assembled' ? 0
-          : Math.max(scrollGoal, touchGoal);
+          : scrollGoal;
 
     // Slow the opening, but only the part of it the scroll is responsible for.
     //
-    // The three conditions are each load-bearing. 'scroll' mode: the other two
-    // modes are entrances, not gestures. Rising: coming back together on the
-    // way up would read as lag, not weight. And scroll outranking touch is
-    // what keeps the cursor burst sharp — when the pointer is on the mark it
-    // is touchGoal driving the goal, so that case takes the original rate.
-    const scrollOpening =
-      m === 'scroll' && goal > scatter.current && scrollGoal >= touchGoal;
+    // Both conditions are load-bearing. 'scroll' mode: the other two modes are
+    // entrances, not gestures. Rising: coming back together on the way up
+    // would read as lag, not weight.
+    const scrollOpening = m === 'scroll' && goal > scatter.current;
     const rate = scrollOpening ? BURST_EASE : SETTLE_EASE;
 
     scatter.current += (goal - scatter.current) * Math.min(1, d * rate);
@@ -681,12 +625,8 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
       // stays knocked back exactly as the open field always was; brightening it
       // there would be turning up the volume on the wallpaper.
       const lift = m === 'scroll' ? r : 0;
-      // On white the same alpha that reads as a soft cloud reads as grain,
-      // because every particle is now darker than its ground rather than
-      // lighter. Pulled back so the field stays atmosphere behind the copy.
-      const ground = theme === 'light' ? LIGHT_FIELD_OPACITY : FIELD_OPACITY;
       materialRef.current.opacity =
-        ground * (1 - s * 0.55 * (1 - lift)) * (centred ? 0.5 : 1)
+        FIELD_OPACITY * (1 - s * 0.55 * (1 - lift)) * (centred ? 0.5 : 1)
         * (1 + shimmer * SHIMMER_OPACITY);
 
       // Ease toward the active section's accent, or back to neutral white
@@ -797,30 +737,18 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
   );
 }
 
-export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = null, energy = 0, theme = 'dark' }) {
-  const isLight = theme === 'light';
+export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = null, energy = 0 }) {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: 0, pointerEvents: 'none' }}>
       {/* dpr capped at 1.5 — rendering a particle field at a phone's native
           3x costs three times the fill rate for no visible gain. */}
       <Canvas camera={{ position: [0, 0, 9], fov: 45 }} dpr={[1, 1.5]}>
-        {/*
-          * Light lifts the ambient and drops the key.
-          *
-          * On dark the directional at 1.8 is what separates the mark from the
-          * ground. On white there is nothing to separate it from — the ground
-          * is already brighter than any particle — so a hard key only blows
-          * the pale end of the ramp out toward the page and flattens it.
-          * Ambient does the work instead, and the two accent lights come down
-          * with it so they tint rather than wash.
-          */}
-        <ambientLight intensity={isLight ? 0.85 : 0.4} />
-        <directionalLight position={[10, 10, 5]} intensity={isLight ? 0.55 : 1.8} />
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[10, 10, 5]} intensity={1.8} />
 
-        {/* Accent fill. Light swaps the cyan for the brand blue, since the
-            cyan it used to throw is invisible against white anyway. */}
-        <pointLight position={[-6, 4, -5]} intensity={isLight ? 0.3 : 0.7} color={isLight ? '#7C3AED' : '#a855f7'} />
-        <pointLight position={[6, -4, 5]} intensity={isLight ? 0.35 : 1.0} color={isLight ? '#2563EB' : '#06b6d4'} />
+        {/* Dynamic theme accent colored spotlights */}
+        <pointLight position={[-6, 4, -5]} intensity={0.7} color="#a855f7" />
+        <pointLight position={[6, -4, 5]} intensity={1.0} color="#06b6d4" />
 
         {/*
          * No <Environment> here, deliberately.
@@ -842,7 +770,7 @@ export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = nu
          * environment — it gets one from StudioEnvironment where it is
          * actually mounted, in AnimationLab.
          */}
-        <ParticleLogo mode={mode} align={align} tint={tint} energy={energy} theme={theme} />
+        <ParticleLogo mode={mode} align={align} tint={tint} energy={energy} />
       </Canvas>
     </div>
   );

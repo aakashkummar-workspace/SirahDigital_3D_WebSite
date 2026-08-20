@@ -24,7 +24,7 @@ export default function TeamGrid() {
         <AnimatedHeading
           text="Meet Our Brains"
           highlight="Brains"
-          className="text-4xl md:text-5xl font-bold text-ink"
+          className="text-4xl md:text-5xl font-bold text-white"
         />
       </Reveal>
 
@@ -49,16 +49,16 @@ export default function TeamGrid() {
                 src={member.photo}
                 name={member.name}
                 textClass="text-3xl"
-                className="w-28 h-28 md:w-32 md:h-32 rounded-full mx-auto border border-ink/10 transition-colors duration-300 group-hover:border-ink/30"
+                className="w-28 h-28 md:w-32 md:h-32 rounded-full mx-auto border border-white/10 transition-colors duration-300 group-hover:border-white/30"
               />
-              <h4 className="mt-5 text-sm md:text-base font-bold uppercase tracking-wide text-ink">
+              <h4 className="mt-5 text-sm md:text-base font-bold uppercase tracking-wide text-white">
                 {member.name}
               </h4>
               <p className="mt-1 text-sm text-cyan-400">{member.role}</p>
-              <p className="mt-2 text-sm leading-relaxed text-brand-subtle">{member.bio}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{member.bio}</p>
               {/* The affordance. Without it a card that happens to be a link
                   looks exactly like one that is not. */}
-              <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-ink/45 transition-colors duration-300 group-hover:text-ink">
+              <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-white/45 transition-colors duration-300 group-hover:text-white">
                 See the work
                 <span
                   aria-hidden="true"

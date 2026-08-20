@@ -34,7 +34,7 @@ export default function QuoteRow({ quotes }) {
                 >
                   &ldquo;
                 </span>
-                <blockquote className="mt-4 text-[1.0625rem] leading-[1.65] tracking-[-0.01em] text-ink/85">
+                <blockquote className="mt-4 text-[1.0625rem] leading-[1.65] tracking-[-0.01em] text-white/85">
                   {item.quote}
                 </blockquote>
                 <figcaption className="mt-6 text-[0.8125rem] font-medium uppercase tracking-[0.22em] text-brand-muted/60">

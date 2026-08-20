@@ -11,10 +11,10 @@ export default function IndustryGrid({ limit }) {
         <Reveal key={niche.slug} delay={(index % 3) * 60}>
           <div
             id={niche.slug}
-            className="py-6 border-b border-ink/10 scroll-mt-28 transition-colors duration-300 hover:border-ink/20"
+            className="py-6 border-b border-white/10 scroll-mt-28 transition-colors duration-300 hover:border-white/20"
           >
-            <h3 className="text-xl font-bold text-ink">{niche.title}</h3>
-            <p className="mt-2 text-sm md:text-base leading-relaxed text-brand-subtle max-w-3xl">{niche.desc}</p>
+            <h3 className="text-xl font-bold text-white">{niche.title}</h3>
+            <p className="mt-2 text-sm md:text-base leading-relaxed text-slate-400 max-w-3xl">{niche.desc}</p>
           </div>
         </Reveal>
       ))}

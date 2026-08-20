@@ -47,7 +47,7 @@ export default function BookPage() {
     <section className="mx-auto max-w-[880px] px-6 py-20 md:py-28">
       <header className="max-w-[34ch]">
         <h1
-          className="font-semibold leading-[1.05] tracking-tight text-ink"
+          className="font-semibold leading-[1.05] tracking-tight text-white"
           style={{ fontSize: 'clamp(2rem, 1.4rem + 2.6vw, 3rem)' }}
         >
           Book a free consultation.

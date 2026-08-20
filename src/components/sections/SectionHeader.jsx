@@ -35,7 +35,7 @@ export function PageHeader({ eyebrow, title, highlight, subtitle }) {
           text={title}
           highlight={highlight}
           stagger={45}
-          className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-ink"
+          className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white"
         />
       </Reveal>
       {subtitle && (
