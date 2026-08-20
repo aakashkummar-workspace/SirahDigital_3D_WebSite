@@ -25,6 +25,26 @@ import { SOCIALS } from "@/data/socials";
  * is what kept it out for so long.
  */
 
+/**
+ * Theme boot — runs before first paint, ahead of every bundle.
+ *
+ * Without this the server would emit its default theme, the page would paint
+ * in it, and the toggle's stored value would only land once React hydrated:
+ * a visible flash of the wrong theme on every navigation-free load. The
+ * script is inline and synchronous for exactly that reason — a module, a
+ * defer, or anything React-driven is already too late.
+ *
+ * Precedence matches resolveTheme() in lib/theme.js: an explicit stored
+ * choice, then the OS preference, then dark as the brand default. The key and
+ * the attribute name are restated as literals rather than imported because
+ * nothing can be imported at this point in the document.
+ *
+ * The try/catch is not defensive padding: reading localStorage *throws* in
+ * Safari's private mode rather than returning null, and an uncaught throw
+ * here would take out the whole inline block and leave <html> unset.
+ */
+const THEME_BOOT = `(function(){try{var k='sirah-theme',v=null;try{v=localStorage.getItem(k)}catch(e){}var t=(v==='light'||v==='dark')?v:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');var r=document.documentElement;r.setAttribute('data-theme',t);r.style.colorScheme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#FFFFFF':'#16142C')}catch(e){}})();`;
+
 export const metadata = {
   // metadataBase lets every page declare a relative canonical and lets OG
   // image paths resolve to absolute URLs.
@@ -44,8 +64,23 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    /*
+     * data-theme is emitted as the default and then corrected in place by
+     * THEME_BOOT below. React re-reads <html>'s attributes at hydration and
+     * finds one it did not write, hence suppressHydrationWarning — it is
+     * scoped to this element only and does not extend to the tree inside.
+     */
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
+        {/* Must be the first thing in the document that executes. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+        {/*
+          Repaints the mobile browser chrome to match the page. The value
+          here is only the pre-boot default; THEME_BOOT and applyTheme()
+          both rewrite it, so the tag has to exist before either runs.
+        */}
+        <meta name="theme-color" content="#16142C" />
+
         {/*
          * Preload, by hand.
          *

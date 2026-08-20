@@ -25,7 +25,7 @@ import { ArrowRightIcon } from '@/components/ui/icons';
  */
 
 const ORBITING = INDUSTRIES.slice(0, 8);
-const ACCENTS = ['#22D3EE', '#22D3EE', '#22D3EE'];
+const ACCENTS = ['rgb(var(--c-cyan))', 'rgb(var(--c-cyan))', 'rgb(var(--c-cyan))'];
 // % of the stage that satellites orbit at. Each label extends outward from
 // its dot, so the ring has to sit far enough inside the stage that the widest
 // one ("Logistics & Supply Chain") still fits. At 42 the stage overflowed its
@@ -115,7 +115,7 @@ export default function IndustryOrbit() {
           {[84, 62, 40].map((size, i) => (
             <span
               key={size}
-              className="absolute rounded-full border border-white/[0.07]"
+              className="absolute rounded-full border border-ink/[0.07]"
               style={{ width: `${size}%`, height: `${size}%` }}
             />
           ))}
@@ -126,11 +126,11 @@ export default function IndustryOrbit() {
         <div
           aria-hidden="true"
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
-          style={{ width: '40%', height: '34%', background: 'radial-gradient(closest-side, rgba(22,20,44,.92), rgba(22,20,44,0))' }}
+          style={{ width: '40%', height: '34%', background: `radial-gradient(closest-side, rgb(var(--c-space) / .92), rgb(var(--c-space) / 0))` }}
         />
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-6 w-[46%]">
           <p className="text-fluid-lg font-extrabold tracking-tight">
-            <span className="text-white">SIRAH </span>
+            <span className="text-ink">SIRAH </span>
             <span className="text-brand-cyan">
               DIGITAL
             </span>
@@ -164,7 +164,7 @@ export default function IndustryOrbit() {
               style={{
                 left: '50%',
                 top: '50%',
-                background: on ? `${accent}1f` : 'transparent',
+                background: on ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent',
               }}
             >
               <span
@@ -177,7 +177,7 @@ export default function IndustryOrbit() {
               />
               <span
                 className="text-fluid-sm font-semibold transition-all duration-300"
-                style={{ color: on ? '#FFFFFF' : '#CBD5E1', letterSpacing: on ? '0.01em' : 0 }}
+                style={{ color: on ? 'rgb(var(--c-text))' : 'rgb(var(--c-muted))', letterSpacing: on ? '0.01em' : 0 }}
               >
                 {industry.title}
               </span>
@@ -199,7 +199,7 @@ export default function IndustryOrbit() {
                 <div className="h-full py-6">
                   <span
                     className="block w-10 h-10 rounded-full mb-5"
-                    style={{ background: `radial-gradient(closest-side, ${accent}, ${accent}22)` }}
+                    style={{ background: `radial-gradient(closest-side, ${accent}, color-mix(in srgb, ${accent} 13%, transparent))` }}
                     aria-hidden="true"
                   />
                   <h3 className="text-fluid-xl font-bold tracking-tight" style={{ color: accent }}>
@@ -211,13 +211,13 @@ export default function IndustryOrbit() {
             );
           })}
         </ul>
-        <p className="mt-2 text-fluid-xs text-white/40">Swipe to browse →</p>
+        <p className="mt-2 text-fluid-xs text-ink/40">Swipe to browse →</p>
       </div>
 
       <div className="mt-16 flex justify-center">
         <Link
           href="/industries"
-          className="inline-flex items-center gap-2 min-h-[44px] px-7 py-3 rounded-full font-medium text-brand-muted hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+          className="inline-flex items-center gap-2 min-h-[44px] px-7 py-3 rounded-full font-medium text-brand-muted hover:text-ink bg-ink/5 hover:bg-ink/10 transition-colors"
         >
           See all twelve industries
           <ArrowRightIcon />

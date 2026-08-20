@@ -32,7 +32,7 @@ export default function SceneNarrative({ scene, reduced }) {
       </span>
 
       <h3
-        className="mt-6 text-fluid-xl font-bold tracking-tight leading-[1.15] text-white"
+        className="mt-6 text-fluid-xl font-bold tracking-tight leading-[1.15] text-ink"
         style={enter(70)}
       >
         {scene.title}

@@ -53,7 +53,7 @@ export default function IndustryCard({ industry }) {
 
       {/* Everything below sits above the texture. */}
       <div className="relative">
-        <h2 className="text-[1.375rem] font-semibold leading-[1.25] tracking-[-0.015em] text-white">
+        <h2 className="text-[1.375rem] font-semibold leading-[1.25] tracking-[-0.015em] text-ink">
           {industry.title}
         </h2>
 
@@ -69,7 +69,7 @@ export default function IndustryCard({ industry }) {
       {/* mt-auto pins the action to the bottom edge, so a row of cards has
           its Explore links on one line however differently the blurbs and
           flows above them wrap. */}
-      <span className="ind-card__go relative mt-auto flex items-center gap-2 pt-7 text-[0.8125rem] font-medium text-white/60">
+      <span className="ind-card__go relative mt-auto flex items-center gap-2 pt-7 text-[0.8125rem] font-medium text-ink/60">
         Explore
         <span aria-hidden="true" className="ind-card__go-arrow">
           →

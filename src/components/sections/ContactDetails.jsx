@@ -19,7 +19,7 @@ import { COMPANY } from '@/data/company';
 function Row({ label, children }) {
   return (
     <div className="py-6 first:pt-0 last:pb-0">
-      <dt className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-white/35">
+      <dt className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-ink/35">
         {label}
       </dt>
       <dd className="mt-3">{children}</dd>
@@ -34,15 +34,15 @@ export default function ContactDetails() {
          field behind this page did not resolve as an edge — the column read
          as loose text rather than as a panel. Every border on this page is
          now one step up from where it was. */
-      className="rounded-2xl border border-white/[0.18] bg-white/[0.03] p-8
+      className="rounded-2xl border border-ink/[0.18] bg-ink/[0.03] p-8
         transition-all duration-500 ease-brand
-        hover:-translate-y-1 hover:border-white/[0.28]
-        hover:shadow-[0_28px_60px_-30px_rgba(0,0,0,0.85)]
+        hover:-translate-y-1 hover:border-ink/[0.28]
+        hover:shadow-lift
         motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      <h2 className="text-fluid-lg font-semibold tracking-tight text-white">Our office</h2>
+      <h2 className="text-fluid-lg font-semibold tracking-tight text-ink">Our office</h2>
 
-      <dl className="mt-7 divide-y divide-white/[0.12]">
+      <dl className="mt-7 divide-y divide-ink/[0.12]">
         <Row label="Address">
           <address className="not-italic text-[0.95rem] leading-relaxed text-brand-muted/85">
             {COMPANY.address.map((line) => (
@@ -54,7 +54,7 @@ export default function ContactDetails() {
         <Row label="Email">
           <a
             href={`mailto:${COMPANY.email}`}
-            className="text-[0.95rem] text-white transition-colors duration-300 ease-brand hover:text-brand-blue"
+            className="text-[0.95rem] text-ink transition-colors duration-300 ease-brand hover:text-brand-blue"
           >
             {COMPANY.email}
           </a>
@@ -63,7 +63,7 @@ export default function ContactDetails() {
         <Row label="Phone">
           <a
             href={COMPANY.phoneHref}
-            className="text-[0.95rem] text-white transition-colors duration-300 ease-brand hover:text-brand-blue"
+            className="text-[0.95rem] text-ink transition-colors duration-300 ease-brand hover:text-brand-blue"
           >
             {COMPANY.phone}
           </a>

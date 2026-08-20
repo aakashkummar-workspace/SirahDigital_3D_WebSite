@@ -37,6 +37,49 @@ const LOGO_COLOR_TO = '#7e22ce';
 // Lower this to darken the whole mark without touching its hues.
 const COLOR_GAIN = 1.0;
 
+/*
+ * The light-theme ramp.
+ *
+ * On dark the field takes its colour from logo.png itself, and the sampler
+ * that reads it is written to *avoid* pale pixels — it scores saturation up
+ * and near-white down, so what survives is the azure arrow, the royal blue
+ * top, the magenta bowl and the near-black navy foot. That is exactly the
+ * right instinct on a #16142C ground and exactly the wrong one on #FFFFFF:
+ * the azure end of that spread lands at roughly 1.6:1 against white, and a
+ * third of the mark simply disappears.
+ *
+ * So light does not recolour the sampled values, it replaces them. Four
+ * stops walked along the same bottom-left-to-arrow diagonal the flat logo
+ * uses, all of them chosen to hold against white. The mark keeps its shape
+ * and its direction of travel; only the pigment changes.
+ */
+const LIGHT_RAMP = ['#2563EB', '#4F46E5', '#7C3AED', '#9333EA'].map((h) => new THREE.Color(h));
+
+/**
+ * Position on the mark -> colour, for the light ramp.
+ *
+ * `t` is the same diagonal buildLogoGeometry bakes into its vertex colours,
+ * so the two treatments agree about which end of the shape is which. The
+ * segment lerp is plain rather than eased: four stops across one diagonal is
+ * already a short interval, and easing it puts a visible band at each joint.
+ */
+function makeBrandRamp(bbox) {
+  const { min, max } = bbox;
+  const spanX = max.x - min.x || 1;
+  const spanY = max.y - min.y || 1;
+  const last = LIGHT_RAMP.length - 1;
+
+  return (x, y, out) => {
+    const tx = (x - min.x) / spanX;
+    const ty = (y - min.y) / spanY;
+    const t = THREE.MathUtils.clamp((tx + (1 - ty)) / 2, 0, 1);
+
+    const f = t * last;
+    const i = Math.min(last - 1, Math.floor(f));
+    return out.copy(LIGHT_RAMP[i]).lerp(LIGHT_RAMP[i + 1], f - i);
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /* Reading the real gradient out of the logo artwork                    */
 /* ------------------------------------------------------------------ */
@@ -291,6 +334,10 @@ const SHIMMER_OPACITY = 0.12;
  * slightly less of it behind the headline and this is the whole of that
  * change — no scrim, no gradient, just less of the cloud. */
 const FIELD_OPACITY = 0.88;
+// Light's equivalent. Lower, not higher: on white the particles are the dark
+// element, so they gain contrast from the ground rather than losing it, and
+// the density that read as a cloud on near-black reads as noise here.
+const LIGHT_FIELD_OPACITY = 0.62;
 
 /* Below this the hero stacks and there is no column beside the copy for the
  * mark to sit in. Matches Tailwind's lg, which is where Hero.jsx switches
@@ -305,7 +352,7 @@ const DROP_FRACTION = 0.52;   // of the half-viewport, downward
  *   'assembled' — a section has claimed it; hold the mark together regardless
  *                 of scroll position
  */
-function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0 }) {
+function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0, theme = 'dark' }) {
   const pointsRef = useRef();
   const materialRef = useRef();
   const scatter = useRef(0);          // 0 = assembled, 1 = fully scattered
@@ -368,10 +415,13 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
     if (pixels === null) {
       return { positions: new Float32Array(0), targets: null, bursts: null, stagger: null, colors: new Float32Array(0), count: 0 };
     }
-    const sampleArt = makeLogoSampler(pixels);
+    const isLight = theme === 'light';
+    // The artwork sampler is skipped entirely on light — see LIGHT_RAMP.
+    const sampleArt = isLight ? null : makeLogoSampler(pixels);
     const geo = buildLogoGeometry();
     geo.computeBoundingBox();
     const c = geo.boundingBox.getCenter(new THREE.Vector3());
+    const rampArt = isLight ? makeBrandRamp(geo.boundingBox) : null;
 
     // Sampling the geometry's *vertices* would only ever give the outline —
     // the extruded caps are triangulated straight from the contour, so they
@@ -419,11 +469,12 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
       // pos is still in the shape's own coordinates here, which is exactly
       // what LOGO_PX maps back into the artwork.
       if (sampleArt) sampleArt(pos.x, pos.y, col);
+      else if (rampArt) rampArt(pos.x, pos.y, col);
       colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
     }
     geo.dispose();
     return { positions: new Float32Array(targets), targets, bursts, stagger, colors, count: n };
-  }, [pixels]);
+  }, [pixels, theme]);
 
   /**
    * Where each particle goes when the cloud forms the band.
@@ -630,8 +681,12 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
       // stays knocked back exactly as the open field always was; brightening it
       // there would be turning up the volume on the wallpaper.
       const lift = m === 'scroll' ? r : 0;
+      // On white the same alpha that reads as a soft cloud reads as grain,
+      // because every particle is now darker than its ground rather than
+      // lighter. Pulled back so the field stays atmosphere behind the copy.
+      const ground = theme === 'light' ? LIGHT_FIELD_OPACITY : FIELD_OPACITY;
       materialRef.current.opacity =
-        FIELD_OPACITY * (1 - s * 0.55 * (1 - lift)) * (centred ? 0.5 : 1)
+        ground * (1 - s * 0.55 * (1 - lift)) * (centred ? 0.5 : 1)
         * (1 + shimmer * SHIMMER_OPACITY);
 
       // Ease toward the active section's accent, or back to neutral white
@@ -742,18 +797,30 @@ function ParticleLogo({ mode = 'scroll', align = 'hero', tint = null, energy = 0
   );
 }
 
-export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = null, energy = 0 }) {
+export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = null, energy = 0, theme = 'dark' }) {
+  const isLight = theme === 'light';
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: 0, pointerEvents: 'none' }}>
       {/* dpr capped at 1.5 — rendering a particle field at a phone's native
           3x costs three times the fill rate for no visible gain. */}
       <Canvas camera={{ position: [0, 0, 9], fov: 45 }} dpr={[1, 1.5]}>
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[10, 10, 5]} intensity={1.8} />
+        {/*
+          * Light lifts the ambient and drops the key.
+          *
+          * On dark the directional at 1.8 is what separates the mark from the
+          * ground. On white there is nothing to separate it from — the ground
+          * is already brighter than any particle — so a hard key only blows
+          * the pale end of the ramp out toward the page and flattens it.
+          * Ambient does the work instead, and the two accent lights come down
+          * with it so they tint rather than wash.
+          */}
+        <ambientLight intensity={isLight ? 0.85 : 0.4} />
+        <directionalLight position={[10, 10, 5]} intensity={isLight ? 0.55 : 1.8} />
 
-        {/* Dynamic theme accent colored spotlights */}
-        <pointLight position={[-6, 4, -5]} intensity={0.7} color="#a855f7" />
-        <pointLight position={[6, -4, 5]} intensity={1.0} color="#06b6d4" />
+        {/* Accent fill. Light swaps the cyan for the brand blue, since the
+            cyan it used to throw is invisible against white anyway. */}
+        <pointLight position={[-6, 4, -5]} intensity={isLight ? 0.3 : 0.7} color={isLight ? '#7C3AED' : '#a855f7'} />
+        <pointLight position={[6, -4, 5]} intensity={isLight ? 0.35 : 1.0} color={isLight ? '#2563EB' : '#06b6d4'} />
 
         {/*
          * No <Environment> here, deliberately.
@@ -775,7 +842,7 @@ export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = nu
          * environment — it gets one from StudioEnvironment where it is
          * actually mounted, in AnimationLab.
          */}
-        <ParticleLogo mode={mode} align={align} tint={tint} energy={energy} />
+        <ParticleLogo mode={mode} align={align} tint={tint} energy={energy} theme={theme} />
       </Canvas>
     </div>
   );

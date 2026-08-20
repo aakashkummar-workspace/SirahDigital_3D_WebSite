@@ -81,7 +81,7 @@ export default function ServiceContent({ service, active, registerRef }) {
       aria-labelledby={`service-title-${service.slug}`}
       /* 72px navbar + ~56px sticky chip bar + breathing room on mobile; from
           md the chip bar is gone and only the navbar has to be cleared. */
-      className="scroll-mt-[9.5rem] md:scroll-mt-28 py-14 md:py-20 border-b border-white/10 last:border-b-0"
+      className="scroll-mt-[9.5rem] md:scroll-mt-28 py-14 md:py-20 border-b border-ink/10 last:border-b-0"
       style={{
         opacity: active ? 1 : DIM,
         // The dim is contrast, not motion, so it still applies under
@@ -95,8 +95,8 @@ export default function ServiceContent({ service, active, registerRef }) {
           <span className="font-mono text-fluid-base font-bold text-cyan-400">
             {service.number}
           </span>
-          <span className="text-white/30 font-mono text-fluid-xs">/</span>
-          <span className="text-fluid-xs uppercase tracking-[0.25em] text-white/40 font-semibold">{service.system}</span>
+          <span className="text-ink/30 font-mono text-fluid-xs">/</span>
+          <span className="text-fluid-xs uppercase tracking-[0.25em] text-ink/40 font-semibold">{service.system}</span>
         </div>
 
         {/* Heading — the tight leading is what makes 52px read as editorial
@@ -107,22 +107,22 @@ export default function ServiceContent({ service, active, registerRef }) {
             as="h2"
             id={`service-title-${service.slug}`}
             text={service.title}
-            className="text-fluid-2xl font-bold tracking-tight leading-[1.06] text-white max-w-3xl"
+            className="text-fluid-2xl font-bold tracking-tight leading-[1.06] text-ink max-w-3xl"
           />
         </div>
 
         {/* Problem Statement — slate-300 rather than slate-400: this is the
             smallest normal-weight text in the block, so it sets the contrast
             floor once the block is dimmed. See DIM. */}
-        <p className="mt-7 text-fluid-base leading-relaxed text-slate-300 max-w-3xl" style={rise(120)}>
-          <strong className="text-white font-semibold mr-1.5">Current Challenge:</strong>
+        <p className="mt-7 text-fluid-base leading-relaxed text-brand-muted max-w-3xl" style={rise(120)}>
+          <strong className="text-ink font-semibold mr-1.5">Current Challenge:</strong>
           {service.problem}
         </p>
 
         {/* Solution Description — the lead line, the largest body text here.
             Brightest of the three so hierarchy reads by weight of colour as
             well as size, now that the problem line has been lifted. */}
-        <p className="mt-6 text-fluid-lg leading-[1.4] text-white/90 max-w-3xl" style={rise(180)}>
+        <p className="mt-6 text-fluid-lg leading-[1.4] text-ink/90 max-w-3xl" style={rise(180)}>
           {service.desc}
         </p>
 
@@ -139,7 +139,7 @@ export default function ServiceContent({ service, active, registerRef }) {
           <Link
             href="/contact"
             data-cursor="cta"
-            className="group mt-10 inline-flex items-center gap-2.5 min-h-[44px] text-fluid-base font-semibold text-white hover:text-brand-blue transition-colors duration-300"
+            className="group mt-10 inline-flex items-center gap-2.5 min-h-[44px] text-fluid-base font-semibold text-ink hover:text-brand-blue transition-colors duration-300"
           >
             <span>{service.cta}</span>
             <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />

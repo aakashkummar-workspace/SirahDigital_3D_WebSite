@@ -9,10 +9,10 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen grid place-items-center px-6 text-center font-sans text-white bg-[#060608]">
+    <div className="min-h-screen grid place-items-center px-6 text-center font-sans text-ink bg-space">
       <div>
         <p className="text-xs uppercase tracking-[0.3em] font-semibold text-blue-400">Error 404</p>
-        <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight text-white">
+        <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight text-ink">
           That page moved.
         </h1>
         <p className="mt-6 text-brand-muted max-w-md mx-auto">
@@ -24,7 +24,7 @@ export default function NotFound() {
           </PrimaryButton>
           <Link
             href="/contact"
-            className="px-6 py-3 rounded-full font-medium border transition-all border-white/10 bg-white/5 hover:bg-white/10"
+            className="px-6 py-3 rounded-full font-medium border transition-all border-ink/10 bg-ink/5 hover:bg-ink/10"
           >
             Contact us
           </Link>

@@ -21,7 +21,7 @@ import { ArrowRightIcon } from '@/components/ui/icons';
  */
 
 const CHAPTERS = SERVICES.slice(0, 4);
-const ACCENTS = ['#22D3EE', '#22D3EE', '#22D3EE', '#22D3EE'];
+const ACCENTS = ['rgb(var(--c-cyan))', 'rgb(var(--c-cyan))', 'rgb(var(--c-cyan))', 'rgb(var(--c-cyan))'];
 
 function Chapter({ service, index }) {
   const [ref, inView] = useInView({ threshold: 0.2, rootMargin: '0px 0px -12% 0px' });
@@ -138,7 +138,7 @@ export default function ServiceChapters() {
       <div className="max-w-6xl mx-auto px-6 pb-8 flex justify-center">
         <Link
           href="/services"
-          className="inline-flex items-center gap-2 min-h-[44px] px-7 py-3 rounded-full font-medium text-brand-muted hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+          className="inline-flex items-center gap-2 min-h-[44px] px-7 py-3 rounded-full font-medium text-brand-muted hover:text-ink bg-ink/5 hover:bg-ink/10 transition-colors"
         >
           See all ten services
           <ArrowRightIcon />

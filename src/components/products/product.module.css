@@ -23,14 +23,14 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgb(var(--c-ink) / 0.08);
   border-radius: 16px;
   background:
     linear-gradient(
       150deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.018) 46%,
-      rgba(255, 255, 255, 0.004) 100%
+      rgb(var(--c-ink) / 0.05) 0%,
+      rgb(var(--c-ink) / 0.018) 46%,
+      rgb(var(--c-ink) / 0.004) 100%
     ),
     rgba(9, 12, 20, 0.88);
 }
@@ -53,14 +53,14 @@
   align-items: center;
   gap: 7px;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgb(var(--c-ink) / 0.07);
 }
 
 .dot {
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgb(var(--c-ink) / 0.14);
 }
 
 /*
@@ -97,8 +97,8 @@
   /* A faint grid, so an empty well reads as a deliberate placeholder rather
      than as an image that failed to load. */
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+    linear-gradient(rgb(var(--c-ink) / 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--c-ink) / 0.022) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 
@@ -106,7 +106,7 @@
   font-size: 0.9375rem;
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgb(var(--c-ink) / 0.6);
 }
 
 .placeholderNote {

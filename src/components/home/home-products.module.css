@@ -24,7 +24,7 @@
   font-weight: 500;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.38);
+  color: rgb(var(--c-ink) / 0.38);
   margin-bottom: 28px;
 }
 
@@ -41,7 +41,7 @@
   align-items: flex-start;
   padding: 30px 0;
   /* Stacked on a phone, so the rule between columns is horizontal. */
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgb(var(--c-ink) / 0.07);
 }
 
 .col:first-child {
@@ -72,7 +72,7 @@
    * also visible text that a sighted reader is meant to be able to read, and
    * meeting the floor costs nothing here.
    */
-  color: rgba(255, 255, 255, 0.34);
+  color: rgb(var(--c-ink) / 0.34);
 }
 
 /*
@@ -86,7 +86,7 @@
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: rgb(var(--c-text));
   transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -108,7 +108,7 @@
   max-width: 42ch;
   font-size: 0.9375rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.52);
+  color: rgb(var(--c-ink) / 0.52);
 }
 
 .arrow {
@@ -121,7 +121,7 @@
   /* 46% is 4.7:1. At 18px this is body-sized text, so it needs the full
      4.5:1 rather than the large-text 3.0:1 — and unlike the counter it is
      the column's only affordance, so it has to be seen to be used. */
-  color: rgba(255, 255, 255, 0.46);
+  color: rgb(var(--c-ink) / 0.46);
   transition:
     transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
     color 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -135,7 +135,7 @@
   }
   .col:hover .arrow {
     transform: translateX(6px);
-    color: #ffffff;
+    color: rgb(var(--c-text));
   }
 }
 
@@ -148,7 +148,7 @@
 }
 .col:focus-visible .arrow {
   transform: translateX(6px);
-  color: #ffffff;
+  color: rgb(var(--c-text));
 }
 
 /* -- two across, on tablets ------------------------------------------- */
@@ -173,8 +173,8 @@
     padding: 26px 24px 22px;
     /* A vertical rule between the pair, and a horizontal one above every row
        but the first. Together they draw the grid. */
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgb(var(--c-ink) / 0.07);
+    border-left: 1px solid rgb(var(--c-ink) / 0.07);
   }
 
   /* nth-child(2n+1), not :first-child: every row starts a new left edge, so
@@ -240,7 +240,7 @@
        between neighbours. Both are re-established per row below for the
        wrapped case. */
     border-top: 0;
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
+    border-left: 1px solid rgb(var(--c-ink) / 0.07);
   }
 
   /*
@@ -289,7 +289,7 @@
   .block[data-cols='4'] .col:nth-child(n + 5),
   .block[data-cols='5'] .col:nth-child(n + 6) {
     padding-top: 30px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgb(var(--c-ink) / 0.07);
   }
 
   /*

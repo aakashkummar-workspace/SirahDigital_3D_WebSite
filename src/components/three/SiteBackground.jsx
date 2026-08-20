@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import useTheme from '@/hooks/useTheme';
 
 const SirahCanvas = dynamic(() => import('./SirahCanvas'), { ssr: false });
 
@@ -55,6 +56,15 @@ const LANDING = '/';
 
 export default function SiteBackground() {
   const pathname = usePathname();
+  /*
+   * WebGL paints outside the cascade, so this is the one part of the site a
+   * CSS variable cannot reach. The hook is here rather than in SirahCanvas
+   * because SirahCanvas is loaded through next/dynamic with ssr:false — it is
+   * already a client leaf, and putting the subscription in its parent keeps
+   * the theme in the props it re-renders on instead of adding a second
+   * listener inside the render loop.
+   */
+  const { theme } = useTheme();
   // null = nobody has claimed the background; otherwise { assembled, align }
   const [focus, setFocus] = useState(null);
 
@@ -81,5 +91,5 @@ export default function SiteBackground() {
       : 'dispersed';  // inner pages: background texture
   const align = focus?.align || 'hero';
 
-  return <SirahCanvas mode={mode} align={align} tint={tint?.accent || null} energy={tint?.energy || 0} />;
+  return <SirahCanvas mode={mode} align={align} tint={tint?.accent || null} energy={tint?.energy || 0} theme={theme} />;
 }

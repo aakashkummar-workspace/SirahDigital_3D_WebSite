@@ -45,7 +45,7 @@ export default function SceneSwitcher({ active, onSelect }) {
       role="group"
       aria-label="Choose a scene"
       onKeyDown={onKeyDown}
-      className="flex w-full md:w-auto items-stretch gap-1 rounded-full bg-white/[0.04] p-1"
+      className="flex w-full md:w-auto items-stretch gap-1 rounded-full bg-ink/[0.04] p-1"
     >
       {SCENES.map((scene, i) => {
         const on = i === active;

@@ -40,7 +40,7 @@
 
 .path {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.16);
+  stroke: rgb(var(--c-ink) / 0.16);
   stroke-width: 1;
 }
 
@@ -60,7 +60,7 @@
   height: 7px;
   margin: -3.5px 0 0 -3.5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgb(var(--c-ink) / 0.75);
 }
 
 /* ── the entries ─────────────────────────────────────────────────────── */
@@ -124,7 +124,7 @@
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: rgb(var(--c-text));
 }
 
 /*
@@ -152,7 +152,7 @@
   margin-top: 12px;
   font-size: 0.9375rem;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgb(var(--c-ink) / 0.55);
 }
 
 /* ── tablet ──────────────────────────────────────────────────────────── */

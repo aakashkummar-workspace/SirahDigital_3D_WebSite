@@ -31,10 +31,10 @@ export default function ScreenshotTour({ screenshots }) {
                 frames zig-zag down the page instead of marching. */}
             <div className={i % 2 === 1 ? 'lg:order-last' : undefined}>
               <Reveal y={16} duration={640}>
-                <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-white/30">
+                <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-ink/30">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="mt-5 text-[clamp(1.25rem,1rem+0.9vw,1.625rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-white">
+                <h3 className="mt-5 text-[clamp(1.25rem,1rem+0.9vw,1.625rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-ink">
                   {shot.caption}
                 </h3>
                 {shot.desc && (

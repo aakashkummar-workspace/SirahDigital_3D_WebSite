@@ -33,7 +33,7 @@ export default function BrandLockup({ size = 'sm', interactive = false, classNam
       {/* Solid white throughout. "DIGITAL" was cyan, which on the dark bar
           read as a link rather than as half the company's name and lost the
           wordmark its second half at a glance. */}
-      <span className="text-xl font-extrabold tracking-tight whitespace-nowrap text-white">
+      <span className="text-xl font-extrabold tracking-tight whitespace-nowrap text-ink">
         SIRAH DIGITAL
       </span>
     </span>

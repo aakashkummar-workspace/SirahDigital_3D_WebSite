@@ -26,8 +26,8 @@ export default function ContactMap() {
   return (
     <div
       className="relative h-[400px] w-full overflow-hidden rounded-[24px]
-        border border-white/[0.18] bg-space-raised
-        shadow-[0_30px_70px_-32px_rgba(0,0,0,0.85)]"
+        border border-ink/[0.18] bg-space-raised
+        shadow-lift"
     >
       <iframe
         src={SRC}

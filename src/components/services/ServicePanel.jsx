@@ -54,7 +54,7 @@ export default function ServicePanel({ state, label, run = false, className = ''
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-space-deep/70 ${className}`}
+      className={`relative w-full overflow-hidden rounded-2xl border border-ink/[0.07] bg-space-deep/70 ${className}`}
     >
       {/* The artwork's viewBox is square, so the plate is kept close to square
           too — a wide plate letterboxes it and leaves most of the panel empty.
@@ -69,50 +69,32 @@ export default function ServicePanel({ state, label, run = false, className = ''
       >
         {/* orbit rails */}
         {cfg.rings.map((r, i) => (
-          <circle
-            key={`ring-${i}`}
-            cx={CENTRE} cy={CENTRE} r={r}
-            fill="none" stroke="#FFFFFF" strokeWidth="1.6"
-            opacity={(cfg.ringAlpha * (0.5 - i * 0.12)).toFixed(3)}
-          />
+          <circle key={`ring-${i}`} cx={CENTRE} cy={CENTRE} r={r} fill="none" strokeWidth="1.6" opacity={(cfg.ringAlpha * (0.5 - i * 0.12)).toFixed(3)} style={{ stroke: "rgb(var(--c-text))" }} />
         ))}
 
         {/* mesh links between neighbouring nodes */}
         {cfg.mesh > 0 && cfg.nodes.map((n, i) => {
           const m = cfg.nodes[(i + 1) % NODE_COUNT];
           return (
-            <line
-              key={`mesh-${i}`}
-              x1={f(n.x)} y1={f(n.y)} x2={f(m.x)} y2={f(m.y)}
-              stroke="#FFFFFF" strokeWidth="1.4"
-              opacity={(cfg.mesh * n.a * m.a * 0.55).toFixed(3)}
-            />
+            <line key={`mesh-${i}`} x1={f(n.x)} y1={f(n.y)} x2={f(m.x)} y2={f(m.y)} strokeWidth="1.4" opacity={(cfg.mesh * n.a * m.a * 0.55).toFixed(3)} style={{ stroke: "rgb(var(--c-text))" }} />
           );
         })}
 
         {/* spokes from the core, each carrying a travelling packet */}
         {cfg.spokes > 0 && cfg.nodes.map((n, i) => (
           <g key={`spoke-${i}`}>
+            <line x1={CENTRE} y1={CENTRE} x2={f(n.x)} y2={f(n.y)} strokeOpacity="0.28" strokeWidth="1.6" opacity={(cfg.spokes * n.a).toFixed(3)} style={{ stroke: accent }} />
             <line
               x1={CENTRE} y1={CENTRE} x2={f(n.x)} y2={f(n.y)}
-              stroke={accent} strokeOpacity="0.28" strokeWidth="1.6"
-              opacity={(cfg.spokes * n.a).toFixed(3)}
-            />
-            <line
-              x1={CENTRE} y1={CENTRE} x2={f(n.x)} y2={f(n.y)}
-              stroke={accent} strokeWidth="2.6" strokeLinecap="round" strokeDasharray="9 120"
+              strokeWidth="2.6" strokeLinecap="round" strokeDasharray="9 120"
               opacity={alive ? (cfg.spokes * n.a).toFixed(3) : 0}
-              style={{ animation: alive ? `flow ${2200 + i * 240}ms linear ${i * 160}ms infinite` : undefined }}
+              style={{ stroke: accent, animation: alive ? `flow ${2200 + i * 240}ms linear ${i * 160}ms infinite` : undefined }}
             />
           </g>
         ))}
 
         {/* core */}
-        <circle
-          cx={CENTRE} cy={CENTRE} r={cfg.core.r}
-          fill={accent} fillOpacity="0.3" stroke={accent} strokeOpacity="0.85" strokeWidth="2"
-          opacity={cfg.core.a}
-        />
+        <circle cx={CENTRE} cy={CENTRE} r={cfg.core.r} fillOpacity="0.3" strokeOpacity="0.85" strokeWidth="2" opacity={cfg.core.a} style={{ fill: accent, stroke: accent }} />
 
         {/* the detail that carries this particular capability */}
         {cfg.detail !== 'none' && (
@@ -123,10 +105,7 @@ export default function ServicePanel({ state, label, run = false, className = ''
 
         {/* nodes, on top of everything they connect */}
         {cfg.nodes.map((n, i) => (
-          <circle
-            key={`node-${i}`}
-            cx={f(n.x)} cy={f(n.y)} r={n.r} fill={n.color || accent} opacity={n.a}
-          />
+          <circle key={`node-${i}`} cx={f(n.x)} cy={f(n.y)} r={n.r} opacity={n.a} style={{ fill: n.color || accent }} />
         ))}
       </svg>
     </div>

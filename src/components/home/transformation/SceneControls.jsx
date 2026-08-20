@@ -13,7 +13,7 @@ export default function SceneControls({ accent, playing, onNext, onToggle }) {
       <button
         type="button"
         onClick={onNext}
-        className="group inline-flex flex-1 sm:flex-none items-center justify-center gap-2.5 min-h-[44px] px-6 rounded-full text-fluid-sm font-semibold text-white bg-white/[0.06] hover:bg-white/[0.12] transition-colors"
+        className="group inline-flex flex-1 sm:flex-none items-center justify-center gap-2.5 min-h-[44px] px-6 rounded-full text-fluid-sm font-semibold text-ink bg-ink/[0.06] hover:bg-ink/[0.12] transition-colors"
       >
         Next Scene
         <span className="transition-transform duration-300 group-hover:translate-x-1">

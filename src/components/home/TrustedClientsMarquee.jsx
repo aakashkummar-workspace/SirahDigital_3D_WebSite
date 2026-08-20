@@ -80,7 +80,7 @@ export default function TrustedClientsMarquee() {
           <div className="mx-auto max-w-[720px] text-center">
             <h2
               id="clients-title"
-              className="text-balance text-fluid-2xl font-bold leading-[1.1] tracking-[-0.02em] text-white"
+              className="text-balance text-fluid-2xl font-bold leading-[1.1] tracking-[-0.02em] text-ink"
             >
               Trusted Across Industries
             </h2>

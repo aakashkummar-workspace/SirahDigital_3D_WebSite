@@ -56,7 +56,7 @@ export default function DetailGrid({ section, id, columns = 3 }) {
                     aria-hidden="true"
                   />
                 )}
-                <h3 className="text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-white">
+                <h3 className="text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-ink">
                   {item.title}
                 </h3>
                 <p className="mt-3 text-[0.9375rem] leading-[1.7] text-brand-muted/70">
@@ -70,14 +70,14 @@ export default function DetailGrid({ section, id, columns = 3 }) {
 
       {limits?.length > 0 && (
         <Reveal y={14} duration={640} delay={100}>
-          <div className="mt-16 border-t border-white/10 pt-8">
-            <h3 className="text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-white/30">
+          <div className="mt-16 border-t border-ink/10 pt-8">
+            <h3 className="text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-ink/30">
               {limitsHeading || 'What it does not do'}
             </h3>
             <ul role="list" className="mt-6 space-y-4">
               {limits.map((limit) => (
                 <li key={limit} className="flex max-w-[80ch] gap-4">
-                  <span aria-hidden="true" className="select-none text-white/25">
+                  <span aria-hidden="true" className="select-none text-ink/25">
                     -
                   </span>
                   <span className="text-[0.9375rem] leading-[1.7] text-brand-muted/60">
@@ -102,10 +102,10 @@ export default function DetailGrid({ section, id, columns = 3 }) {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-fluid-sm font-medium text-brand-muted transition-colors hover:text-white"
+                  className="text-fluid-sm font-medium text-brand-muted transition-colors hover:text-ink"
                 >
                   {link.label}{' '}
-                  <span aria-hidden="true" className="text-white/30">
+                  <span aria-hidden="true" className="text-ink/30">
                     ↗
                   </span>
                 </a>

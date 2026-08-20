@@ -101,7 +101,7 @@ export default function ProductsPage() {
       <section className="mx-auto w-full max-w-[1100px] px-6 pb-4 pt-20 md:pt-28">
         <div className="max-w-[760px]">
           <Reveal duration={700} y={12}>
-            <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-white/40">
+            <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-ink/40">
               What we&rsquo;ve built
             </span>
           </Reveal>
@@ -115,7 +115,7 @@ export default function ProductsPage() {
            * less of one.
            */}
           <Reveal delay={120} duration={700} y={24}>
-            <h1 className="mt-7 text-balance text-[clamp(2rem,1.1rem+2.9vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.03em] text-white">
+            <h1 className="mt-7 text-balance text-[clamp(2rem,1.1rem+2.9vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.03em] text-ink">
               Systems built around real operational problems.
             </h1>
           </Reveal>

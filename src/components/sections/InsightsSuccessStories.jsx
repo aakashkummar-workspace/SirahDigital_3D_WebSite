@@ -30,14 +30,14 @@ export default function InsightsSuccessStories() {
           than a text column does. */}
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
         <header className="max-w-3xl">
-          <span className="block text-fluid-xs font-semibold uppercase tracking-[0.3em] text-white/35">
+          <span className="block text-fluid-xs font-semibold uppercase tracking-[0.3em] text-ink/35">
             Insights
           </span>
           <AnimatedHeading
             as="h2"
             id="insights-title"
             text="Learn From Real AI Implementations"
-            className="mt-5 text-fluid-2xl font-bold tracking-tight leading-[1.1] text-white"
+            className="mt-5 text-fluid-2xl font-bold tracking-tight leading-[1.1] text-ink"
           />
           <p className="mt-6 text-fluid-base leading-relaxed text-brand-muted/80 max-w-xl">
             Explore educational AI content from Sirah Digital along with real client transformation stories.

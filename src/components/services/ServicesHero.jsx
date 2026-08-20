@@ -42,7 +42,7 @@ export default function ServicesHero() {
               className="block"
               style={{
                 fontSize: 'clamp(2.5rem, 1.1rem + 6.6vw, 7rem)',
-                color: '#FFFFFF',
+                color: 'rgb(var(--c-text))',
                 opacity: shown ? 1 : 0,
                 transform: shown ? 'none' : 'translateY(0.5em)',
                 transition: reduced
@@ -77,7 +77,7 @@ export default function ServicesHero() {
         className="mt-16 flex items-center gap-3"
         style={{ opacity: shown ? 1 : 0, transition: reduced ? 'none' : 'opacity 900ms ease 900ms' }}
       >
-        <span className="relative block w-px h-16 overflow-hidden bg-white/10">
+        <span className="relative block w-px h-16 overflow-hidden bg-ink/10">
           <span
             className="absolute inset-x-0 h-6 bg-gradient-to-b from-transparent via-brand-cyan to-transparent"
             style={{ animation: reduced ? undefined : 'scroll-hint 2.4s ease-in-out infinite' }}

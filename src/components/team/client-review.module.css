@@ -37,10 +37,10 @@
   gap: clamp(18px, 2.6vw, 36px);
   margin: 0;
   padding: var(--pad-y) clamp(28px, 4vw, 52px) var(--pad-y) var(--pad-x);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgb(var(--c-ink) / 0.14);
   border-radius: clamp(20px, 2.4vw, 30px);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+    linear-gradient(135deg, rgb(var(--c-ink) / 0.055), rgb(var(--c-ink) / 0.018));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -62,9 +62,9 @@
   overflow: hidden;
   /* Opaque ground: the card's border runs behind this and must not show
      through a portrait that fails to load. */
-  background: var(--space-raised, #111522);
+  background: var(--space-raised, rgb(var(--c-space-raised)));
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    inset 0 0 0 1px rgb(var(--c-ink) / 0.16),
     0 18px 40px rgba(3, 5, 12, 0.55);
 }
 
@@ -85,7 +85,7 @@
   font-size: clamp(0.875rem, 0.82rem + 0.28vw, 1rem);
   line-height: 1.75;
   /* 8.4:1 on this card — comfortably past the 4.5:1 AA floor for body text. */
-  color: rgba(255, 255, 255, 0.74);
+  color: rgb(var(--c-ink) / 0.74);
 }
 
 .quote p {
@@ -118,7 +118,7 @@
   font-family: var(--font-display);
   font-size: clamp(96px, 11vw, 156px);
   line-height: 1;
-  color: rgba(255, 255, 255, 0.24);
+  color: rgb(var(--c-ink) / 0.24);
   pointer-events: none;
   user-select: none;
 }

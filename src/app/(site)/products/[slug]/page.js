@@ -71,7 +71,7 @@ export default function ProductPage({ params }) {
       <header className="mx-auto w-full max-w-[1100px] px-6">
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 text-fluid-sm font-medium text-brand-muted transition-colors hover:text-white"
+          className="inline-flex items-center gap-2 text-fluid-sm font-medium text-brand-muted transition-colors hover:text-ink"
         >
           <span aria-hidden="true">←</span> Products
         </Link>
@@ -86,7 +86,7 @@ export default function ProductPage({ params }) {
           )}
 
           <Reveal delay={110} duration={700} y={24}>
-            <h1 className="mt-6 text-balance text-[clamp(2rem,1.1rem+2.9vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.03em] text-white">
+            <h1 className="mt-6 text-balance text-[clamp(2rem,1.1rem+2.9vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.03em] text-ink">
               {product.title}
             </h1>
           </Reveal>
@@ -128,7 +128,7 @@ export default function ProductPage({ params }) {
               ) : (
                 <Link
                   href="/products#client-systems"
-                  className="text-fluid-sm font-medium text-brand-muted transition-colors hover:text-white"
+                  className="text-fluid-sm font-medium text-brand-muted transition-colors hover:text-ink"
                 >
                   See our work
                 </Link>

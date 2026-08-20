@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import BrandLockup from './BrandLockup';
 import { NAV_LINKS } from '@/data/nav';
 import { ChevronDownIcon } from '@/components/ui/icons';
+import ThemeToggle from './ThemeToggle';
 
 /**
  * The bar detaches from the viewport edges on scroll and becomes a floating
@@ -84,7 +85,7 @@ export default function Navbar() {
   // the bar and has no fill of its own, so at the top of the page an open menu
   // would otherwise be unreadable text floating over the hero.
   const surface = scrolled || mobileOpen
-    ? 'bg-space/80 backdrop-blur-xl border border-white/[0.06] shadow-lg shadow-black/30'
+    ? 'bg-[var(--nav-surface)] backdrop-blur-xl border border-ink/[0.06] shadow-[var(--nav-shadow)]'
     : 'bg-transparent border border-transparent';
 
   return (
@@ -141,8 +142,8 @@ export default function Navbar() {
             >
               <Link
                 href={link.href}
-                className={`relative flex items-center justify-center gap-1.5 text-sm font-semibold transition-colors py-2 px-2 min-h-[44px] ${
-                  isActive(link.href) ? 'text-white font-bold' : 'text-slate-400 hover:text-white'
+                className={`nav-link relative flex items-center justify-center gap-1.5 text-sm font-semibold transition-colors py-2 px-2 min-h-[44px] ${
+                  isActive(link.href) ? 'text-ink font-bold' : 'text-brand-subtle hover:text-ink'
                 }`}
                 onClick={() => setOpenMenu(null)}
                 aria-expanded={link.menu ? openMenu === link.label : undefined}
@@ -159,13 +160,13 @@ export default function Navbar() {
                     openMenu === link.label ? 'opacity-100 translate-y-0 visible' : 'opacity-0 -translate-y-1 invisible'
                   }`}
                 >
-                  <ul className="rounded-xl border border-white/10 p-2 backdrop-blur-xl bg-[#0b0e17]/95 shadow-2xl">
+                  <ul className="rounded-xl border border-ink/10 p-2 backdrop-blur-xl bg-[var(--menu-surface)] shadow-2xl">
                     {link.menu.map((item) => (
                       <li key={item.label}>
                         <Link
                           href={item.href}
                           onClick={() => setOpenMenu(null)}
-                          className="flex items-center min-h-[40px] px-3 py-2 rounded-lg text-sm transition-colors text-slate-300 hover:text-white hover:bg-white/5"
+                          className="nav-link flex items-center min-h-[40px] px-3 py-2 rounded-lg text-sm transition-colors text-brand-muted hover:text-ink hover:bg-ink/5"
                         >
                           {item.label}
                         </Link>
@@ -180,7 +181,7 @@ export default function Navbar() {
                         <Link
                           href={link.menuFooter.href}
                           onClick={() => setOpenMenu(null)}
-                          className="flex items-center min-h-[40px] px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-brand-blue hover:text-white"
+                          className="flex items-center min-h-[40px] px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-brand-blue hover:text-ink"
                         >
                           {link.menuFooter.label} →
                         </Link>
@@ -194,6 +195,8 @@ export default function Navbar() {
         </ul>
 
         <div className="ml-auto lg:ml-0 flex items-center gap-2 shrink-0">
+          <ThemeToggle />
+
           {/* This button names a booking, so it owes the visitor a calendar.
               /book is now that calendar — one form, times on the page, done in
               a single submit — so it is the honest destination for this label,
@@ -207,7 +210,7 @@ export default function Navbar() {
               booking vendor. */}
           <Link
             href="/contact"
-            className="hidden md:inline-flex items-center text-sm font-semibold text-white hover:text-brand-blue transition-colors whitespace-nowrap gap-1"
+            className="hidden md:inline-flex items-center text-sm font-semibold text-ink hover:text-brand-blue transition-colors whitespace-nowrap gap-1"
           >
             Book Free Consultation →
           </Link>
@@ -218,7 +221,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
-            className="lg:hidden w-11 h-11 rounded-lg grid place-items-center border border-white/10 text-white"
+            className="lg:hidden w-11 h-11 rounded-lg grid place-items-center border border-ink/10 text-ink"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
               {mobileOpen ? (
@@ -234,7 +237,7 @@ export default function Navbar() {
         {/* Mobile sheet — now nested inside the bar so it drops out of the
             capsule rather than out of a full-width header behind it. */}
         <div
-          className={`lg:hidden transition-all duration-300 border-t border-white/5 ${
+          className={`lg:hidden transition-all duration-300 border-t border-ink/5 ${
             mobileOpen ? 'max-h-[80svh] overflow-y-auto' : 'max-h-0 overflow-hidden border-t-0'
           }`}
         >
@@ -245,7 +248,7 @@ export default function Navbar() {
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
                   className={`block px-3 py-3 font-semibold transition-colors ${
-                    isActive(link.href) ? 'text-white' : 'text-slate-400'
+                    isActive(link.href) ? 'text-ink' : 'text-brand-subtle'
                   }`}
                 >
                   {link.label}
@@ -256,7 +259,7 @@ export default function Navbar() {
               <Link
                 href="/contact"
                 onClick={() => setMobileOpen(false)}
-                className="block text-center px-6 py-3 font-bold text-white transition-colors hover:text-brand-blue"
+                className="block text-center px-6 py-3 font-bold text-ink transition-colors hover:text-brand-blue"
               >
                 Book Free Consultation →
               </Link>

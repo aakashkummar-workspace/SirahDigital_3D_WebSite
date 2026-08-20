@@ -69,7 +69,7 @@ export default function HomeProductsBlock() {
       // one row work: it is the difference between four columns at ~300px,
       // where every description breaks to three lines, and four at ~348px,
       // where they hold at two.
-      className="relative mx-auto w-full max-w-[1440px] px-6 pt-20 pb-14 md:pt-28 md:pb-20"
+      className="section-alt relative mx-auto w-full max-w-[1440px] px-6 pt-20 pb-14 md:pt-28 md:pb-20"
     >
       <Reveal y={24} duration={600}>
         <h2 id="home-products-label" className={styles.label}>

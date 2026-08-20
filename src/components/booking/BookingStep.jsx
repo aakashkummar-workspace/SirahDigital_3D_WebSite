@@ -81,8 +81,8 @@ export default function BookingStep({ firstName, lastName, email, phone, company
 
   if (state === 'done') {
     return (
-      <div className="rounded-xl border border-white/10 p-6">
-        <p className="text-fluid-base font-medium text-white">
+      <div className="rounded-xl border border-ink/10 p-6">
+        <p className="text-fluid-base font-medium text-ink">
           You are booked{firstName ? `, ${firstName}` : ''}.
         </p>
         <p className="mt-3 max-w-[52ch] text-fluid-sm leading-relaxed text-brand-muted">
@@ -90,7 +90,7 @@ export default function BookingStep({ firstName, lastName, email, phone, company
           the joining link an hour before we start.
         </p>
         {confirmed?.startAt && (
-          <p className="mt-4 text-fluid-sm text-white/55">
+          <p className="mt-4 text-fluid-sm text-ink/55">
             {new Intl.DateTimeFormat('en-GB', {
               weekday: 'long', day: 'numeric', month: 'long',
               hour: 'numeric', minute: '2-digit', hour12: true,

@@ -70,7 +70,7 @@ export default function WorkflowTimeline({ steps, label = 'Automation workflow' 
       initial={initial}
       whileInView="show"
       viewport={{ once: true, amount: 0.2 }}
-      className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-sm sm:p-7 lg:p-9"
+      className="rounded-3xl border border-ink/[0.07] bg-ink/[0.025] p-5 backdrop-blur-sm sm:p-7 lg:p-9"
     >
       <p className="mb-6 text-fluid-xs font-semibold uppercase tracking-[0.3em] text-brand-cyan">
         {label}
@@ -105,10 +105,10 @@ export default function WorkflowTimeline({ steps, label = 'Automation workflow' 
 
                 <motion.div variants={nodeV} className="h-full">
                   <div className="wf-card flex flex-col gap-2 p-3.5 sm:p-4">
-                    <span className="wf-icon inline-flex h-8 w-8 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-brand-cyan">
+                    <span className="wf-icon inline-flex h-8 w-8 items-center justify-center rounded-[10px] border border-ink/[0.08] bg-ink/[0.04] text-brand-cyan">
                       <Icon size={17} strokeWidth={1.75} aria-hidden="true" />
                     </span>
-                    <span className="text-[0.8125rem] font-semibold leading-snug tracking-tight text-white">
+                    <span className="text-[0.8125rem] font-semibold leading-snug tracking-tight text-ink">
                       {step.title}
                     </span>
                     <span className="text-[0.6875rem] leading-snug text-brand-muted">

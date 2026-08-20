@@ -106,7 +106,7 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
         <button
           type="button"
           onClick={downloadReport}
-          className="interactive-hover group inline-flex min-h-[44px] items-center gap-2 text-[14px] font-medium text-white/60 transition-colors hover:text-white"
+          className="interactive-hover group inline-flex min-h-[44px] items-center gap-2 text-[14px] font-medium text-ink/60 transition-colors hover:text-ink"
         >
           Download the automation report
           <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">
@@ -124,8 +124,8 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
       {/* The honest caveat. These are modelled projections shown to a
           prospect, so the page says so plainly rather than implying they are
           measured results. */}
-      <p className="mt-8 max-w-[62ch] text-[12px] leading-relaxed text-white/35">
-        <strong className="font-medium text-white/55">Indicative estimate.</strong> Figures are modelled from
+      <p className="mt-8 max-w-[62ch] text-[12px] leading-relaxed text-ink/35">
+        <strong className="font-medium text-ink/55">Indicative estimate.</strong> Figures are modelled from
         your inputs using industry-typical assumptions for automatable workload, transaction handling time and
         implementation cost. They are not a quotation and not a guarantee of results - a scoping call replaces
         them with numbers based on your actual processes.

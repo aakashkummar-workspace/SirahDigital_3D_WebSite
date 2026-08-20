@@ -70,7 +70,7 @@ export default function ServiceNavigator({ variant, active, onSelect, reduced = 
   if (variant === 'rail') {
     return (
       <nav aria-label="Services" onKeyDown={onKeyDown}>
-        <p className="text-fluid-xs uppercase tracking-[0.3em] font-semibold text-white/40 mb-5">
+        <p className="text-fluid-xs uppercase tracking-[0.3em] font-semibold text-ink/40 mb-5">
           Capabilities
         </p>
         <ol ref={listRef} className="space-y-1">
@@ -84,13 +84,13 @@ export default function ServiceNavigator({ variant, active, onSelect, reduced = 
                   aria-current={isActive ? 'true' : undefined}
                   className={`group flex items-center gap-3 w-full text-left py-2 pl-3.5 border-l-2 transition-all duration-300 ${
                     isActive
-                      ? 'border-brand-blue text-white font-semibold'
-                      : 'border-transparent text-white/40 hover:text-white/80 font-normal'
+                      ? 'border-brand-blue text-ink font-semibold'
+                      : 'border-transparent text-ink/40 hover:text-ink/80 font-normal'
                   }`}
                 >
                   <span
                     className={`font-mono text-xs shrink-0 transition-colors ${
-                      isActive ? 'text-brand-blue font-bold' : 'text-white/30 group-hover:text-white/60'
+                      isActive ? 'text-brand-blue font-bold' : 'text-ink/30 group-hover:text-ink/60'
                     }`}
                   >
                     {s.number}
@@ -113,11 +113,11 @@ export default function ServiceNavigator({ variant, active, onSelect, reduced = 
     return (
       <nav aria-label="Services" onKeyDown={onKeyDown}>
         <div className="flex items-baseline justify-between gap-4">
-          <p className="text-fluid-sm font-bold text-white">
+          <p className="text-fluid-sm font-bold text-ink">
             <span className="font-mono text-brand-blue mr-2">{current.number}</span>
             {current.navLabel}
           </p>
-          <p className="text-fluid-xs font-mono text-white/40 shrink-0">
+          <p className="text-fluid-xs font-mono text-ink/40 shrink-0">
             {current.number} / {String(total).padStart(2, '0')}
           </p>
         </div>
@@ -143,8 +143,8 @@ export default function ServiceNavigator({ variant, active, onSelect, reduced = 
                       background: on
                         ? 'var(--brand-blue)'
                         : visited
-                          ? 'rgba(203,213,225,.32)'
-                          : 'rgba(255,255,255,.1)',
+                          ? 'rgb(var(--c-muted) / .32)'
+                          : 'rgb(var(--c-ink) / .1)',
                     }}
                   />
                 </button>
@@ -175,16 +175,16 @@ export default function ServiceNavigator({ variant, active, onSelect, reduced = 
                 aria-current={on ? 'true' : undefined}
                 className="flex items-center gap-2 min-h-[44px] px-4 rounded-full whitespace-nowrap transition-all duration-400 ease-brand"
                 style={{
-                  background: on ? 'rgba(59,130,246,.16)' : 'rgba(255,255,255,.04)',
+                  background: on ? 'rgb(var(--c-blue) / .16)' : 'rgb(var(--c-ink) / .04)',
                   opacity: on ? 1 : visited ? 0.45 : 0.75,
                 }}
               >
-                <span className="font-mono text-fluid-xs" style={{ color: on ? 'var(--brand-blue)' : 'rgba(255,255,255,.45)' }}>
+                <span className="font-mono text-fluid-xs" style={{ color: on ? 'var(--brand-blue)' : 'rgb(var(--c-ink) / .45)' }}>
                   {s.number}
                 </span>
                 <span
                   className="text-fluid-sm"
-                  style={{ color: on ? '#FFFFFF' : '#CBD5E1', fontWeight: on ? 700 : 500 }}
+                  style={{ color: on ? 'rgb(var(--c-text))' : 'rgb(var(--c-muted))', fontWeight: on ? 700 : 500 }}
                 >
                   {s.navLabel}
                 </span>

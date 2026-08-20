@@ -36,7 +36,7 @@ import s from './calculator.module.css';
  * Brand cyan, and only brand cyan: slider fill, the meters, the curve, the
  * primary CTA. It used to rotate by industry index, which encoded nothing.
  */
-const ACCENT = '#22D3EE';
+const ACCENT = 'rgb(var(--c-cyan))';
 
 function reducer(state, action) {
   if (state[action.key] === action.value) return state;   // no-op, no re-render
@@ -59,10 +59,10 @@ export default function AIAutomationROICalculator() {
         <AnimatedHeading
           id="roi-title"
           text="See what automation could save."
-          className="font-semibold leading-[1.05] tracking-tight text-white"
+          className="font-semibold leading-[1.05] tracking-tight text-ink"
           style={{ fontSize: 'clamp(2.25rem, 1.5rem + 3vw, 3.5rem)' }}
         />
-        <p className="mt-6 max-w-[52ch] text-[16px] leading-relaxed text-white/55">
+        <p className="mt-6 max-w-[52ch] text-[16px] leading-relaxed text-ink/55">
           Adjust a few details about your business to estimate your potential automation impact.
         </p>
       </header>
@@ -93,11 +93,11 @@ export default function AIAutomationROICalculator() {
       {/* ── recommendations ─────────────────────────────────────────────────
           Inline text rather than a row of pills. The set changes with the
           industry, so it is keyed on the industry id and re-reads naturally. */}
-      <div className="mt-20 border-t border-white/[0.06] pt-8">
-        <h2 className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/45">
+      <div className="mt-20 border-t border-ink/[0.06] pt-8">
+        <h2 className="text-[12px] font-semibold uppercase tracking-[0.22em] text-ink/45">
           Recommended automations
         </h2>
-        <p key={result.industry.id} className="mt-4 max-w-[70ch] text-[15px] leading-relaxed text-white/70">
+        <p key={result.industry.id} className="mt-4 max-w-[70ch] text-[15px] leading-relaxed text-ink/70">
           {result.industry.recommendations.join(' · ')}
         </p>
       </div>

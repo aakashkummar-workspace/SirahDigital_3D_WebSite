@@ -19,9 +19,9 @@ import { METHODOLOGY } from '@/data/services';
 // One accent across all three milestones. The colours here cycled by index
 // and never encoded anything, so three of them was noise rather than meaning.
 const ACCENTS = [
-  { dot: '#22D3EE', name: 'cyan' },
-  { dot: '#22D3EE', name: 'cyan' },
-  { dot: '#22D3EE', name: 'cyan' },
+  { dot: 'rgb(var(--c-cyan))', name: 'cyan' },
+  { dot: 'rgb(var(--c-cyan))', name: 'cyan' },
+  { dot: 'rgb(var(--c-cyan))', name: 'cyan' },
 ];
 
 function Milestone({ item, index, reduced }) {
@@ -122,24 +122,24 @@ export default function MethodologyJourney() {
             Vertical down the left on mobile, horizontal across on desktop.
             Both are a dim rail with a bright fill scaled by --progress. */}
         <div aria-hidden="true" className="absolute left-8 top-0 bottom-0 w-px md:hidden">
-          <div className="absolute inset-0 bg-white/10" />
+          <div className="absolute inset-0 bg-ink/10" />
           <div
             className="absolute inset-x-0 top-0 origin-top"
             style={{
               height: '100%',
               transform: 'scaleY(var(--progress))',
-              background: '#22D3EE',
+              background: 'rgb(var(--c-cyan))',
             }}
           />
         </div>
 
         <div aria-hidden="true" className="hidden md:block absolute left-0 right-0 top-10 h-px">
-          <div className="absolute inset-0 bg-white/10" />
+          <div className="absolute inset-0 bg-ink/10" />
           <div
             className="absolute inset-y-0 left-0 w-full origin-left"
             style={{
               transform: 'scaleX(var(--progress))',
-              background: '#22D3EE',
+              background: 'rgb(var(--c-cyan))',
             }}
           />
         </div>

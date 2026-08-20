@@ -29,7 +29,7 @@ export default function FeatureRow({ features }) {
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h3 className="mt-5 text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-white">
+                <h3 className="mt-5 text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-ink">
                   {feature.title}
                 </h3>
                 <p className="mt-3 text-[0.9375rem] leading-[1.7] text-brand-muted/70">

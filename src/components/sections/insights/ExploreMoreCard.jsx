@@ -38,15 +38,15 @@ export default function ExploreMoreCard({ href, label = 'Explore More' }) {
       >
         <div
           className="relative flex-1 min-h-[180px] grid place-items-center rounded-[24px]
-            border border-dashed border-white/15 bg-white/[0.02]
+            border border-dashed border-ink/15 bg-ink/[0.02]
             transition-colors duration-500 ease-brand
-            group-hover:border-white/30 group-hover:bg-white/[0.04]"
+            group-hover:border-ink/30 group-hover:bg-ink/[0.04]"
         >
           <span
             aria-hidden="true"
-            className="grid place-items-center w-14 h-14 rounded-full border border-white/20
-              text-white/70 transition-all duration-500 ease-brand
-              group-hover:border-white/40 group-hover:text-white group-hover:scale-105
+            className="grid place-items-center w-14 h-14 rounded-full border border-ink/20
+              text-ink/70 transition-all duration-500 ease-brand
+              group-hover:border-ink/40 group-hover:text-ink group-hover:scale-105
               motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -56,7 +56,7 @@ export default function ExploreMoreCard({ href, label = 'Explore More' }) {
         </div>
 
         {/* sits on the same baseline as the card titles beside it */}
-        <p className="mt-5 text-fluid-base font-semibold leading-snug text-white">
+        <p className="mt-5 text-fluid-base font-semibold leading-snug text-ink">
           {label}
           <span
             aria-hidden="true"
@@ -65,7 +65,7 @@ export default function ExploreMoreCard({ href, label = 'Explore More' }) {
             →
           </span>
         </p>
-        <p className="mt-2 text-fluid-xs text-white/45">Watch the full channel on YouTube</p>
+        <p className="mt-2 text-fluid-xs text-ink/45">Watch the full channel on YouTube</p>
       </a>
     </li>
   );

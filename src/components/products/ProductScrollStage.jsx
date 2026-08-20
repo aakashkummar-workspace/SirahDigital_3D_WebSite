@@ -244,9 +244,9 @@ export default function ProductScrollStage({
                     particle field. It is the brand ramp now, at three times
                     the width, with the glow in the stylesheet. */}
                 <linearGradient id="arcLeadRamp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22d3ee" />
-                  <stop offset="55%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#a855f7" />
+                  <stop offset="0%" style={{ stopColor: "rgb(var(--c-cyan))" }} />
+                  <stop offset="55%" style={{ stopColor: "rgb(var(--c-indigo))" }} />
+                  <stop offset="100%" style={{ stopColor: "rgb(var(--c-purple))" }} />
                 </linearGradient>
               </defs>
 
