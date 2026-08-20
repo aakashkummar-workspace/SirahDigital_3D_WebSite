@@ -23,3 +23,12 @@ yarn-error.log*
 .vercel
 *.tsbuildinfo
 /.next-verify/
+
+# Every .env variant, including backups like .env.local.bak-* .
+# The narrow patterns above missed those and they hold live secrets.
+.env*
+!.env.example
+
+# Dev build output and server logs
+/.next-dev*/
+*.log

@@ -1,7 +1,8 @@
 "use client";
 import React, { useMemo, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Environment } from '@react-three/drei';
+import { Float } from '@react-three/drei';
+import StudioEnvironment from './StudioEnvironment';
 import * as THREE from 'three';
 import { buildLogoGeometry } from './SirahCanvas';
 
@@ -58,7 +59,9 @@ export default function CTALogo3D() {
       <pointLight position={[-6, 4, -5]} intensity={0.8} color="#A855F7" />
       <pointLight position={[6, -4, 5]} intensity={1.1} color="#22D3EE" />
       <pointLight position={[0, 6, 4]} intensity={0.6} color="#6366F1" />
-      <Environment preset="studio" />
+      {/* Local rig, not a preset — the preset fetches an HDR from GitHub
+          and 429s took the page down. See StudioEnvironment. */}
+      <StudioEnvironment />
       <Mark />
     </Canvas>
   );

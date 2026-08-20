@@ -1,0 +1,264 @@
+/*
+ * The About page's full-bleed opening.
+ *
+ * ── the layout follows the photograph ────────────────────────────────────
+ * The reference this was drawn from centres its copy, because its subject is
+ * centred. Ours is not, and copying the arrangement rather than the idea
+ * would have put the headline across the founder's face.
+ *
+ * Measuring the supplied frame (luminance, 0-255, sampled on a 10x6 grid):
+ *
+ *     the subject's head   ~62-68% across, ~5-30% down, luminance 15-79
+ *     the bottom third     luminance 0-7 — effectively pure black
+ *     the left at mid      luminance 3-9
+ *
+ * So the copy sits low and left, over pixels that are already black, and the
+ * subject keeps the upper right of the frame to himself. That is the same
+ * composition as the reference — type in the dark part, subject in the lit
+ * part — arrived at from this image rather than from that one.
+ *
+ * ── the scrim is a guarantee, not a look ─────────────────────────────────
+ * Given the numbers above the copy would clear 4.5:1 with no scrim at all.
+ * It is here anyway, because the image is replaceable — lib/founderImages.js
+ * will pick up whatever is dropped at that path — and white type over an
+ * unknown photograph has no contrast guarantee. It is weighted to the bottom
+ * and the left, which is where the type is, and stays light across the top
+ * right so the subject is never muddied.
+ */
+
+/*
+ * Full-bleed horizontally, and starting below the navbar.
+ *
+ * `(site)/layout.js` renders `<main className="relative z-10 w-full pt-[72px]">`
+ * — full width, no max-width, no horizontal padding. Every section inside it
+ * centres and pads *itself*, so this one is already edge to edge simply by not
+ * doing that. The usual `width: 100vw; margin-left: calc(50% - 50vw)` escape
+ * would be worse than useless here: 100vw includes the scrollbar, so it would
+ * introduce the horizontal overflow it exists to avoid.
+ *
+ * Vertically it does NOT bleed. This carried `margin-top: -72px` so the image
+ * ran up behind the fixed navbar, which is a good trick for an abstract
+ * background and the wrong one for a portrait: the bar sat across the top of
+ * the frame and cut into the subject. <main>'s padding is left to do its job,
+ * so the photograph begins where the navbar ends and the whole frame is
+ * visible.
+ */
+.bleed {
+  margin-top: 0;
+}
+
+.stage {
+  position: relative;
+  display: flex;
+  /* Copy sits at the bottom of the frame, under the subject's eyeline. */
+  align-items: flex-end;
+  /* svh, not vh — a mobile URL bar collapsing must not resize the hero. */
+  min-height: min(78svh, calc(100svh - 72px));
+  /* No navbar to clear any more — the section already starts below it. */
+  padding: clamp(40px, 8svh, 96px) 0 clamp(44px, 7svh, 88px);
+  overflow: hidden;
+  isolation: isolate;
+  /* Under the image, so a slow connection shows the page's own ground rather
+     than a white flash. Also what the no-image fallback renders on. */
+  background-color: #0b0e17;
+  /* States the edge between the navbar's ground and the photograph, now that
+     the two sit next to each other rather than overlapping. Paired with the
+     hairline .stage::after draws at the other end. */
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/*
+ * The image and the scrim, as background layers on one pseudo-element.
+ *
+ * Listed scrim-first because CSS paints background layers front to back.
+ *
+ *   layer 1  bottom-up, carrying the copy. Its last two stops lift again
+ *            towards the top, very slightly, so the lit glass up there is
+ *            settled rather than blown out against the dark page
+ *   layer 2  left-to-right, so the copy column is covered at every height
+ *   layer 3  the photograph
+ *
+ * background-position 68% 10%: horizontal only bites once the viewport is
+ * narrower than the frame, where it keeps the subject in shot instead of
+ * cropping him off the right edge. Vertical sits near the top because the
+ * navbar no longer covers it — his head starts ~5% down, so anything much
+ * past 10% begins clipping it on a short viewport.
+ */
+.stage[data-has-image='true']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(
+      to top,
+      rgba(11, 14, 23, 0.88) 0%,
+      rgba(11, 14, 23, 0.72) 26%,
+      rgba(11, 14, 23, 0.34) 55%,
+      rgba(11, 14, 23, 0.1) 80%,
+      rgba(11, 14, 23, 0.16) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(11, 14, 23, 0.72) 0%,
+      rgba(11, 14, 23, 0.42) 34%,
+      rgba(11, 14, 23, 0) 62%
+    ),
+    var(--hero-image);
+  background-size: cover, cover, cover;
+  background-position: center, center, 68% 10%;
+  background-repeat: no-repeat;
+}
+
+/*
+ * Phones get the 1024px cut. `cover` on a tall, narrow viewport throws most of
+ * a 1536px frame away, so the wider file would be bytes nobody ever sees.
+ * The subject is pushed further into shot here — at this aspect the crop is
+ * severe enough that 68% would leave him half off the edge.
+ */
+@media (max-width: 767px) {
+  .stage[data-has-image='true']::before {
+    background-image:
+      linear-gradient(
+        to top,
+        rgba(11, 14, 23, 0.94) 0%,
+        rgba(11, 14, 23, 0.82) 32%,
+        rgba(11, 14, 23, 0.4) 62%,
+        rgba(11, 14, 23, 0.28) 100%
+      ),
+      var(--hero-image-sm);
+    background-size: cover, cover;
+    background-position: center, 72% 8%;
+  }
+}
+
+/*
+ * No landscape hero on disk, so the only image is the 293x512 roster portrait.
+ * Upscaled across a full-bleed frame it is visibly soft, so this leans into
+ * it: a heavier scrim and a slight blur turn the photograph into a ground
+ * rather than a subject. Not reached while riyaz-hero.jpg exists — see
+ * lib/founderImages.js.
+ */
+.stageTight[data-has-image='true']::before {
+  background-image: linear-gradient(
+      to top,
+      rgba(11, 14, 23, 0.96) 0%,
+      rgba(11, 14, 23, 0.9) 40%,
+      rgba(11, 14, 23, 0.78) 100%
+    ),
+    var(--hero-image);
+  background-size: cover, cover;
+  background-position: center, center 20%;
+  filter: blur(1.5px);
+  transform: scale(1.04);
+}
+
+/*
+ * A hairline where the hero meets the page.
+ *
+ * The image fades to near-black and the page below it is near-black, so
+ * without this the boundary is invisible and the hero reads as unbounded.
+ * One pixel at 8% is enough to state the edge without drawing a line across
+ * the design.
+ */
+.stage::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+
+/* Matches the container every other section on the page uses. */
+.inner {
+  position: relative;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/*
+ * The copy column.
+ *
+ * Capped so the headline never runs under the subject: at 1160px the container
+ * is the full measure, and 34rem of it leaves the right-hand third — where he
+ * stands — clear of type at every desktop width.
+ */
+.copy {
+  max-width: 34rem;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.title {
+  margin-top: 20px;
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 1.35rem + 3.4vw, 4rem);
+  font-weight: 700;
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+/*
+ * The name, gradiented — the same treatment the founder plate below gives his
+ * surname, so the two blocks read as one page.
+ */
+.name {
+  background: linear-gradient(120deg, #ffffff 0%, #c7d2fe 40%, #7dd3fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .name {
+    color: #7dd3fc;
+    -webkit-text-fill-color: #7dd3fc;
+  }
+}
+
+.standfirst {
+  margin-top: 22px;
+  max-width: 46ch;
+  font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+  line-height: 1.7;
+  /* Deliberately under the headline's white: this is the second thing read,
+     and against a photograph the hierarchy has to come from value. */
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  margin-top: 32px;
+}
+
+@media (min-width: 1024px) {
+  .stage {
+    min-height: min(82svh, calc(100svh - 72px));
+  }
+
+  .title {
+    margin-top: 24px;
+  }
+
+  .actions {
+    margin-top: 38px;
+  }
+}

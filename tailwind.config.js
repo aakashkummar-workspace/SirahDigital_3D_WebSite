@@ -1,3 +1,5 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -10,6 +12,19 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // --font-sans is Satoshi (digits from Melodrama), declared as
+        // @font-face in globals.css.
+        // Preflight puts theme('fontFamily.sans') on <html>, so overriding it
+        // here is what carries the face to the whole site rather than only to
+        // the elements that happen to spell out `font-sans`. The system stack
+        // stays behind it as the fallback during swap.
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
+        // Boska, via --font-display. globals.css already applies it to
+        // h1/h2/h3 directly, so this utility is only for the exceptions.
+        // The `voga` entry that sat here is gone with the face it named.
+        display: ['var(--font-display)', ...defaultTheme.fontFamily.serif],
+      },
       colors: {
         // Brand identity — exact values, do not drift.
         // Three of these already match Tailwind defaults at the same hex
@@ -23,9 +38,27 @@ module.exports = {
         brand: {
           indigo: '#6366F1',    // Primary Accent
           purple: '#A855F7',    // Secondary Accent
-          cyan: '#22D3EE',      // Highlight
+          cyan: '#22D3EE',      // Highlight — decorative only, see below
           text: '#FFFFFF',      // Text
           muted: '#CBD5E1',     // Secondary Text
+
+          // The CTA pair. Every primary button and every accent sitting next
+          // to one is drawn from these two, and from nothing else.
+          //
+          // They are not `indigo` and `purple` renamed: those are #6366F1 and
+          // #A855F7, and the identity the hero particle field and the logo
+          // are actually built on is #3B82F6 into #8B5CF6. Pointing the
+          // buttons at the older tokens would have restated the same
+          // mismatch the cyan had.
+          //
+          // brand-cyan stays declared because a good deal of the site's
+          // *decoration* is still legitimately cyan — the WebGL field, the
+          // SVG scenes, the timeline rails, the industry accents. It is no
+          // longer used on anything a visitor can press.
+          blue: '#3B82F6',      // CTA gradient, start
+          violet: '#8B5CF6',    // CTA gradient, end
+          'blue-deep': '#2563EB',   // CTA gradient, start — hover/pressed
+          'violet-deep': '#7C3AED', // CTA gradient, end   — hover/pressed
         },
       },
       fontSize: {

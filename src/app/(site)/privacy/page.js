@@ -41,7 +41,7 @@ export default function PrivacyPage() {
       <section className="max-w-3xl mx-auto px-6 py-16">
         <p className="text-sm text-gray-500">
           Last updated {new Date().getFullYear()}. Questions about this policy?{' '}
-          <a href={`mailto:${COMPANY.email}`} className="text-cyan-400 hover:text-cyan-300">{COMPANY.email}</a>
+          <a href={`mailto:${COMPANY.email}`} className="text-brand-blue transition-colors hover:text-white">{COMPANY.email}</a>
         </p>
 
         <div className="mt-12 space-y-10">
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
               <br />
               {COMPANY.addressOneLine}
               <br />
-              <a href={`mailto:${COMPANY.email}`} className="text-cyan-400 hover:text-cyan-300">{COMPANY.email}</a>
+              <a href={`mailto:${COMPANY.email}`} className="text-brand-blue transition-colors hover:text-white">{COMPANY.email}</a>
             </address>
           </div>
         </div>

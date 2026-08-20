@@ -1,0 +1,277 @@
+/*
+ * The ABOUT statement block.
+ *
+ * An oversized wordmark with one column set against it, carrying the
+ * statement, the quote and the links in that order. The word and the column
+ * overlap on purpose; the word is a ground, not a heading, which is why it is
+ * faint enough to read as texture and why the column never needs to clear it.
+ */
+
+.section {
+  position: relative;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  /* Stacked on a phone: the wordmark above, the statement under it. */
+  gap: 8px;
+}
+
+.wordmark {
+  display: block;
+  font-family: var(--font-display);
+  /*
+   * Huge, and allowed to be — it is the section's texture.
+   *
+   * The ceiling went 13rem -> 15rem when the quote and the links moved into
+   * the column beside it. That roughly doubled the column's height, and a
+   * word that had balanced a three-line paragraph read as undersized against
+   * it. The floor and the growth rate are unchanged: on a phone the word sits
+   * above the column rather than behind it, where its size is set by the
+   * screen and not by what it is next to.
+   */
+  font-size: clamp(4.5rem, 2rem + 16vw, 15rem);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  /*
+   * 8%, up from 4.5%.
+   *
+   * At 4.5% over this ground the word was so close to invisible that it read
+   * as a rendering artefact rather than as a deliberate mark. 8% is the point
+   * where it states itself and still sits clearly behind the type. Much past
+   * 10% and it starts competing with the statement for the eye, which is the
+   * one thing a ground must not do.
+   */
+  color: rgba(255, 255, 255, 0.08);
+  user-select: none;
+  /* Never a scrollbar, however wide the clamp resolves. */
+  overflow: hidden;
+}
+
+.copy {
+  position: relative;
+}
+
+/*
+ * The statement, at the top of the column and the loudest thing in it. The
+ * quote below is deliberately a step down: two voices at the same size read
+ * as one run-on paragraph.
+ */
+.lead {
+  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.875rem);
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  color: rgba(255, 255, 255, 0.92);
+  text-wrap: balance;
+}
+
+/*
+ * From here the word and the column sit side by side, in two tracks with a
+ * real gap between them.
+ *
+ * They used to share one grid cell, on the idea that the word would run
+ * behind the type as a ground. In practice it never did: the column is sized
+ * by its own content, `text-wrap: balance` narrows that content by an amount
+ * nothing here can predict, and the two ended up butting against each other
+ * with a few pixels between them — close enough to read as a collision rather
+ * than as a layer.
+ *
+ * Two tracks make the separation a stated quantity instead of a coincidence.
+ * The word is then sized to fit its own track, which is what keeps the gap
+ * from being eaten at any width — see the note on the font-size below.
+ */
+@media (min-width: 860px) {
+  .inner {
+    /* Establishes the query container the wordmark sizes itself against. It
+       must be this element and not .section: the tracks are shares of THIS
+       box's inline size, so this is the box the type has to fit inside. */
+    container-type: inline-size;
+
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    /* vw, not cqw: an element cannot query itself, so a cqw here would
+       resolve against some ancestor container or fail. */
+    column-gap: clamp(36px, 5vw, 88px);
+    /* The word centres against whatever height the column comes out at,
+       which is now the quote and the links as well as the statement. */
+    align-items: center;
+    min-height: 320px;
+  }
+
+  .wordmark {
+    grid-column: 1;
+    justify-self: start;
+
+    /*
+     * Sized to its track, not to the viewport.
+     *
+     * "ABOUT" in Cormorant Garamond at 700 with -0.05em tracking measures
+     * 3.490em wide — the five advances summed off the font's own hmtx, plus
+     * the five letter-spacings CSS adds after every character including the
+     * last, all multiplied by the 110% size-adjust in globals.css. The left
+     * track is a shade under half of this container, so 12cqw keeps the word
+     * at 3.490 x 12 = 42cqw — inside a ~48cqw track, with the remainder left
+     * as slack. That is the whole reason the gap survives: the word can no
+     * longer grow into it.
+     *
+     * THIS NUMBER IS A FUNCTION OF THE HEADING FACE, and of the size-adjust
+     * on it. It was 16cqw against Boska at 2.677em, which overflowed to 56cqw
+     * the moment a wider face went in. It is unchanged across the Clash
+     * Display -> Cormorant move only because 110% was chosen to hold widths
+     * steady (3.505em -> 3.490em, a 0.4% difference). Re-measure on the next
+     * face change, or on any change to that size-adjust:
+     *
+     *   from fontTools.ttLib import TTFont
+     *   from fontTools.varLib import instancer
+     *   f = instancer.instantiateVariableFont(
+     *         TTFont('public/fonts/cormorant-garamond.woff2'), {'wght': 700})
+     *   c = f.getBestCmap()
+     *   em = sum(f['hmtx'][c[ord(ch)]][0] for ch in 'ABOUT') / f['head'].unitsPerEm
+     *   em = (em - 0.05 * 5) * 1.10          # tracking, then size-adjust
+     *   print(em, '-> use', round(42 / em), 'cqw')
+     *
+     * The rem cap scales with it for the same reason: 11.5rem holds the same
+     * ceiling the 15rem did under the narrower face.
+     *
+     * The clamp above stays as the declaration this overrides, which is also
+     * the fallback anywhere container query units are unsupported.
+     */
+    font-size: min(11.5rem, 12cqw);
+    /*
+     * Pulled out past the container's left edge, into the page gutter.
+     *
+     * Bounded rather than a flat value, because the gutter is not: the
+     * container caps at 1160px, so at 1400px there is 120px either side to
+     * move into and at 900px there is none. clamp() reads (min, preferred,
+     * max) — the preferred -2.5vw is what does the work on a wide screen, and
+     * the -0.22em floor stops it walking off the edge on a narrow one. The
+     * -0.06em ceiling is the optical correction it started as: a display face
+     * carries side bearing, so a plain flush-left alignment already leaves a
+     * visible gap.
+     */
+    margin-left: clamp(-0.22em, -2.5vw, -0.06em);
+  }
+
+  .copy {
+    grid-column: 2;
+    /* The track is narrower than 46ch here, so the cap is inert — dropped
+       rather than left as a number that no longer decides anything. */
+    max-width: none;
+  }
+}
+
+/* ── the quote ──────────────────────────────────────────────────────────
+   A left rule in the brand gradient and nothing else: no quote-mark glyph,
+   no box, and no divider above it — the rule is the only ornament in the
+   section, and it is already enough to mark where the company stops speaking
+   and the founder starts. */
+.quote {
+  position: relative;
+  margin: 36px 0 0;
+  padding-left: 22px;
+}
+
+.quote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #6366f1, #a855f7 52%, #38bdf8);
+}
+
+.quoteText {
+  margin: 0;
+  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.55;
+  letter-spacing: -0.015em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/*
+ * The attribution, and the whole of the founder credibility this section
+ * still carries: his name, and what he is. The paragraphs that used to say
+ * the same thing at length are gone.
+ */
+.by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin-top: 16px;
+}
+
+.byName {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.byRole {
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+  /*
+   * 48%, not the 34% the removed block used for its equivalent line.
+   *
+   * 34% is 3.07:1 against this ground, and at 13px that is under the 4.5:1
+   * WCAG AA needs. 45% is exactly 4.5:1 and 48% clears it with a margin for
+   * the particle field drifting behind. It is still visibly the quieter half
+   * of the attribution, which is all the dimming was ever for.
+   */
+  color: rgba(255, 255, 255, 0.48);
+}
+
+/* ── socials ────────────────────────────────────────────────────────────
+   A small sequence, sitting on the quote's baseline rather than under it.
+   32px targets: smaller than the footer's 40px set on purpose, because here
+   they are a signature rather than a navigation row. */
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Indented to the quote's text, not to the column edge, so the signature
+     lines up under the words it belongs to. */
+  margin: 26px 0 0 22px;
+}
+
+.social {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.5);
+  transition:
+    color 240ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 240ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .social:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+@media (min-width: 1024px) {
+  .quote {
+    margin-top: 44px;
+  }
+
+  .socials {
+    margin-top: 30px;
+  }
+}

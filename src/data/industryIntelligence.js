@@ -12,7 +12,7 @@ import { INDUSTRIES } from './industries';
  * ── copy status ──────────────────────────────────────────────────────────
  * TODO: review before launch. `metric`, `outcomes`, `guarantee` and `stack`
  * were written to fill the panel's slots against plausible sector work, not
- * lifted from signed case studies. Replace any of it freely — nothing else
+ * lifted from signed client engagements. Replace any of it freely — nothing else
  * in the codebase depends on the wording. The `metric` figures in particular
  * should be swapped for numbers you can stand behind publicly.
  *
@@ -52,7 +52,7 @@ const INTELLIGENCE = [
       'Automated work-order dispatch',
       'Supplier and inventory reorder triggers',
     ],
-    guarantee: 'Edge-buffered ingestion — no telemetry lost during network drops.',
+    guarantee: 'Edge-buffered ingestion - no telemetry lost during network drops.',
     stack: ['MQTT', 'InfluxDB', 'Grafana', 'Node-RED'],
   },
   {

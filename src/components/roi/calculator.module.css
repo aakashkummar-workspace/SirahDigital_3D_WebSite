@@ -6,11 +6,88 @@
  * redesign needs a thinner one. Scoping it here means the two can coexist and
  * nothing outside this component can be affected by the change.
  *
- * A `.scrim` used to live here — a masked wash that lifted the read-out off
- * the WebGL particle field, which was dense enough on this route to make the
- * small figures unreadable. That background has been removed from the site, so
- * the scrim had nothing left to fight and went with it.
+ * The particle background is untouched by everything in this file.
  */
+
+/* ── Legibility scrim ──────────────────────────────────────────────────────
+   The page renders over a fixed WebGL particle field, and on this route the
+   field is dense enough to run straight through the read-out — 13px labels,
+   the 2px meters and the savings curve all become unreadable against it.
+
+   The previous design solved this with a solid #191634 card. That worked, and
+   it is exactly the dashboard-panel language this redesign is removing. This
+   is the same fix without the card: a heavily feathered radial wash that fades
+   to nothing well before any edge, so it reads as depth rather than as a
+   container. No border, no visible corner, no blur filter — a backdrop-blur
+   this large over a canvas repainting every frame is a real cost on mobile for
+   no gain over a plain fill.
+
+   It sits on the content layer, behind the text and in front of the canvas.
+   The particle component, its density, opacity, colour, speed and animation
+   are untouched. */
+.scrim {
+  position: absolute;
+  /*
+   * Overshoots vertically only.
+   *
+   * A horizontal overshoot (-10%) widened the section past the viewport and
+   * put 39px of horizontal overflow on the page at 390px. The body carries
+   * `overflow-x-hidden`, so nothing was visibly broken — which is the problem:
+   * the page was relying on a clip to hide a layout error rather than not
+   * having one. The horizontal softness comes from the mask's own feather
+   * instead, which costs no width.
+   */
+  inset: -3% 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* Fallback for engines without mask-composite: a soft ellipse. It cannot
+     cover a section this tall evenly, but it never shows a hard edge, which
+     is the property that matters — a visible rectangle would read as exactly
+     the card this redesign removed. */
+  background: radial-gradient(
+    ellipse 74% 78% at 50% 46%,
+    rgba(13, 11, 30, 0.93) 0%,
+    rgba(13, 11, 30, 0.88) 45%,
+    rgba(13, 11, 30, 0.5) 74%,
+    rgba(13, 11, 30, 0) 100%
+  );
+}
+
+/* The section is ~2600px tall and ~1160px wide, so a radial gradient is the
+   wrong shape for it: sized to cover the bottom it becomes far too strong in
+   the middle. A flat fill masked separately on each axis gives even coverage
+   with a soft edge on all four sides, which is what is actually wanted. */
+@supports (mask-composite: intersect) or (-webkit-mask-composite: source-in) {
+  .scrim {
+    background: rgba(13, 11, 30, 0.9);
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 7%,
+        black 93%,
+        transparent 100%
+      ),
+      linear-gradient(to right, transparent 0%, black 13%, black 87%, transparent 100%);
+    -webkit-mask-composite: source-in;
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 7%,
+        black 93%,
+        transparent 100%
+      ),
+      linear-gradient(to right, transparent 0%, black 13%, black 87%, transparent 100%);
+    mask-composite: intersect;
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
 
 /* ── Slider ────────────────────────────────────────────────────────────────
    A native <input type="range"> under custom styling. The native control

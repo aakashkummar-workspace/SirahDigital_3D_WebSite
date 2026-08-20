@@ -1,0 +1,350 @@
+/*
+ * The homepage products block.
+ *
+ * Columns separated by rules, and nothing else — no plate, no card, no fill.
+ * Hovering a column must not look like hovering a card, so nothing lifts and
+ * nothing shadows; the only things that move are the name (2px) and the arrow
+ * (6px).
+ *
+ * Three rungs, and the widest one is the design:
+ *
+ *   < 720px      stacked, one per row, divided by horizontal rules
+ *   720-1159px   two across
+ *   >= 1160px    ONE ROW, every product on it, up to five
+ *
+ * There is deliberately no background of any kind. The site's WebGL particle
+ * field runs behind this section and stays fully visible through it.
+ */
+
+.label {
+  /* An <h2> by markup, a label by job — the same opt-out .work-group__label
+     and the product stage's own label take. */
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  margin-bottom: 28px;
+}
+
+.block {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+/* ── one column ──────────────────────────────────────────────────────── */
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 30px 0;
+  /* Stacked on a phone, so the rule between columns is horizontal. */
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.col:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/*
+ * The counter.
+ *
+ * Large, and quiet enough that it never competes with the name it introduces
+ * — it is the one thing on this page allowed to be big and almost invisible
+ * at the same time. Tabular figures so 01/02/03 sit on identical widths.
+ */
+.num {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  /*
+   * 34%, which is exactly 3.0:1 — the WCAG AA floor for text at this size.
+   *
+   * It reads as quiet as the 22% it started at, and as the 13% the product
+   * stage uses for the same job, but neither of those clears the threshold.
+   * The counter is aria-hidden and decorative, so the rule is arguable; it is
+   * also visible text that a sighted reader is meant to be able to read, and
+   * meeting the floor costs nothing here.
+   */
+  color: rgba(255, 255, 255, 0.34);
+}
+
+/*
+ * The name, and the only highlighted thing in the column. Everything around
+ * it is set quieter so that this is what the eye takes away.
+ */
+.title {
+  margin-top: 22px;
+  font-family: var(--font-display);
+  font-size: clamp(1.625rem, 1.3rem + 1.3vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/*
+ * Two lines, and the measure is what holds it to two.
+ *
+ * 26ch here was sized for a tagline. The column now carries the description
+ * from data/products.js, which is written to about 85 characters, and 26ch
+ * would break that over four lines and leave the three columns ragged. 42ch
+ * is the widest measure the narrowest column can give it — the middle column
+ * is ~317px inside its 40px rules, which is about 42 characters at this size
+ * — so the copy wraps to two lines and the arrows below still line up.
+ *
+ * If a description grows past ~90 characters it will take a third line. That
+ * is the constraint the length note in data/products.js is describing.
+ */
+.desc {
+  margin-top: 14px;
+  max-width: 42ch;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.arrow {
+  /* Pushed to the bottom so the three arrows sit on one line however uneven
+     the names and the taglines are. */
+  margin-top: auto;
+  padding-top: 30px;
+  font-size: 1.125rem;
+  line-height: 1;
+  /* 46% is 4.7:1. At 18px this is body-sized text, so it needs the full
+     4.5:1 rather than the large-text 3.0:1 — and unlike the counter it is
+     the column's only affordance, so it has to be seen to be used. */
+  color: rgba(255, 255, 255, 0.46);
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    color 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ── hover: three columns responding, not three cards lifting ────────── */
+
+@media (hover: hover) {
+  .col:hover .title {
+    transform: translateY(-2px);
+  }
+  .col:hover .arrow {
+    transform: translateX(6px);
+    color: #ffffff;
+  }
+}
+
+/* Keyboard parity — the column is a link, so it takes focus. */
+.col:focus-visible {
+  outline-offset: 4px;
+}
+.col:focus-visible .title {
+  transform: translateY(-2px);
+}
+.col:focus-visible .arrow {
+  transform: translateX(6px);
+  color: #ffffff;
+}
+
+/* -- two across, on tablets ------------------------------------------- */
+
+/*
+ * The middle rung of the ladder. Bounded at the top rather than open-ended:
+ * above 1160px every product goes on ONE row, and these rules would otherwise
+ * keep applying underneath it and fight the row's own borders.
+ *
+ * 720px rather than the 860 this used to start at. The block used to jump
+ * straight from stacked to its final arrangement, so 860 was chosen as the
+ * width the FINAL layout needed. It is now an intermediate step and only has
+ * to be better than stacking, which two columns are from about 720 — 336px
+ * each, comfortably wider than the longest single word in any product name.
+ */
+@media (min-width: 720px) and (max-width: 1159.98px) {
+  .block {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .col {
+    padding: 26px 24px 22px;
+    /* A vertical rule between the pair, and a horizontal one above every row
+       but the first. Together they draw the grid. */
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-left: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* nth-child(2n+1), not :first-child: every row starts a new left edge, so
+     the rule comes off the first item of each row rather than only the first
+     item of the grid. */
+  .col:nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .col:nth-child(2n) {
+    padding-right: 0;
+  }
+
+  /* The top row sits directly under the section label, which is separation
+     enough on its own. */
+  .col:nth-child(1),
+  .col:nth-child(2) {
+    padding-top: 8px;
+    border-top: 0;
+  }
+
+  .title {
+    margin-top: 26px;
+  }
+
+  .arrow {
+    padding-top: 40px;
+  }
+}
+
+/* -- one row ---------------------------------------------------------- */
+
+/*
+ * Every product on a single row, up to five of them.
+ *
+ * This replaced a 2x2 block. The note that used to sit here argued against
+ * going wider than two — "at this container width four columns are ~300px
+ * wide, about 30 characters of measure, so every description would take three
+ * lines and the row would read as a spec table". That was true at the 1240px
+ * container it was written against. The section is 1440px now, which is what
+ * buys the row back: four columns come out at 348px, ~48 characters at the
+ * 14px this tier sets, so the descriptions still land on two lines.
+ *
+ * Five is the cap, and it is a real one — at five the columns are 278px and
+ * about 37 characters, which is a three-line description and the point where
+ * the old objection starts to apply again. A sixth product wraps onto a
+ * second row rather than squeezing the first.
+ *
+ * --cols and data-cols are the same number, written by the component as
+ * min(productCount, 5). The custom property sizes the track list; the
+ * attribute drives the row-edge rules below, because nth-child() cannot take
+ * a var().
+ */
+@media (min-width: 1160px) {
+  .block {
+    grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  }
+
+  .col {
+    padding: 8px 20px 22px;
+    /* One row, so there is no horizontal rule to draw — only the verticals
+       between neighbours. Both are re-established per row below for the
+       wrapped case. */
+    border-top: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /*
+   * Not redundant with the shorthand above, and leaving it out is a real bug:
+   * the stacked tier sets `.col:first-child { padding-top: 0 }` to close the
+   * gap under the section label, and a class-plus-pseudo-class selector
+   * out-specifies the bare `.col` here whatever the media query. Without this
+   * the first product's numeral sits 8px higher than the other three and the
+   * whole row reads as misaligned.
+   *
+   * Same specificity as the rule it is beating, so source order decides — and
+   * this file has the stacked tier first. The two-across tier handles the same
+   * collision the same way, with its nth-child(1)/(2) pair.
+   */
+  .col:first-child {
+    padding-top: 8px;
+  }
+
+  /*
+   * Row edges.
+   *
+   * One pair of selectors per possible column count, because nth-child() takes
+   * an integer rather than var(--cols). Verbose, and the alternative is worse:
+   * :first-child/:last-child would be correct only while everything fits on
+   * one row, and would silently draw a rule down the left of a wrapped sixth
+   * product the day one is added.
+   */
+  .block[data-cols='2'] .col:nth-child(2n + 1),
+  .block[data-cols='3'] .col:nth-child(3n + 1),
+  .block[data-cols='4'] .col:nth-child(4n + 1),
+  .block[data-cols='5'] .col:nth-child(5n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .block[data-cols='2'] .col:nth-child(2n),
+  .block[data-cols='3'] .col:nth-child(3n),
+  .block[data-cols='4'] .col:nth-child(4n),
+  .block[data-cols='5'] .col:nth-child(5n) {
+    padding-right: 0;
+  }
+
+  /* Only reached once there are more products than fit on one row. */
+  .block[data-cols='2'] .col:nth-child(n + 3),
+  .block[data-cols='3'] .col:nth-child(n + 4),
+  .block[data-cols='4'] .col:nth-child(n + 5),
+  .block[data-cols='5'] .col:nth-child(n + 6) {
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /*
+   * Type, one step down from the two-column tier.
+   *
+   * The column is narrower here than in any other arrangement, so the name
+   * and the counter come down with it — at the 2.125rem the wide tier allows,
+   * "Transcriber" alone would take 170px of a 328px measure and every
+   * two-word name would break.
+   */
+  .num {
+    font-size: clamp(1.5rem, 1.2rem + 0.8vw, 2rem);
+  }
+
+  .title {
+    margin-top: 24px;
+    font-size: clamp(1.375rem, 1.05rem + 0.9vw, 1.75rem);
+  }
+
+  .desc {
+    margin-top: 12px;
+    /* The column is the measure now — a ch cap on top of it would only ever
+       be the tighter of the two and would leave the row ragged. */
+    max-width: none;
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+
+  .arrow {
+    padding-top: 34px;
+  }
+}
+
+/*
+ * The gutter the layout was drawn with, once the columns are wide enough to
+ * carry it. Below this the rules sit closer to the text so the measure stays
+ * readable; see the note on .col above.
+ */
+@media (min-width: 1440px) {
+  .col {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .block[data-cols='2'] .col:nth-child(2n + 1),
+  .block[data-cols='3'] .col:nth-child(3n + 1),
+  .block[data-cols='4'] .col:nth-child(4n + 1),
+  .block[data-cols='5'] .col:nth-child(5n + 1) {
+    padding-left: 0;
+  }
+
+  .block[data-cols='2'] .col:nth-child(2n),
+  .block[data-cols='3'] .col:nth-child(3n),
+  .block[data-cols='4'] .col:nth-child(4n),
+  .block[data-cols='5'] .col:nth-child(5n) {
+    padding-right: 0;
+  }
+}

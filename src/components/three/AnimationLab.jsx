@@ -1,7 +1,8 @@
 "use client";
 import React, { useRef, useEffect, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Center, Float, Environment, MeshTransmissionMaterial } from '@react-three/drei';
+import { Center, Float, MeshTransmissionMaterial } from '@react-three/drei';
+import StudioEnvironment from './StudioEnvironment';
 import * as THREE from 'three';
 import { Sirah3DLogoShape, buildLogoGeometry } from './SirahCanvas';
 
@@ -626,7 +627,7 @@ const RIGS = {
 
 const SET_C = [
   { n: 1, key: 'crystal', name: 'Dispersive Crystal', tag: 'Glass', hint: 'Move your mouse to turn it.',
-    blurb: 'Proper transmission with chromatic aberration — the edges split colour like a prism instead of just going see-through. This is what B4 was reaching for; B4 used the plain transmission material, this uses drei’s multi-sample one.' },
+    blurb: 'Proper transmission with chromatic aberration - the edges split colour like a prism instead of just going see-through. This is what B4 was reaching for; B4 used the plain transmission material, this uses drei’s multi-sample one.' },
   { n: 2, key: 'molten', name: 'Molten Glass', tag: 'Glass', hint: 'Runs on its own.',
     blurb: 'Same transmission with live surface distortion, so the glass churns as though it has not finished cooling. Softer and more organic than the crystal.' },
   { n: 3, key: 'overtext', name: 'Glass Over Copy', tag: 'Glass', hint: 'Watch the text bend as it passes.',
@@ -638,7 +639,7 @@ const SET_C = [
 ];
 
 const SET_B = [
-  { n: 1, key: 'energy', name: 'Energy Pulse', tag: 'Light sweep', hint: 'Runs on its own — no input needed.',
+  { n: 1, key: 'energy', name: 'Energy Pulse', tag: 'Light sweep', hint: 'Runs on its own - no input needed.',
     blurb: 'A band of light travels across the mark on a loop, like current moving through the workflow the logo actually depicts. The material still lights normally underneath; the pulse is added emission.' },
   { n: 2, key: 'particles', name: 'Particle Assembly', tag: 'Dissolve / reform', hint: 'Loops every 7 seconds.',
     blurb: 'Seven thousand points sampled off the real geometry condense into the logo, hold, scatter, and reform. Each particle keeps its gradient colour, so the brand palette survives the dissolve.' },
@@ -655,7 +656,7 @@ const SET_A = [
   { n: 2, key: 'turntable', name: 'Turntable', tag: 'Always moving', hint: '', blurb: 'Constant slow revolution showing the extruded depth from every angle.' },
   { n: 3, key: 'scroll', name: 'Scroll Spin + Drift', tag: 'Scroll-linked', hint: 'Scroll slowly through this section.', blurb: 'Rotation, scale and position driven by scroll, so the mark moves aside as you read.' },
   { n: 4, key: 'assemble', name: 'Assemble', tag: 'Entrance', hint: 'Replays on scroll into view.', blurb: 'Flies up, unwinds and settles with a slight overshoot.' },
-  { n: 5, key: 'elastic', name: 'Elastic Magnet', tag: 'Springy', hint: 'Move your mouse fast.', blurb: 'Spring physics — overshoots the cursor, wobbles back, pops in scale.' },
+  { n: 5, key: 'elastic', name: 'Elastic Magnet', tag: 'Springy', hint: 'Move your mouse fast.', blurb: 'Spring physics - overshoots the cursor, wobbles back, pops in scale.' },
 ];
 
 /* ================= page ================= */
@@ -700,7 +701,9 @@ function Stage({ item, setLabel }) {
             <pointLight position={[-6, 4, -5]} intensity={0.7} color="#a855f7" />
             <pointLight position={[6, -4, 5]} intensity={1.0} color="#06b6d4" />
             <Suspense fallback={null}>
-              <Environment preset="studio" />
+              {/* Local rig — MeshTransmissionMaterial needs an envMap, but
+                  not one fetched from a CDN. See StudioEnvironment. */}
+              <StudioEnvironment />
               {needsCenter
                 ? <Center><Rig progress={progress} trigger={trigger} /></Center>
                 : <Rig progress={progress} trigger={trigger} />}
@@ -724,11 +727,11 @@ export default function AnimationLab() {
           3D logo animation options
         </h1>
         <p className="mt-4 text-brand-muted max-w-2xl">
-          Set C goes deeper on the two you liked — three glass treatments and two particle
+          Set C goes deeper on the two you liked - three glass treatments and two particle
           treatments. Scroll through, then tell me the number you want on the live site.
         </p>
         <div className="mt-8 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
-          {[['C', 'Set C — glass + particles'], ['B', 'Set B'], ['A', 'Set A']].map(([k, label]) => (
+          {[['C', 'Set C - glass + particles'], ['B', 'Set B'], ['A', 'Set A']].map(([k, label]) => (
             <button
               key={k}
               onClick={() => setSet(k)}
@@ -741,7 +744,7 @@ export default function AnimationLab() {
       </header>
       {items.map((item) => <Stage key={item.key} item={item} setLabel={set} />)}
       <footer className="max-w-6xl mx-auto px-6 py-24 text-sm text-gray-500">
-        Preview route only — the live homepage is untouched.
+        Preview route only - the live homepage is untouched.
       </footer>
     </main>
   );

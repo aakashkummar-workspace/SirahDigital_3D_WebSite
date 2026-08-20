@@ -54,7 +54,7 @@ export default function ResultPanel({ result, accent }) {
           style={{ fontSize: 'clamp(3rem, 1.9rem + 4.4vw, 4rem)' }}
         />
         <p className="mt-3 max-w-[42ch] text-[12px] leading-relaxed text-white/40">
-          Realised cost avoidance — not the notional value of every freed hour.
+          Realised cost avoidance - not the notional value of every freed hour.
         </p>
       </div>
 

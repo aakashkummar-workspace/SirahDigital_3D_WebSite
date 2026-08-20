@@ -16,12 +16,25 @@ const nextConfig = {
     // sent to the server — so the homepage forwards those on the client.
     // See components/sections/AnchorRedirect.jsx.
     return [
+      // The landing page moved to /hub. 307 rather than 308 on purpose: a
+      // permanent redirect on the root URL is cached hard by every browser
+      // that sees it once, and undoing that is a support problem rather than
+      // a deploy. Flip `permanent` to true once /hub is settled.
+      { source: '/', destination: '/hub', permanent: false },
+
       { source: '/team', destination: '/about', permanent: true },
       { source: '/process', destination: '/about', permanent: true },
-      { source: '/projects', destination: '/work', permanent: true },
-      { source: '/portfolio', destination: '/work', permanent: true },
       { source: '/service', destination: '/services', permanent: true },
       { source: '/contact-us', destination: '/contact', permanent: true },
+
+      // /work merged into /products — the products it listed were the same
+      // three that page already carried, and the case studies moved with it.
+      // The fragment is not sent to the server, so these land at the top of
+      // /products rather than on the case studies; that is the right landing
+      // for /work itself, and the two below inherit it.
+      { source: '/work', destination: '/products', permanent: true },
+      { source: '/projects', destination: '/products', permanent: true },
+      { source: '/portfolio', destination: '/products', permanent: true },
     ];
   },
 };

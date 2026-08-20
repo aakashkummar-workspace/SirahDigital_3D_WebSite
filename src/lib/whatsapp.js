@@ -8,6 +8,8 @@
 // The instance is identified by the token, not by a path segment, so
 // WHATSAPP_INSTANCE is kept only for logging and error messages.
 
+import { COMPANY } from '@/data/company';
+
 const BASE = (process.env.WHATSAPP_API_URL || '').replace(/\/$/, '');
 const KEY = process.env.WHATSAPP_API_KEY;
 const INSTANCE = process.env.WHATSAPP_INSTANCE || 'default';
@@ -55,26 +57,62 @@ export async function sendWhatsAppText({ to = TO, text }) {
   }
 }
 
-// Sent to the person who filled in the form, on the number they typed.
-//
-// NB: WhatsApp bold is a *single* asterisk. Markdown's **double** asterisk is
-// not supported — it renders the extra asterisks literally — so the emphasis
-// below is deliberately single-starred.
+/*
+ * The public booking page, for the message below.
+ *
+ * It used to be built from NEXT_PUBLIC_TIDYCAL_PATH and point at tidycal.com.
+ * The calendar is ours now, so this is simply our own /book — which means it can
+ * no longer be misconfigured to point at a calendar nobody reads, and there is
+ * no env var left to forget when the booking type is renamed.
+ */
+const BOOKING_URL = `${COMPANY.url}/book`;
+
+/**
+ * Sent to the person who filled in either form, on the number they typed.
+ *
+ * ── Why it no longer says we will call to schedule ───────────────────────
+ * It used to promise that "one of our AI solutions experts will contact you
+ * shortly to schedule your consultation at a time convenient for you". That was
+ * written when the form was the whole funnel. Both forms now hand straight over
+ * to the calendar, so the sentence contradicts what the person is looking at —
+ * and for anyone who has just picked a slot it reads as though the booking did
+ * not register.
+ *
+ * ── Who this message is really for ───────────────────────────────────────
+ * The one who filled in the form and then closed the tab without choosing a
+ * time. They are the reason it carries the booking link: it is the only way they
+ * can finish without waiting for someone to chase them. Whoever does book gets
+ * this a moment before their confirmation, which is why it promises nothing the
+ * confirmation will contradict.
+ *
+ * NB: WhatsApp bold is a *single* asterisk. Markdown's **double** asterisk is
+ * not supported — it renders the extra asterisks literally — so the emphasis
+ * below is deliberately single-starred.
+ */
 export function formatConfirmation(lead) {
-  return [
+  const lines = [
     `Hi ${lead.firstName},`,
     '',
-    'Thank you for contacting *SIRAH DIGITAL*.',
+    'Thank you for contacting *SIRAH DIGITAL*. We have received your enquiry.',
     '',
-    'We have successfully received your inquiry. One of our AI solutions experts will contact you shortly to schedule your complimentary *45-minute AI Strategy Consultation* at a time convenient for you.',
+    'Your next step is to pick a time for your complimentary *45-minute AI Strategy Consultation*.',
+  ];
+
+  if (BOOKING_URL) {
+    lines.push('', 'Choose a slot here:', BOOKING_URL);
+  }
+
+  lines.push(
     '',
-    'If you have any additional information or specific requirements, please feel free to reply to this message. We will be happy to assist you.',
+    'If you have already chosen a time, you will receive a separate confirmation - nothing more to do.',
     '',
-    'We look forward to speaking with you.',
+    'Reply to this message any time if you have questions or specific requirements.',
     '',
     '*Kind regards,*',
     '*Team SIRAH DIGITAL*',
-  ].join('\n');
+  );
+
+  return lines.join('\n');
 }
 
 // Human-readable lead summary for the team's WhatsApp.
@@ -87,6 +125,9 @@ export function formatLead(lead) {
   ];
   if (lead.phone) lines.push(`*Phone:* ${lead.phone}`);
   if (lead.company) lines.push(`*Company:* ${lead.company}`);
+  // Above the free-text needs, not below it: this is the one line that says
+  // which of us should pick the enquiry up.
+  if (lead.interests?.length) lines.push(`*Interested in:* ${lead.interests.join(', ')}`);
   lines.push('', '*Needs:*', lead.message, '', `_via ${lead.source}_`);
   return lines.join('\n');
 }

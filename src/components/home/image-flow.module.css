@@ -1,0 +1,365 @@
+/* ----------------------------------------------------------------------- */
+/* Image flow                                                              */
+/*                                                                         */
+/* An editorial stage: one photograph held on a raised plate with a label   */
+/* above it and a line of copy below, the rest of the set shrunk to         */
+/* thumbnails flanking it on both sides, and a counter in the right gutter. */
+/*                                                                         */
+/* -- one box, many sizes ------------------------------------------------ */
+/* Every frame in the section is the SAME 5:7 box at --hero-w, and the only */
+/* difference between the hero and a thumbnail is a uniform scale() on the  */
+/* transform. That is the whole reason a photograph never breaks or gets    */
+/* trimmed as it travels in to the centre: the box never changes shape, so  */
+/* object-cover has nothing to crop. Sizing the thumbnails with width and   */
+/* height instead would reflow the frame on every step and re-crop the      */
+/* picture inside it, and it would put layout work on the compositor path.  */
+/*                                                                         */
+/* -- the geometry is derived ------------------------------------------- */
+/* --hero-w is the one number that is typed. Everything else — the plate,   */
+/* its padding, how tall the stage is, and the --axis every frame is        */
+/* centred on — falls out of it, so the composition scales as one piece and */
+/* there is no breakpoint at which a part of it drifts. The two breakpoints */
+/* below re-type --hero-w and nothing else that affects the arrangement.    */
+/*                                                                         */
+/* The slot offsets and scales that JS writes are likewise multiples of     */
+/* --hero-w rather than pixels; see the constants in ImageFlow.jsx.         */
+/* ----------------------------------------------------------------------- */
+
+.stage {
+  /* Phone and small tablet: one thumbnail a side, and the counter and the
+     arrows in a row under the plate rather than in a gutter. The cap on the
+     middle term is what keeps the thumbnails on screen - the outermost frame
+     reaches 0.95 * --hero-w from the centre, and that has to stay inside
+     half the column. Solve 0.95 * --hero-w <= (100vw - 48px) / 2 and this is
+     what falls out, with a little left over. */
+  --hero-w: clamp(130px, calc(50vw - 26px), 250px);
+  --stage-w: 100%;
+  --flow-span: 1;
+  --eyebrow-h: 16px;
+  --controls-h: 48px;
+
+  --hero-h: calc(var(--hero-w) * 1.4);
+  --panel-w: calc(var(--hero-w) * 1.3);
+  --pad-x: calc(var(--hero-w) * 0.15);
+  --pad-t: calc(var(--hero-w) * 0.085);
+  --gap-eyebrow: calc(var(--hero-w) * 0.075);
+  /* Deeper than the top of the plate, and deliberately: the top already
+     carries the label, so the two ends only read as balanced when the empty
+     one is the heavier. Padding them equally makes the picture look as
+     though it has slipped downwards. */
+  --pad-b: calc(var(--hero-w) * 0.26);
+
+  /* Distance from the top of the plate to the middle of the photograph.
+     Every frame in the section is centred on this line, thumbnails
+     included, so they bracket the picture rather than the plate. */
+  --axis: calc(
+    var(--pad-t) + var(--eyebrow-h) + var(--gap-eyebrow) + var(--hero-h) / 2
+  );
+  --panel-h: calc(
+    var(--pad-t) + var(--eyebrow-h) + var(--gap-eyebrow) + var(--hero-h) +
+    var(--pad-b)
+  );
+
+  position: relative;
+  /* Wide enough for the outermost thumbnail plus a gutter for the counter,
+     and never wider than the column it sits in. On a phone the counter is
+     not in a gutter, so there is nothing to reserve and the stage is simply
+     the column. */
+  width: min(100%, var(--stage-w));
+  height: calc(var(--panel-h) + var(--controls-h));
+  margin-inline: auto;
+  touch-action: pan-y;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+}
+
+.stage[data-dragging='true'] { cursor: grabbing; }
+
+/*
+ * Two thumbnails a side, and the counter and the arrows move out into a
+ * gutter.
+ *
+ * The gutter is stated in pixels rather than as a multiple of --hero-w,
+ * because what has to fit in it - a two-digit count and two 38px arrows - is
+ * a fixed size. The stage is therefore the two outermost frames
+ * (2 * 1.1825 * --hero-w) plus 100px of gutter a side, and --hero-w is
+ * capped at the value that keeps all of that inside the column:
+ * 2.365 * --hero-w + 200px <= 100vw - 48px.
+ *
+ * There is no such width below this one. At 640px the sum wants a hero
+ * narrower than the one the phone layout is already showing, so the phone
+ * layout keeps going and the second thumbnail waits until here.
+ */
+@media (min-width: 768px) {
+  .stage {
+    --hero-w: clamp(190px, calc(42.3vw - 105px), 300px);
+    --stage-w: calc(var(--hero-w) * 2.365 + 200px);
+    --flow-span: 2;
+    --eyebrow-h: 18px;
+    /* The counter and the arrows move into the right gutter, so the stage
+       stops reserving a row for them. */
+    --controls-h: 0px;
+  }
+}
+
+
+/* ----------------------------------------------------------------------- */
+/* The plate                                                               */
+/*                                                                         */
+/* Flat, one step up from the page, with a hairline. No gradient and no     */
+/* glow: the plate is the quiet ground the photograph is set on, and the    */
+/* moment it has a light of its own it starts competing with the picture.   */
+/* ----------------------------------------------------------------------- */
+
+.panel {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: var(--panel-w);
+  height: var(--panel-h);
+  margin-left: calc(var(--panel-w) / -2);
+  padding: var(--pad-t) var(--pad-x) var(--pad-b);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background-color: #1d1a38;
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--eyebrow-h);
+  margin-bottom: var(--gap-eyebrow);
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: rgba(203, 213, 225, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Reserves exactly the space the photograph is drawn over. The frames are
+   absolutely positioned siblings of the plate rather than children of it —
+   a thumbnail has to be able to sit outside the plate — so this is what
+   keeps the plate honest about where the picture is. */
+.slot {
+  height: var(--hero-h);
+  flex: none;
+}
+
+/* The label is the one thing that cannot travel with the frames — it is set
+   in the plate, and the plate does not move — so it changes over on its own.
+   Keyed on the index in the component, which is what restarts this. */
+.textIn {
+  animation: flow-text-in 760ms cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+
+@keyframes flow-text-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Autoplay timer, drawn along the bottom edge of the plate.
+   The animation IS the timer: the component advances on its animationend,
+   so the bar can never drift out of step with the slides, and pausing it
+   pauses the autoplay. */
+.progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: 0 50%;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(90deg, #6366f1, #22d3ee);
+  animation: flow-progress linear both;
+}
+
+@keyframes flow-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ----------------------------------------------------------------------- */
+/* Frames                                                                  */
+/* ----------------------------------------------------------------------- */
+
+.frame {
+  position: absolute;
+  top: var(--axis);
+  left: 50%;
+  width: var(--hero-w);
+  height: var(--hero-h);
+  margin-left: calc(var(--hero-w) / -2);
+  margin-top: calc(var(--hero-h) / -2);
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background-color: #14182a;
+  box-shadow: 0 34px 64px -34px rgba(0, 0, 0, 0.8);
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  /* The transition is declared here and the property is switched off from
+     JS for the one frame that wraps from one end of the loop to the other.
+     Duration and curve stay in CSS so the whole section eases alike.
+
+     The curve is symmetric — slow away, quick through the middle, slow into
+     place — rather than the usual expo-out, and that is the whole character
+     of the section. Expo-out leaves at full speed and decays, which reads as
+     a snap followed by stillness; easing in as well means a frame is seen to
+     take hold and let go, so the growing and the shrinking are the motion
+     rather than the aftermath of it. Long, for the same reason: at 900ms
+     the size change is over before the eye has followed it. */
+  transition:
+    transform 1600ms cubic-bezier(0.45, 0, 0.25, 1),
+    opacity 1000ms cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+/* A drag is direct manipulation: the frames have to be under the finger, not
+   easing towards it. */
+.stage[data-dragging='true'] .frame { transition: none; }
+
+.frame img {
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The wash that settles nine differently-lit photographs onto one surface.
+   Low on purpose — this is a cast, not a scrim; past about 0.3 the faces
+   start to go flat, which is the opposite of the intent. */
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: rgba(22, 20, 44, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Thumbnails dim a little so the eye lands on the middle frame first, and
+   only a little - past about 0.35 they stop reading as photographs and start
+   reading as placeholders. The attribute is written by JS alongside the
+   transform. */
+.frame[data-current='false']::after {
+  background-color: rgba(16, 14, 32, 0.34);
+}
+
+@media (hover: hover) {
+  .frame[data-current='false']:hover::after {
+    background-color: rgba(22, 20, 44, 0.18);
+  }
+}
+
+/* ----------------------------------------------------------------------- */
+/* Counter and arrows                                                      */
+/*                                                                         */
+/* In the right gutter from 768px up - a column with the count at the top  */
+/* of the picture and the arrows under it. Below that the gutter is not     */
+/* wide enough for them, so they drop into a row under the plate and the   */
+/* stage grows by --controls-h to make room. One cluster, two placements.   */
+/* ----------------------------------------------------------------------- */
+
+.controls {
+  position: absolute;
+  z-index: 50;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .controls {
+    left: auto;
+    bottom: auto;
+    top: calc(var(--axis) - var(--hero-h) / 2);
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 22px;
+  }
+}
+
+.count {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.countNow {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.countAll {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgba(203, 213, 225, 0.45);
+}
+
+.arrows { display: flex; gap: 10px; }
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(12, 10, 28, 0.6);
+  color: rgba(203, 213, 225, 0.85);
+  cursor: pointer;
+  transition: border-color 220ms ease, color 220ms ease, background-color 220ms ease;
+}
+
+@media (hover: hover) {
+  .arrow:hover {
+    border-color: rgba(99, 102, 241, 0.55);
+    background-color: rgba(20, 17, 42, 0.85);
+    color: #ffffff;
+  }
+}
+
+.arrow:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.7);
+  outline-offset: 2px;
+}
+
+.stage:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.55);
+  outline-offset: 14px;
+  border-radius: 8px;
+}
+
+/*
+ * Reduced motion: no travel and no autoplay. The component already skips the
+ * progress bar and the timer when the preference is set — this is the part
+ * that has to be said in CSS, because the frames are positioned from JS and
+ * would otherwise still ease between slots when an arrow is pressed.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .frame { transition: none; }
+  .textIn { animation: none; }
+}

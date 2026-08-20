@@ -1,47 +1,74 @@
 import React from 'react';
-import Reveal from '@/components/ui/Reveal';
 import { COMPANY } from '@/data/company';
-import { MailIcon, PhoneIcon, PinIcon, CalendarIcon, ArrowRightIcon } from '@/components/ui/icons';
+
+/**
+ * Office information — the right column of the contact page.
+ *
+ * This replaces the "Book Free Consultation" card that used to open the left
+ * column. That card competed with the form for the same click: the page asked
+ * twice for the same commitment and neither ask was the obvious one. The
+ * consultation is now the form's own submit button, and this column is
+ * reference material — where we are, and the two other ways to reach us.
+ *
+ * No icons. A pin, an envelope and a handset next to three rows that already
+ * say "Office", "Email" and "Phone" is the same information twice, and at this
+ * size the icons were the loudest thing in the column. Dividers and a label
+ * scale do the separating instead.
+ */
+
+function Row({ label, children }) {
+  return (
+    <div className="py-6 first:pt-0 last:pb-0">
+      <dt className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-white/35">
+        {label}
+      </dt>
+      <dd className="mt-3">{children}</dd>
+    </div>
+  );
+}
 
 export default function ContactDetails() {
   return (
-    <div>
-      <Reveal>
-        <div className="rounded-2xl border p-8 relative overflow-hidden pointer-events-auto bg-gradient-to-br from-[#0d2030] via-[#0b1524] to-[#12102a] border-cyan-400/20">
-          <CalendarIcon className="w-11 h-11 text-cyan-400" />
-          <h2 className="mt-6 text-2xl font-bold">Book Free Consultation</h2>
-          <p className="mt-3 text-sm text-brand-muted">45 minutes strategy call with our AI experts.</p>
-          {/* TODO: point at the real booking link (Calendly / Google Calendar) */}
-          <a
-            href="#send-message"
-            className="mt-7 w-full inline-flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl font-bold text-white bg-brand-cyan hover:bg-white transition-colors"
-          >
-            Schedule Now
-            <ArrowRightIcon />
-          </a>
-        </div>
-      </Reveal>
+    <aside
+      /* The outline was 8% white over a 2% fill, which against the particle
+         field behind this page did not resolve as an edge — the column read
+         as loose text rather than as a panel. Every border on this page is
+         now one step up from where it was. */
+      className="rounded-2xl border border-white/[0.18] bg-white/[0.03] p-8
+        transition-all duration-500 ease-brand
+        hover:-translate-y-1 hover:border-white/[0.28]
+        hover:shadow-[0_28px_60px_-30px_rgba(0,0,0,0.85)]
+        motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+    >
+      <h2 className="text-fluid-lg font-semibold tracking-tight text-white">Our office</h2>
 
-      <Reveal delay={120}>
-        <ul className="mt-10 space-y-6">
-          <li>
-            <a href={`mailto:${COMPANY.email}`} className="flex items-center gap-4 transition-colors text-gray-200 hover:text-white">
-              <MailIcon className="w-6 h-6 shrink-0 text-cyan-400" />
-              <span className="text-lg">{COMPANY.email}</span>
-            </a>
-          </li>
-          <li>
-            <a href={COMPANY.phoneHref} className="flex items-center gap-4 transition-colors text-gray-200 hover:text-white">
-              <PhoneIcon className="w-6 h-6 shrink-0 text-cyan-400" />
-              <span className="text-lg">{COMPANY.phone}</span>
-            </a>
-          </li>
-          <li className="flex items-start gap-4 text-gray-300">
-            <PinIcon className="w-6 h-6 shrink-0 text-cyan-400 mt-0.5" />
-            <address className="not-italic text-lg leading-relaxed">{COMPANY.addressOneLine}</address>
-          </li>
-        </ul>
-      </Reveal>
-    </div>
+      <dl className="mt-7 divide-y divide-white/[0.12]">
+        <Row label="Address">
+          <address className="not-italic text-[0.95rem] leading-relaxed text-brand-muted/85">
+            {COMPANY.address.map((line) => (
+              <span key={line} className="block">{line}</span>
+            ))}
+          </address>
+        </Row>
+
+        <Row label="Email">
+          <a
+            href={`mailto:${COMPANY.email}`}
+            className="text-[0.95rem] text-white transition-colors duration-300 ease-brand hover:text-brand-blue"
+          >
+            {COMPANY.email}
+          </a>
+        </Row>
+
+        <Row label="Phone">
+          <a
+            href={COMPANY.phoneHref}
+            className="text-[0.95rem] text-white transition-colors duration-300 ease-brand hover:text-brand-blue"
+          >
+            {COMPANY.phone}
+          </a>
+        </Row>
+      </dl>
+    </aside>
   );
 }

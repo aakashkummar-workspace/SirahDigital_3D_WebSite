@@ -1,0 +1,188 @@
+/*
+ * Styles for StatBand.
+ *
+ * A CSS Module rather than globals.css: this is one self-contained block and
+ * nothing outside it needs these names. Same reasoning as the calculator.
+ *
+ * The look is the site's own — hairlines at 6-8% white, uppercase labels at
+ * 0.28em tracking, no shadow and no blur filter over the moving background.
+ * The one thing it adds is the accent bloom, which is what "highlighted"
+ * means here: a wash of indigo through cyan sitting behind the figures at an
+ * opacity low enough that it reads as light rather than as a coloured box.
+ */
+
+/*
+ * The fill is 88% rather than a lighter tint because the site background is a
+ * particle field, not a flat colour: at 55% the particles read straight
+ * through the plate and across the figures. 88% keeps it a translucent
+ * surface — the field is still faintly visible in it — without letting
+ * anything move behind the text. No backdrop-filter: a blur this size over a
+ * canvas repainting every frame costs real frames on mobile and buys nothing
+ * a fill does not.
+ */
+.plate {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.018) 46%,
+      rgba(255, 255, 255, 0.004) 100%
+    ),
+    rgba(9, 12, 20, 0.88);
+}
+
+/* The bloom. Two soft ellipses, indigo on the left and cyan on the right, so
+   the band is warmer where it starts and cooler where it ends — the same
+   accent order the brand gradient uses. Feathered to nothing well inside the
+   edges, so no border of it is ever visible. */
+.plate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 42% 120% at 8% 0%, rgba(99, 102, 241, 0.16), transparent 70%),
+    radial-gradient(ellipse 46% 130% at 92% 100%, rgba(56, 189, 248, 0.12), transparent 72%);
+}
+
+/* A brighter hairline along the top edge only — the light source is above,
+   the same as every other lifted surface on the site. */
+.plate::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.16) 20%,
+    rgba(255, 255, 255, 0.16) 80%,
+    transparent
+  );
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.cell {
+  padding: 30px 28px;
+  /* Stacked on a phone, so the divider is horizontal and the first cell does
+     not draw one against the plate's own top edge. */
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cell:first-child {
+  border-top: 0;
+}
+
+/*
+ * Two up before the plate is wide enough for four.
+ *
+ * The divider rules are written per position rather than with :first-child,
+ * which only ever cleared the very first cell. At two columns that left every
+ * odd cell drawing a left rule against the plate edge, and a wrapped row
+ * drawing a top rule against nothing.
+ */
+@media (min-width: 560px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cell {
+    padding: 36px 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-left: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* First in its row: no left rule. */
+  .cell:nth-child(2n + 1) {
+    border-left: 0;
+  }
+
+  /* Top row: no top rule. */
+  .cell:nth-child(-n + 2) {
+    border-top: 0;
+  }
+}
+
+/*
+ * Four across, one row. 1000px rather than 720px because four figures at
+ * 3.5rem plus 40px of padding either side need the room — at 720 they would
+ * collide before the clamp had scaled them down.
+ */
+@media (min-width: 1000px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .cell {
+    padding: 42px 32px;
+    border-top: 0;
+    /* Vertical dividers between the four, none on the outside. */
+    border-left: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .cell:first-child {
+    border-left: 0;
+  }
+}
+
+/*
+ * The figure.
+ *
+ * Gradient text rather than white: these are the only numbers on the page
+ * and the accent is what separates them from a heading. -webkit- prefix
+ * included because background-clip: text is still prefixed in Safari.
+ */
+.value {
+  display: block;
+  font-size: clamp(2.375rem, 1.7rem + 2.5vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(120deg, #ffffff 0%, #c7d2fe 42%, #7dd3fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Falls back to white anywhere background-clip: text is unsupported. */
+  -webkit-text-fill-color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .value {
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+  }
+}
+
+.label {
+  display: block;
+  margin-top: 14px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/*
+ * At four across a cell is ~210px of content, and "Customised softwares" at
+ * 0.26em tracking wraps to two lines there while the other three stay on one.
+ * Reserving both lines keeps the cells the same height so the four figures
+ * still sit on one baseline.
+ */
+@media (min-width: 1000px) {
+  .label {
+    min-height: 2.4em;
+  }
+}

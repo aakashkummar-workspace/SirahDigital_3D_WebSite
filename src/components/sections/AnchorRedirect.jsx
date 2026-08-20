@@ -9,9 +9,13 @@ import { LEGACY_ANCHORS } from '@/data/nav';
  * A URL fragment is never sent to the server, so `sirahdigital.in/#offer`
  * arrives here as a plain request for `/` — next.config redirects cannot see
  * it and cannot rewrite it. The only place that hash is visible is the
- * browser, so the homepage forwards it on arrival.
+ * browser, so the landing page forwards it on arrival.
  *
- * Rendered by the homepage only; every other route was never reachable by
+ * The root now 307s to /hub, and a browser carries the fragment across a
+ * redirect whose target has none of its own — so `/#offer` becomes
+ * `/hub#offer` and still lands here.
+ *
+ * Rendered by the landing page only; every other route was never reachable by
  * anchor. Uses replace() so the dead anchor URL does not sit in history.
  */
 export default function AnchorRedirect() {
@@ -19,7 +23,7 @@ export default function AnchorRedirect() {
 
   useEffect(() => {
     const target = LEGACY_ANCHORS[window.location.hash];
-    if (target && target !== '/') router.replace(target);
+    if (target && target !== '/hub') router.replace(target);
   }, [router]);
 
   return null;

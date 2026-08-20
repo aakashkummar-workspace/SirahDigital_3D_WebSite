@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/ui/icons';
 import { money, compact, num } from '@/lib/roi';
 import { COMPANY } from '@/data/company';
 
+import { PrimaryButton } from '@/components/ui/Button';
 /**
  * Conversion close, plus the report download.
  *
@@ -52,7 +52,7 @@ export default function CalculatorCTA({ result, input }) {
       `<tr><td>${a}</td><td class="${strong ? 'v strong' : 'v'}">${b}</td></tr>`;
 
     const html = `<!doctype html><html><head><meta charset="utf-8">
-<title>AI Automation Impact Report — ${COMPANY.name}</title>
+<title>AI Automation Impact Report - ${COMPANY.name}</title>
 <style>
   *{box-sizing:border-box}
   body{font:14px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#16142c;margin:0;padding:48px}
@@ -96,15 +96,12 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
   return (
     <div>
       <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-        <Link
-          href="/contact"
-          className="interactive-hover group inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-xl bg-brand-cyan px-6 py-3.5 text-[15px] font-semibold text-[#04121a] transition-colors hover:bg-white"
-        >
+        <PrimaryButton href="/contact">
           Book a free AI strategy session
-          <span className="transition-transform duration-300 group-hover:translate-x-1">
+          <span className="btn-arrow">
             <ArrowRightIcon />
           </span>
-        </Link>
+        </PrimaryButton>
 
         <button
           type="button"
@@ -130,7 +127,7 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
       <p className="mt-8 max-w-[62ch] text-[12px] leading-relaxed text-white/35">
         <strong className="font-medium text-white/55">Indicative estimate.</strong> Figures are modelled from
         your inputs using industry-typical assumptions for automatable workload, transaction handling time and
-        implementation cost. They are not a quotation and not a guarantee of results — a scoping call replaces
+        implementation cost. They are not a quotation and not a guarantee of results - a scoping call replaces
         them with numbers based on your actual processes.
       </p>
     </div>

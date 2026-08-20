@@ -1,0 +1,375 @@
+/*
+ * The custom software portfolio cylinder.
+ *
+ * Five panels on the surface of an invisible cylinder, placed by
+ * `rotateY(i * step) translateZ(radius)`. The stage turns; the panels hold
+ * their positions on it.
+ *
+ * The stage is also pushed back by exactly that radius, which is what makes
+ * it a cylinder rather than one inflated card — see the long note in
+ * PortfolioCylinder.jsx. That is why --radius is declared on .stage and read
+ * by both.
+ *
+ * No fills, no borders, no glass, no gradients, no glow. The panels are type
+ * standing in space, which is the whole brief.
+ */
+
+/*
+ * The panel's scale, written every frame by the component.
+ *
+ * `inherits: false` is the point of registering it. An inherited custom
+ * property invalidates every descendant that might resolve it whenever it
+ * changes, so driving five panels from an inherited value meant five subtree
+ * style recalculations per frame. Nothing below a panel reads this, so
+ * nothing below it needs invalidating when it moves.
+ */
+@property --s {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.94;
+}
+
+.section {
+  position: relative;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── heading ─────────────────────────────────────────────────────────── */
+
+.head {
+  max-width: 46ch;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 1.35rem + 2.4vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.sub {
+  margin-top: 18px;
+  font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── the camera ──────────────────────────────────────────────────────── */
+
+/*
+ * perspective is on the viewport rather than the stage, so rotating the stage
+ * does not rotate the vanishing point with it.
+ *
+ * 1100px, down from 1500: with the front panel now landing at z = 0 rather
+ * than being magnified, perspective is doing all of the depth work, and a
+ * shallower camera is what makes a panel 72deg round fall convincingly away
+ * instead of merely narrowing.
+ *
+ * The height came down from 460px. It was sized for a panel that perspective
+ * was inflating by half again; at true size the tallest category needs about
+ * 300px, so this is that plus air rather than an empty band.
+ */
+.viewport {
+  position: relative;
+  margin-top: clamp(40px, 5vw, 64px);
+  height: 390px;
+  perspective: 1100px;
+  perspective-origin: 50% 50%;
+  /* Nothing should reach the edge at these radii; this is a guarantee rather
+     than a mechanism, so a bad viewport can never hand the page a scrollbar. */
+  overflow: hidden;
+}
+
+/*
+ * --radius lives here rather than on the panel because both need it: the
+ * panels stand this far out from the axis, and the stage is pushed back by
+ * exactly the same amount so the front one lands at z = 0. The component
+ * writes `translateZ(calc(var(--radius) * -1))` into the stage transform, so
+ * the two cannot drift apart.
+ */
+.stage {
+  --radius: 480px;
+
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* No transition: the rAF loop writes this every frame, and a transition on
+     top of that would fight it and lag the wobble. */
+  will-change: transform;
+}
+
+/* ── one panel ───────────────────────────────────────────────────────── */
+
+/*
+ * The radius has to clear half the panel width divided by tan(180/N) — at
+ * five panels that is 0.69x the width — or adjacent panels intersect. Every
+ * breakpoint here sits comfortably above that line.
+ */
+.panel {
+  --w: 460px;
+  /*
+   * Every panel is the same height, and it is the tallest one's content.
+   *
+   * This is the fix for the headings sitting at different levels as the
+   * cylinder turned. The panels have different amounts in them — Education
+   * Platforms lists three projects, Digital Experiences lists one — so with
+   * height:auto each box was a different size, and translate(-50%,-50%)
+   * centred each on its own centre. Measured, that put the tallest and the
+   * shortest heading 55px apart, which is exactly the step between MARKETING
+   * AUTOMATION and DIGITAL EXPERIENCES.
+   *
+   * Pinning the height makes all five boxes identical, so one transform
+   * places them all the same way and the content — top-aligned below — starts
+   * on one line. Nothing draws this box, so the slack under a short category
+   * is invisible; what it buys is that the heading never moves.
+   */
+  --h: 292px;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--w);
+  height: var(--h);
+  margin: 0;
+  /* Content from the top of an equal box, which is what aligns the headings.
+     Centring it here would re-introduce the stagger the fixed height removes. */
+  display: flex;
+  flex-direction: column;
+  /* Placed on the cylinder, then pulled back by half its own box so the
+     rotation happens about its centre rather than its corner. */
+  transform:
+    translate(-50%, -50%)
+    rotateY(calc(var(--i) * var(--step)))
+    translateZ(var(--radius))
+    /* The brief's "scales slightly larger" for the front panel. Slightly:
+       six percent, written by the loop. */
+    scale(var(--s));
+
+  /* Written by the loop on a steep curve — see the note there. Panels turning
+     away are already compressed by perspective, which is geometry rather than
+     styling; the fade takes them out of contention for the eye. This value is
+     only the pre-hydration state. */
+  opacity: 0.04;
+
+  /*
+   * Only the front panel is clickable. Without this the CTA of a panel edge
+   * on at the far side can sit under the cursor and swallow the click.
+   *
+   * Driven by a data attribute the frame loop flips, not by a selector on a
+   * custom property: pointer-events takes keywords, so there is no calc()
+   * that could derive it.
+   */
+  pointer-events: none;
+
+  text-align: left;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Set by the loop on whichever panel is nearest the front. */
+.panel[data-front='true'] {
+  pointer-events: auto;
+}
+
+.category {
+  font-family: var(--font-display);
+  /* Raised, because removing the accidental 1.53x magnification made the old
+     ceiling look undersized at true scale. 2.375rem keeps the longest
+     category — "Marketing Automation" — on one line in a 460px panel. */
+  font-size: clamp(1.5rem, 1.15rem + 1.7vw, 2.375rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+/*
+ * The projects and the CTA — the part only the front panel shows. Both
+ * opacity and transform are written directly by the loop; the value here is
+ * the pre-hydration state, so a panel that has never been ticked starts
+ * hidden rather than flashing its contents.
+ */
+.detail {
+  opacity: 0;
+}
+
+.projects {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/*
+ * A rule and a name, not a bullet. The rule is 1px and short, sitting on the
+ * cap height of the name beside it.
+ */
+.project {
+  position: relative;
+  padding-left: 22px;
+}
+
+.project::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 12px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.projectName {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.projectNote {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  /* 55% is 6.3:1 on this ground — this is 14px text and has to clear the
+     4.5:1 AA floor for body copy. */
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 22px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: color 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.arrow {
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .cta:hover .arrow {
+    transform: translateX(4px);
+  }
+}
+
+.cta:focus-visible .arrow {
+  transform: translateX(4px);
+}
+
+/* ── tablet ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .viewport {
+    height: 400px;
+    perspective: 950px;
+  }
+
+  .stage {
+    --radius: 400px;
+  }
+
+  .panel {
+    --w: 380px;
+    /* Taller than desktop, not shorter: at 380px wide the longest category
+       wraps to two lines, so the tallest panel grows rather than shrinks. */
+    --h: 322px;
+  }
+}
+
+/* ── phone ───────────────────────────────────────────────────────────── */
+
+/*
+ * One category at a time, and the 3D kept.
+ *
+ * The panel narrows to nearly the full screen while the radius stays large
+ * relative to it, so a neighbour sits far enough off-axis to be clear of the
+ * viewport entirely. The cylinder is the same object; the camera is simply
+ * closer to one face of it.
+ */
+@media (max-width: 767px) {
+  .viewport {
+    height: 400px;
+    perspective: 800px;
+  }
+
+  .stage {
+    --radius: 330px;
+  }
+
+  .panel {
+    --w: min(300px, 80vw);
+    /* Smaller type and tighter spacing below, so the tallest panel is shorter
+       here than on either larger breakpoint. */
+    --h: 262px;
+  }
+
+  .projects {
+    margin-top: 16px;
+    gap: 10px;
+  }
+
+  .projectName {
+    font-size: 1rem;
+  }
+
+  .cta {
+    margin-top: 18px;
+  }
+}
+
+/* ── reduced motion ──────────────────────────────────────────────────── */
+
+/*
+ * No cylinder at all: five categories as a plain list, every one fully
+ * visible. The component checks the same query and never starts its loop, so
+ * nothing writes to these after the single pass that sets them all active.
+ *
+ * Everything 3D is unwound explicitly — perspective, preserve-3d, the
+ * absolute positioning and the per-panel transform — because a flattened
+ * cylinder that still carries them is a stack of overlapping panels.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    height: auto;
+    perspective: none;
+    overflow: visible;
+  }
+
+  .stage {
+    position: static;
+    transform: none !important;
+    transform-style: flat;
+    display: grid;
+    gap: 56px;
+  }
+
+  .panel {
+    position: static;
+    width: auto;
+    max-width: 46ch;
+    /* The fixed height exists to align headings on a rotating cylinder. There
+       is no cylinder here, so it would only add dead space under the short
+       categories. */
+    height: auto;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto;
+  }
+
+  .detail {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -1,29 +1,83 @@
 import { SERVICES } from './services';
+import { HOME_PRODUCTS } from './products';
+import { TEAM } from './team';
 
 // The site's route map. Navbar and Footer both read from here, so adding a
 // page is a single edit rather than three.
 export const NAV_LINKS = [
-  { label: 'Home', href: '/' },
+  // The landing page is /hub, not /. The root redirects to it — see
+  // next.config.js. Nothing in the app should link to '/' and take that hop.
+  { label: 'Hub', href: '/hub' },
   {
     label: 'Services',
     href: '/services',
     // Deep links into the service grid — each card carries its slug as an id.
     menu: SERVICES.slice(0, 4).map((s) => ({ label: s.title, href: `/services#${s.slug}` })),
+    // The "see everything" row at the foot of the dropdown. It lives here
+    // rather than in Navbar because it used to be hardcoded inside the shared
+    // `link.menu &&` block, which appended "All services →" to the Products
+    // menu as well. Data per item is what stops that recurring.
+    menuFooter: { label: 'All services', href: '/services' },
+  },
+  {
+    label: 'Products',
+    href: '/products',
+    // Each product is a whole route rather than an anchor, unlike Services.
+    // Only three, so the menu is the full set.
+    //
+    // "Client systems" is the exception, and it is load-bearing: /products
+    // absorbed /work, so the client systems now live at the bottom of that
+    // page. Without this entry they would be reachable only by scrolling
+    // past the products, under a nav item that reads as "things for sale".
+    // This is what keeps them findable.
+    //
+    // It said "Case studies" and pointed at #case-studies. There are no case
+    // studies — no project has a page of its own — so the label was promising
+    // something the site cannot deliver.
+    //
+    // Note the desktop dropdown is the only place any of this appears:
+    // Navbar's mobile sheet renders NAV_LINKS flat and ignores `menu`. On a
+    // phone this is one "Products" link to the page that holds both.
+    menu: [
+      ...HOME_PRODUCTS.map((p) => ({ label: p.title, href: p.href })),
+      { label: 'Client systems', href: '/products#client-systems' },
+    ],
+    menuFooter: { label: 'All products', href: '/products' },
   },
   { label: 'Industries', href: '/industries' },
-  { label: 'Work', href: '/work' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
 
 // Every crawlable route, with the priority hints the sitemap uses.
 export const ROUTES = [
-  { path: '/', priority: 1.0, changeFrequency: 'weekly' },
+  { path: '/hub', priority: 1.0, changeFrequency: 'weekly' },
   { path: '/services', priority: 0.9, changeFrequency: 'monthly' },
+  { path: '/products', priority: 0.9, changeFrequency: 'monthly' },
+  // Spread rather than listed, so a fourth product needs no edit here.
+  ...HOME_PRODUCTS.map((p) => ({
+    path: p.href,
+    priority: 0.8,
+    changeFrequency: 'monthly',
+  })),
   { path: '/industries', priority: 0.8, changeFrequency: 'monthly' },
-  { path: '/work', priority: 0.8, changeFrequency: 'weekly' },
+  // No /work entry — it redirects to /products, and a sitemap should not
+  // advertise a URL that 301s.
   { path: '/about', priority: 0.7, changeFrequency: 'monthly' },
+  // One per member, spread rather than listed so a new hire needs no edit
+  // here. Lower priority than /about: these are depth behind the roster, not
+  // entry points competing with it.
+  ...TEAM.map(({ slug }) => ({
+    path: `/${slug}`,
+    priority: 0.5,
+    changeFrequency: 'monthly',
+  })),
   { path: '/contact', priority: 0.9, changeFrequency: 'yearly' },
+  // Every "Book Free Consultation" on the site lands here, so it is a primary
+  // conversion page, not an afterthought — hence parity with /contact. The
+  // calendar itself is a third-party iframe with nothing to crawl; what ranks is
+  // this page's own copy.
+  { path: '/book', priority: 0.9, changeFrequency: 'yearly' },
   { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' },
   { path: '/terms', priority: 0.3, changeFrequency: 'yearly' },
 ];
@@ -32,10 +86,10 @@ export const ROUTES = [
 // never sent to the server, so this cannot be a next.config redirect — the
 // homepage resolves it on the client instead. See components/AnchorRedirect.
 export const LEGACY_ANCHORS = {
-  '#hub': '/',
+  '#hub': '/hub',
   '#offer': '/services',
   '#industries': '/industries',
-  '#work': '/work',
+  '#work': '/products#client-systems',
   '#process': '/about',
   '#brains': '/about',
   '#contact': '/contact',

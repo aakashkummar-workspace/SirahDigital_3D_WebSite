@@ -3,15 +3,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ServiceNavigator from './ServiceNavigator';
 import ServiceContent from './ServiceContent';
 import { SERVICE_EXPERIENCE } from '@/data/serviceExperience';
+import { STATE_ACCENT } from './VisualizationStates';
 import { useReducedMotion } from '@/hooks/useMediaQuery';
+import { BACKGROUND_TINT_EVENT } from '@/components/three/SiteBackground';
 
-// The navbar detaches into a floating pill once you scroll — 12px down from
-// the top, 74px tall including its border — so its bottom edge sits at 86px,
-// not 72. Anything pinned under it has to clear that or it tucks behind the
-// pill. Flush at exactly 86 rather than a few px below: a small gap between
-// two fixed bars just lets a sliver of the page shimmer through as it
-// scrolls. Keep in step with PILL_TOP in components/layout/Navbar.jsx.
-const NAV_OFFSET = 86;
+const NAV_OFFSET = 72;
 // Breathing room between the sticky navbar and the pinned rail. The reference
 // layout pins its rail 224px down, but its header is far taller than our 72px
 // navbar; this is the equivalent gap rather than the equivalent number.
@@ -48,11 +44,17 @@ export default function PinnedExperience() {
     return () => io.disconnect();
   }, []);
 
-  // `activeService` and its `accent` existed only to push the active
-  // capability's colour to the shared particle field, so the background took
-  // on the colour of whatever was being read. That background is gone, and
-  // nothing else in this component consumed either value — so both are gone
-  // with it, along with the STATE_ACCENT import.
+  const activeService = SERVICE_EXPERIENCE[active] ?? SERVICE_EXPERIENCE[0];
+  const accent = STATE_ACCENT[activeService.visual] || '#22D3EE';
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent(BACKGROUND_TINT_EVENT, { detail: { accent, energy: reduced ? 0 : 1 } })
+    );
+  }, [accent, reduced]);
+  useEffect(() => () => {
+    window.dispatchEvent(new CustomEvent(BACKGROUND_TINT_EVENT, { detail: null }));
+  }, []);
 
   const goTo = useCallback((i) => {
     const el = sectionRefs.current[i];

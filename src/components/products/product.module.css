@@ -1,0 +1,125 @@
+/*
+ * Styles for the /products pages.
+ *
+ * The frame is the piece that matters. Everything else on these pages is
+ * Tailwind utilities in the site's existing vocabulary; the frame gets a CSS
+ * module because it has two render states that must occupy identical space,
+ * and pinning that with an aspect-ratio box plus a shared border is clearer
+ * here than as a utility soup.
+ *
+ * Surface treatment is the site's one plate — 8% border, translucent wash over
+ * a rgba(9,12,20,0.88) fill, an accent bloom, a brighter hairline along the
+ * top edge. Same as product-showcase and stat-band. (founder-spotlight was
+ * the third; it is gone — the About hero introduces him now and its statement
+ * sits on the page rather than on a plate.) Blocks on this site that take a
+ * surface all take the same one.
+ */
+
+/* ── screenshot frame ─────────────────────────────────────────────────────
+   A browser chrome around a product shot. The chrome is doing real work: a
+   raw screenshot pasted onto a dark page reads as a stray image, and the
+   frame is what says "this is the product" without a caption having to.  */
+.frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.018) 46%,
+      rgba(255, 255, 255, 0.004) 100%
+    ),
+    rgba(9, 12, 20, 0.88);
+}
+
+.frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 44% 70% at 6% 6%, rgba(99, 102, 241, 0.17), transparent 70%),
+    radial-gradient(ellipse 52% 80% at 96% 92%, rgba(56, 189, 248, 0.11), transparent 72%);
+}
+
+/* The title bar. Three dots and nothing else — no fake URL, because a made-up
+   address bar in a marketing shot is a small lie that ages badly. */
+.chrome {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/*
+ * The image well. aspect-ratio is what keeps the two states the same size:
+ * the placeholder and the real screenshot both resolve to this box, so
+ * dropping a PNG in later does not reflow the page around it.
+ *
+ * 16/10 rather than 16/9 — application UI is taller than video, and a
+ * dashboard cropped to 16/9 loses its sidebar.
+ */
+.well {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.shot {
+  object-fit: cover;
+  object-position: top center; /* a long page keeps its header, not its middle */
+}
+
+/* ── placeholder state ────────────────────────────────────────────────────
+   Same box, same border, no image. Says which screen belongs here, so this
+   doubles as the brief for whoever takes the screenshots. */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  /* A faint grid, so an empty well reads as a deliberate placeholder rather
+     than as an image that failed to load. */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.placeholderLabel {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.placeholderNote {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(203, 213, 225, 0.32);
+}
+
+/* ── caption under a frame ────────────────────────────────────────────── */
+.caption {
+  margin-top: 14px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: rgba(203, 213, 225, 0.5);
+}

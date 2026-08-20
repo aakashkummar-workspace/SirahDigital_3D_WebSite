@@ -1,0 +1,206 @@
+/*
+ * A client's word on one member — see ClientReview.jsx for the anatomy and for
+ * why the frame is 3:4.
+ *
+ * Colours are the page's own: the card is a lift off --space rather than a new
+ * surface colour, the border is the same white-at-low-alpha the rest of the
+ * site draws its edges with, and the only new hue is the star gold, which the
+ * reference has and nothing else on the site needed until now.
+ */
+
+.wrap {
+  /* --pw   how wide the picture is
+     --pad  the card's inner padding, needed in the frame's offset too
+     --over how far the frame hangs outside the card, as a share of its width */
+  --pw: clamp(104px, 12vw, 148px);
+  --pad-x: clamp(22px, 3.2vw, 44px);
+  --pad-y: clamp(24px, 3vw, 36px);
+  --over: 0.6;
+
+  /* Buys back the width the frame hangs into, so the picture sits on the page
+     margin rather than over the edge of it. */
+  padding-left: calc(var(--pw) * var(--over));
+  /* Room for the quotation mark, which hangs above the card's top border. */
+  margin-top: clamp(40px, 5.5vw, 76px);
+}
+
+.card {
+  position: relative;
+  /*
+   * Capped, not full-bleed. The reference card is roughly twice as wide as it
+   * is tall; left to fill this page's 1160px container it would stretch to
+   * four times, and the quote would read as a strip rather than a card.
+   */
+  max-width: 680px;
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2.6vw, 36px);
+  margin: 0;
+  padding: var(--pad-y) clamp(28px, 4vw, 52px) var(--pad-y) var(--pad-x);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: clamp(20px, 2.4vw, 30px);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* ── the picture ─────────────────────────────────────────────────────── */
+
+/*
+ * Straddles the left border, half in and half out. The negative margin has to
+ * clear the card's own padding as well as the overhang, hence both terms.
+ */
+.frame {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: var(--pw);
+  aspect-ratio: 3 / 4;
+  margin-left: calc(-1 * (var(--pad-x) + var(--pw) * var(--over)));
+  border-radius: clamp(14px, 1.6vw, 20px);
+  overflow: hidden;
+  /* Opaque ground: the card's border runs behind this and must not show
+     through a portrait that fails to load. */
+  background: var(--space-raised, #111522);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 18px 40px rgba(3, 5, 12, 0.55);
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── the quote ───────────────────────────────────────────────────────── */
+
+.body {
+  min-width: 0;
+}
+
+.quote {
+  margin: 0;
+  font-size: clamp(0.875rem, 0.82rem + 0.28vw, 1rem);
+  line-height: 1.75;
+  /* 8.4:1 on this card — comfortably past the 4.5:1 AA floor for body text. */
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.quote p {
+  margin: 0;
+  /* Four to six lines at this measure, which is the block the reference sets
+     — and it leaves the top-right corner clear for the quotation mark. */
+  max-width: 46ch;
+}
+
+/*
+ * The oversized mark, hung off the top-right corner.
+ *
+ * A glyph rather than artwork, set in the display face so it matches the
+ * quotation marks the rest of the site's typography would produce.
+ *
+ * It is deliberately bigger than the corner it sits in and breaks out of the
+ * card on two sides — the border runs under it rather than around it. Offsets
+ * are in em so they are a fixed share of the glyph however large it scales:
+ * change font-size alone and the overhang follows, instead of the mark
+ * drifting back inside the box at one breakpoint and off the page at another.
+ *
+ * -0.3em clears the leading that sits above a quotation mark rather than the
+ * mark itself, so the visible overhang above the border is roughly a quarter
+ * of the type size.
+ */
+.mark {
+  position: absolute;
+  top: -0.3em;
+  right: -0.14em;
+  font-family: var(--font-display);
+  font-size: clamp(96px, 11vw, 156px);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.24);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── the rating ──────────────────────────────────────────────────────── */
+
+.stars {
+  display: flex;
+  gap: clamp(5px, 0.7vw, 9px);
+  margin-top: clamp(16px, 2vw, 22px);
+}
+
+.star {
+  width: clamp(17px, 1.9vw, 23px);
+  height: auto;
+  /* The one colour here the site did not already have. Gold reads as a rating
+     in a way the brand cyan does not. */
+  fill: #f2a93b;
+  filter: drop-shadow(0 2px 6px rgba(242, 169, 59, 0.28));
+}
+
+/* ── tablet ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .wrap {
+    --over: 0.5;
+  }
+}
+
+/* ── phone ───────────────────────────────────────────────────────────── */
+
+/*
+ * The overhang goes. A picture hanging off the card needs margin beside the
+ * card to hang into, and at this width there is none — so the frame comes
+ * inside and the card stacks: picture, quote, stars.
+ */
+@media (max-width: 639px) {
+  .wrap {
+    --pw: 108px;
+    --pad-x: 20px;
+    --pad-y: 24px;
+
+    padding-left: 0;
+  }
+
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: var(--pad-y) var(--pad-x);
+  }
+
+  .frame {
+    margin-left: 0;
+  }
+
+  .mark {
+    /* Still breaking out of the corner, but scaled to a card that is now the
+       full width of a phone — the right-hand overhang has to stay inside the
+       page's 24px gutter or it puts the page on a horizontal scrollbar. */
+    font-size: 84px;
+    right: -0.1em;
+  }
+
+  .quote {
+    line-height: 1.7;
+  }
+
+  .stars {
+    margin-top: 16px;
+  }
+}
+
+/* ── reduced transparency / no backdrop-filter ───────────────────────── */
+
+/*
+ * Safari on iOS drops backdrop-filter when Reduce Transparency is on, which
+ * would leave the card almost invisible against the page. A solid ground for
+ * that case.
+ */
+@supports not (backdrop-filter: blur(4px)) {
+  .card {
+    background: rgba(17, 21, 34, 0.86);
+  }
+}

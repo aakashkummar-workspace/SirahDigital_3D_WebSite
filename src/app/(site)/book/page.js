@@ -1,30 +1,38 @@
-import TidyCalEmbed from '@/components/booking/TidyCalEmbed';
+import BookingIntake from '@/components/booking/BookingIntake';
 import { COMPANY } from '@/data/company';
 
 /*
  * Book a consultation.
  *
- * The booking step of the flow:
+ * The flow, end to end:
  *
- *   Book Free Consultation -> TidyCal -> date/time -> confirmed
- *   -> TidyCal's existing Google Calendar sync -> Google Meet + confirmation
+ *   Book Free Consultation -> one form: name, email, WhatsApp, and a time
+ *   -> POST /api/book -> lead stored, then the slot claimed in the CMS
+ *   -> the CMS creates the Google Calendar event and its Meet link, and writes
+ *      a bookings row
+ *   -> WhatsApp on booking, 24h before, and 1h before with the joining link
+ *      + an email to support@sirahdigital.in
  *
- * Everything after "confirmed" is TidyCal's own pipeline, unchanged from the
- * current live site. This page does not receive, store or forward a booking —
- * there is no webhook, no polling and no API call. If lead capture into the
- * CMS is wanted later, that is a separate piece of work and it does not
- * require replacing any of this.
+ * Only the form is on this page. Everything from "claimed" onwards runs in the
+ * CMS (sirah-cms/src/endpoints/slots.ts, then lib/bookingSync.ts and
+ * bookingNotify.ts), because that is where the database, the job schedule and
+ * the editable message templates all are.
  *
- * Availability (Mon–Sat, 10:00–20:00 IST, Sunday closed) is configured in the
- * TidyCal dashboard, not here. It is deliberately not restated in code: two
- * copies of an opening-hours rule drift, and the calendar is the one a visitor
- * actually books against.
+ * ── This used to go through TidyCal ──────────────────────────────────────
+ * It no longer does, and three things went with it. The intake form is no longer
+ * a *gate* — it asked for a phone number ahead of the calendar only because
+ * TidyCal's free plan could not ask for one itself, and that whole two-step flow
+ * existed to work around a plan limit. Availability is no longer configured in
+ * somebody else's dashboard. And a booking is no longer discovered by polling a
+ * calendar and guessing which events were bookings.
  *
- * This lives at /book rather than on /contact because /contact is being
- * reworked concurrently. Both routes are legitimate — /contact is for "I have
- * a question", /book is for "I want a time" — so this does not need to move
- * once that lands, though the embed can be dropped in there too with a single
- * <TidyCalEmbed /> if you want it in both places.
+ * Availability (Mon–Sat, 10:00–20:00 IST, Sunday closed) is now generated in the
+ * CMS at /admin/availability. It is still deliberately not restated in this
+ * file: two copies of an opening-hours rule drift, and the slots a visitor sees
+ * are the rows, not a comment.
+ *
+ * /contact remains the right place for "I have a question"; this is for "I want
+ * a time".
  */
 
 export const metadata = {
@@ -44,25 +52,32 @@ export default function BookPage() {
         >
           Book a free consultation.
         </h1>
+        {/* Was, once: "a calendar invite with a Google Meet link straight after
+            booking". The link now exists from the moment of booking — we create
+            it ourselves on the calendar event — but it is still deliberately
+            held back until an hour before the call, so it cannot get buried in a
+            week-old chat. The copy describes what actually happens, in the order
+            it happens; the constraint is now a choice rather than a plan limit,
+            and the sentence is true either way. */}
         <p className="mt-5 max-w-[52ch] text-fluid-base leading-relaxed text-brand-muted">
-          Pick a time that suits you. You will get a calendar invite with a Google Meet link straight
-          after booking.
+          A 45-minute strategy call, free. Tell us where to reach you, pick a time, and we will send
+          the joining link on WhatsApp an hour before we start.
         </p>
       </header>
 
       <div className="mt-12">
-        <TidyCalEmbed />
+        <BookingIntake />
       </div>
 
       {/* A calendar is the wrong tool for some people — a direct line costs
           nothing to offer and stops that visitor bouncing. */}
       <p className="mt-10 text-fluid-sm text-brand-muted">
         Prefer to talk first? Email{' '}
-        <a href={`mailto:${COMPANY.email}`} className="text-brand-cyan hover:underline">
+        <a href={`mailto:${COMPANY.email}`} className="text-brand-blue hover:underline">
           {COMPANY.email}
         </a>{' '}
         or call{' '}
-        <a href={COMPANY.phoneHref} className="text-brand-cyan hover:underline">
+        <a href={COMPANY.phoneHref} className="text-brand-blue hover:underline">
           {COMPANY.phone}
         </a>
         .

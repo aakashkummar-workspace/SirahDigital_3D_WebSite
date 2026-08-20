@@ -1,0 +1,242 @@
+/*
+ * A member's builds, threaded onto a serpentine line.
+ *
+ * See MemberJourney.jsx for how the curve and the dots are kept on the same
+ * geometry, and why there are no numerals.
+ *
+ * The one hard requirement here is that every row is the SAME height. The rail
+ * is stretched to the list's total height and each of its cubic segments takes
+ * an equal share of that, so a row taller than its neighbours would slide the
+ * curve out from under the dots. Hence grid-auto-rows rather than min-height:
+ * the tallest description sets the number, and the rest carry slack.
+ */
+
+.journey {
+  --row: 210px;
+  --rail: 190px;
+
+  position: relative;
+  margin-top: clamp(40px, 6vw, 72px);
+}
+
+/* ── the rail ────────────────────────────────────────────────────────── */
+
+.rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--rail);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.curve {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1;
+}
+
+/*
+ * One dot per entry, at the apex of that entry's segment.
+ *
+ * --x comes from the component, derived from the same constants as the path.
+ * The vertical position is the segment's midpoint: (i + 0.5) shares of the
+ * total, which is why --count is on the wrapper. Division by a plain number in
+ * calc() is what makes this work without measuring anything.
+ */
+.dot {
+  position: absolute;
+  left: var(--x);
+  top: calc((var(--i) + 0.5) / var(--count) * 100%);
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+/* ── the entries ─────────────────────────────────────────────────────── */
+
+.list {
+  position: relative;
+  display: grid;
+  /* Equal rows — see the note at the top of this file. */
+  grid-auto-rows: var(--row);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  /* The middle track is the rail the curve runs down. */
+  grid-template-columns: 1fr var(--rail) 1fr;
+  align-items: center;
+}
+
+/*
+ * Column placement lives on .cell, not on .card.
+ *
+ * .cell is the Reveal wrapper, and Reveal renders a div of its own — so the
+ * grid item is that wrapper and .card is a grandchild. Placement set on .card
+ * is silently ignored (its parent is not a grid), which left every entry
+ * auto-placed into column 1 while the curve went on alternating without them.
+ */
+.cell {
+  max-width: 34ch;
+}
+
+/* Even entries right of the curve, odd entries left — matching the side the
+   curve bulges toward, which the component decides from the same parity.
+   Each block is justified toward the rail so it sits beside its own dot, the
+   way the reference pairs every step with the point it hangs off. */
+.item:nth-child(odd) .cell {
+  grid-column: 3;
+  justify-self: start;
+}
+
+.item:nth-child(even) .cell {
+  grid-column: 1;
+  justify-self: end;
+}
+
+.card {
+  /* Left-aligned on both sides, as in the reference: the entry on the left of
+     the curve reads left-to-right like the one on the right. */
+  text-align: left;
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+/*
+ * The status, lifted out of the name.
+ *
+ * The supplied list wrote "(In Development)" inside the title. As its own tag
+ * the titles all read as titles, and the ones still being built say so once,
+ * quietly, instead of carrying a parenthesis.
+ */
+.wip {
+  flex: none;
+  padding: 3px 9px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* 6.0:1 on this ground — small text, so it clears the 4.5:1 AA floor. */
+  color: rgba(125, 211, 252, 0.92);
+}
+
+.desc {
+  margin-top: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── tablet ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .journey {
+    --row: 200px;
+    --rail: 130px;
+  }
+}
+
+/* ── phone ───────────────────────────────────────────────────────────── */
+
+/*
+ * The rail moves to the left edge and every entry sits to the right of it.
+ *
+ * Alternating sides needs two readable columns and a phone has one. The curve
+ * is the same object with the same geometry, just narrow — it reads as a
+ * gentle wave down the margin, and the dots still land on it because they are
+ * positioned from the same constants.
+ *
+ * The rows grow here rather than shrink: a narrower column wraps the
+ * descriptions onto more lines, so the tallest entry is taller than it is on a
+ * wide screen.
+ */
+@media (max-width: 767px) {
+  .journey {
+    --row: 176px;
+    --rail: 46px;
+  }
+
+  .rail {
+    left: 0;
+    transform: none;
+  }
+
+  .item {
+    grid-template-columns: var(--rail) 1fr;
+    align-items: center;
+  }
+
+  .item:nth-child(odd) .cell,
+  .item:nth-child(even) .cell {
+    grid-column: 2;
+    justify-self: start;
+    max-width: none;
+  }
+
+  .card {
+    padding-left: 6px;
+  }
+
+  .desc {
+    margin-top: 10px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ── reduced motion ──────────────────────────────────────────────────── */
+
+/*
+ * Nothing here animates — Reveal handles its own reduced-motion case — but the
+ * equal-height rows exist only to keep a decorative curve aligned. With the
+ * curve hidden there is no reason to hold rows open, so the entries collapse
+ * to their content and the page gets shorter.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .rail {
+    display: none;
+  }
+
+  .list {
+    grid-auto-rows: auto;
+    gap: 40px;
+  }
+
+  .item {
+    grid-template-columns: 1fr;
+  }
+
+  .item:nth-child(odd) .cell,
+  .item:nth-child(even) .cell {
+    grid-column: 1;
+    justify-self: start;
+    max-width: none;
+  }
+}

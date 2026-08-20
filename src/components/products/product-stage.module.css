@@ -1,0 +1,492 @@
+/*
+ * The pinned products stage.
+ *
+ * A tall scroll track with a viewport-height panel stuck to the top of it.
+ * Scrolling through the track does not move the panel — it advances which
+ * product the panel is describing, tracing the arc forward as it goes.
+ *
+ * ── the fallback is the important part ───────────────────────────────────
+ * Pinning is a desktop, full-motion affordance and nothing else. Below
+ * 1024px, and for anyone who has asked their OS to reduce motion, the whole
+ * mechanism switches off and the three products become an ordinary stacked
+ * list. That is handled here in CSS rather than in JS on purpose:
+ * hooks/useMediaQuery returns false during SSR and on first paint, so
+ * branching the layout on it would flash a pinned stage at a phone before
+ * settling. CSS has no such gap.
+ *
+ * The JS no longer writes opacity or transform at all — it writes one
+ * `data-state` attribute and this file decides what that means. Which is why
+ * the fallback below no longer needs `!important` to win: the rules that hide
+ * a product live inside the pinned media query, so at narrow widths and under
+ * reduced motion they are never applied in the first place. That is a
+ * stronger guarantee than out-specifying an inline style, because there is
+ * nothing left to out-specify.
+ */
+
+.track {
+  position: relative;
+}
+
+.panel {
+  position: relative;
+}
+
+/* Faint vertical rules, as in the reference.
+
+   A repeating gradient rather than a fill: the stops are transparent between
+   the lines, so the site's particle field still runs behind this section
+   untouched. work_redesign.md marks that field non-negotiable and this does
+   not paint over it. */
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.028) 0 1px,
+    transparent 1px 25%
+  );
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  gap: 40px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── heading ─────────────────────────────────────────────────────────── */
+
+.head {
+  margin-bottom: 44px;
+}
+
+.label {
+  /* An <h2> by markup, a label by job — same opt-out as .work-group__label
+     in globals.css. A high-contrast serif falls apart at 11px uppercase. */
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ── the arc ─────────────────────────────────────────────────────────── */
+
+.rail {
+  display: none; /* desktop-only ornament; the stacked fallback has no arc */
+}
+
+.arc {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/*
+ * The curve was very nearly invisible: a 1px track at 10% white and a 1px
+ * lead at 42%, both drawn over the site's particle field, which is busy
+ * enough at that weight to swallow a hairline whole. Everything here is one
+ * step heavier and the lead now carries the brand ramp rather than flat
+ * white, so the part of the arc you have scrolled through is the part that
+ * reads.
+ */
+.arcTrack {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1.5;
+}
+
+.arcLead {
+  fill: none;
+  /* The gradient is declared in the component's <defs> — a CSS stroke cannot
+     express one, and the id has to match `arcLeadRamp` there. */
+  stroke: url(#arcLeadRamp);
+  stroke-width: 3;
+  stroke-linecap: round;
+  /* Reads as light coming off the stroke rather than as a thicker stroke.
+     .arc sets overflow: visible, so this is not clipped at the viewBox. */
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.45));
+}
+
+.dot {
+  fill: rgba(255, 255, 255, 0.35);
+  transition: fill 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    r 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* The active dot is the one place on the arc that takes the highlight
+   colour outright — it is the marker, and it should be findable at a
+   glance from the far side of the panel. */
+.dotOn {
+  fill: #22d3ee;
+  filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.75));
+}
+
+/* ── one product ─────────────────────────────────────────────────────── */
+
+.items {
+  position: relative;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 40px;
+}
+
+.num {
+  font-size: clamp(4.5rem, 2.6rem + 8vw, 10rem);
+  font-weight: 200;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.13);
+}
+
+.name {
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+}
+
+.tagline {
+  margin-top: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #22d3ee;
+}
+
+/*
+ * The product description.
+ *
+ * Inter Tight, not a display face. Voga was specified here and then dropped
+ * with the rest of the self-hosted pair: it is a didone, its hairlines thin
+ * out badly at paragraph sizes, and this is body copy however short it is.
+ * The heading above it carries the display face; that is the contrast doing
+ * the work, not two display faces stacked.
+ *
+ * The generous setting stayed — 1.0625rem on 1.8, against 0.9375 on 1.7 for
+ * the case-study rows below. It was chosen to give Voga room and it reads
+ * well without it, so it is kept rather than reverted.
+ *
+ * To put a display face back: font-family: var(--font-display).
+ */
+.body {
+  margin-top: 22px;
+  max-width: 44ch;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: rgba(203, 213, 225, 0.68);
+}
+
+/*
+ * The list form.
+ *
+ * An item on this stage is either one thing with a paragraph (a product) or a
+ * group of things (a portfolio category, which is what the band renders now).
+ * `.body` is the first; this is the second. A rule and a name rather than a
+ * bullet, matching how the cylinder sets the same content.
+ */
+.lines {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.line {
+  position: relative;
+  padding-left: 24px;
+}
+
+.line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 13px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.lineName {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.lineNote {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  /* 15px body copy, so it has to clear the 4.5:1 AA floor on this ground. */
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.go:hover {
+  color: #ffffff;
+}
+
+.arrow {
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.go:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ── stacked fallback (default; the pinned mode is the override) ──────── */
+
+.item + .item {
+  margin-top: 72px;
+}
+
+/* ── pinned mode: 1024px and up, full motion only ─────────────────────── */
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .track {
+    /* Set by the component as `count * var(--item-height)`. --item-height is
+       one screen by default; a band with more items than that is comfortable
+       at passes a smaller value, so the section does not become one screen of
+       scroll per item however many it holds. */
+    height: var(--track-height);
+  }
+
+  /*
+   * 72px, not 0: the site's navbar is a fixed 72px bar, and a panel stuck to
+   * the very top spends the whole section underneath it. STICKY_TOP in
+   * ProductScrollStage.jsx is the same number and is what the scroll maths
+   * measures against — change both together.
+   *
+   * svh rather than vh so a mobile browser collapsing its URL bar cannot
+   * resize the pinned panel mid-scroll.
+   */
+  .panel {
+    position: sticky;
+    top: 72px;
+    display: flex;
+    align-items: center;
+    height: calc(100svh - 72px);
+    overflow: hidden;
+  }
+
+  /*
+   * The arc is not a column — it is an ornament down the left edge that both
+   * the heading and the products sit to the right of.
+   *
+   * It was a 210px grid track between the heading and the products, which put
+   * it in the middle of the layout and read as a divider between two columns.
+   * The reference runs it down the far left, past the heading and past every
+   * product, with the heading stacked above them rather than beside them.
+   * Taking it out of flow does that, and hands the products the full measure
+   * instead of a third of it — which is what makes room for the larger type.
+   */
+  /* Given real height so the arc beside it has real height — the curve is
+     sized off this box, and a box that only fits its text would give back the
+     small ornament this replaced. */
+  .inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 78svh;
+  }
+
+  .rail {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 24px; /* matches .inner's padding, so it sits on the true edge */
+    width: 250px;
+  }
+
+  /* Clear of the arc, both of them, so the curve never runs under type. */
+  .head,
+  .items {
+    margin-left: 310px;
+  }
+
+  .head {
+    margin-bottom: 68px;
+  }
+
+  .items {
+    /* The tallest product sets the height; the rest stack on top of it, so
+       swapping one for the next never reflows the panel. */
+    display: grid;
+  }
+
+  .item {
+    grid-area: 1 / 1;
+    margin-top: 0;
+    will-change: opacity, transform;
+  }
+
+  .item + .item {
+    margin-top: 0;
+  }
+
+  /*
+   * The handover.
+   *
+   * Every product shares one grid cell, so the only thing keeping two of them
+   * off each other is that one is at opacity 0 while the other is at 1. The
+   * old scrubbed version could not promise that — halfway between two
+   * products both sat at 0.194 — so the two fades here are staggered rather
+   * than run together:
+   *
+   *   0ms ─────── 170ms            the outgoing product fades out
+   *                 150ms ─────── 410ms   the incoming fades in
+   *
+   * They overlap for 20ms, which is a frame, and the whole thing is driven by
+   * time rather than by scroll position, so there is no way to come to rest
+   * inside it. The 380ms drift is longer than either fade on purpose: the
+   * movement continues under the new product, which is what makes it read as
+   * one object moving rather than two swapping.
+   *
+   * Never `visibility: hidden`. An idle product stays in the accessibility
+   * tree and stays focusable — the component brings it forward on focus
+   * instead. pointer-events is what stops it swallowing clicks.
+   */
+  .item[data-state] {
+    transition: opacity 170ms cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .item[data-state='active'] {
+    opacity: 1;
+    transform: translateY(0);
+    /* Grid items take z-index without needing position. */
+    z-index: 2;
+    pointer-events: auto;
+    transition: opacity 260ms cubic-bezier(0.22, 0.61, 0.36, 1) 150ms,
+      transform 380ms cubic-bezier(0.22, 0.61, 0.36, 1) 100ms;
+  }
+
+  /* Drifts up as it leaves, having come from below — 28px, small enough to
+     read as the same object moving rather than a new one flying in. */
+  .item[data-state='before'] {
+    opacity: 0;
+    transform: translateY(-28px);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .item[data-state='after'] {
+    opacity: 0;
+    transform: translateY(28px);
+    z-index: 1;
+    pointer-events: none;
+  }
+}
+
+/*
+ * Anything narrower, or reduced motion: no pin, no stage, just a list.
+ *
+ * The opacity/transform overrides that used to live here are gone with the
+ * inline styles they existed to beat. `--track-height` is still written by the
+ * component at every width, so the height reset stays.
+ */
+@media (max-width: 1023px), (prefers-reduced-motion: reduce) {
+  .track {
+    height: auto;
+  }
+}
+
+/* ── phones and tablets ──────────────────────────────────────────────────
+   The figure sits above the copy rather than beside it. At 375px a 4.5rem
+   numeral plus its 40px gutter eats 112px of a 327px measure, which leaves
+   the description in a column too narrow to read.
+
+   This ran to 639px and stopped, which left 640–1023px — every tablet, and
+   every phone in landscape — back on the two-column layout with the numeral
+   at its full clamped size and still no pinning to justify it. The stack now
+   runs all the way to the breakpoint where the stage actually takes over. */
+@media (max-width: 1023px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .num {
+    font-size: clamp(3.5rem, 2.6rem + 4vw, 6rem);
+    line-height: 1;
+  }
+
+  .item + .item {
+    margin-top: 64px;
+  }
+}
+
+/* Type and rhythm below 640px only — a tablet has the width for the full
+   scale and only needed the single column above. */
+@media (max-width: 639px) {
+  .name {
+    font-size: 1.5rem;
+  }
+
+  .tagline {
+    margin-top: 8px;
+    font-size: 0.9375rem;
+  }
+
+  .body {
+    margin-top: 16px;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .lines {
+    margin-top: 16px;
+    gap: 11px;
+  }
+
+  .lineName {
+    font-size: 1rem;
+  }
+
+  .go {
+    margin-top: 24px;
+  }
+
+  .head {
+    margin-bottom: 32px;
+  }
+
+  .item + .item {
+    margin-top: 56px;
+  }
+
+  /* Four rules across a phone is a grid; two is a texture. */
+  .panel::before {
+    background-image: repeating-linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.028) 0 1px,
+      transparent 1px 50%
+    );
+  }
+}

@@ -92,7 +92,7 @@ export default function ConfigPanel({ input, set, accent, derived }) {
           reader who disagrees with these can discount the result accordingly,
           which they cannot do if the derivation is invisible. */}
       <p className="mt-9 max-w-[46ch] text-[12px] leading-relaxed text-white/40">
-        Lead, call and document volumes are estimated from your team size — about{' '}
+        Lead, call and document volumes are estimated from your team size - about{' '}
         {derived.monthlyLeads.toLocaleString('en-US')} leads,{' '}
         {derived.monthlyCalls.toLocaleString('en-US')} calls and{' '}
         {derived.monthlyDocs.toLocaleString('en-US')} documents a month.

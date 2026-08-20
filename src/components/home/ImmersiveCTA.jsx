@@ -45,7 +45,7 @@ export default function ImmersiveCTA() {
 
         <Link
           href="/contact"
-          className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-white hover:text-cyan-400 transition-colors duration-300"
+          className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-white hover:text-brand-blue transition-colors duration-300"
         >
           <span>Book Free Consultation</span>
           <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />

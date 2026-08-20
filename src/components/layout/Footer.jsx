@@ -3,6 +3,7 @@ import Link from 'next/link';
 import BrandLockup from './BrandLockup';
 import { COMPANY } from '@/data/company';
 import { SOCIALS } from '@/data/socials';
+import { HOME_PRODUCTS } from '@/data/products';
 import { MailIcon, PhoneIcon, PinIcon, SocialIcon } from '@/components/ui/icons';
 
 const COLUMNS = [
@@ -11,7 +12,7 @@ const COLUMNS = [
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Our Process', href: '/about#process' },
-      { label: 'Our Work', href: '/work' },
+      { label: 'Our Work', href: '/products#client-systems' },
       { label: 'Contact', href: '/contact' },
     ],
   },
@@ -22,6 +23,13 @@ const COLUMNS = [
       { label: 'Chatbot Development', href: '/services#chatbots-voice' },
       { label: 'CRM Automation', href: '/services#crm-erp' },
       { label: 'All Services', href: '/services' },
+    ],
+  },
+  {
+    title: 'Products',
+    links: [
+      ...HOME_PRODUCTS.map((p) => ({ label: p.title, href: p.href })),
+      { label: 'All Products', href: '/products' },
     ],
   },
   {
@@ -43,7 +51,11 @@ export default function Footer() {
   return (
     <footer className="relative z-10 border-t pointer-events-auto bg-space-deep/90 border-white/5 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1.2fr] gap-10 lg:gap-8">
+        {/* Brand + four link columns + contact. The brand column keeps its
+            wider share; the rest divide what is left evenly. Six tracks at
+            1280px is tight, so the link columns drop to 0.9fr to buy the
+            contact column room for an email address without it wrapping. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.5fr_0.9fr_0.9fr_0.9fr_0.9fr_1.15fr] gap-10 lg:gap-7">
 
           {/* Brand */}
           <div className="max-w-sm">
@@ -53,7 +65,7 @@ export default function Footer() {
 
             <Link
               href="/contact"
-              className="mt-6 inline-flex items-center text-sm font-semibold text-white hover:text-cyan-400 transition-colors gap-1"
+              className="mt-6 inline-flex items-center text-sm font-semibold text-white hover:text-brand-blue transition-colors gap-1"
             >
               Book Free Consultation →
             </Link>
@@ -65,7 +77,7 @@ export default function Footer() {
                   href={s.href}
                   aria-label={s.label}
                   target={s.href.startsWith('http') ? '_blank' : undefined}
-                  rel={s.href.startsWith('http') ? 'noreferrer noopener' : undefined}
+                  rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   className="w-10 h-10 rounded-lg grid place-items-center transition-colors border border-white/10 text-slate-300 hover:text-white hover:border-white/30"
                 >
                   <SocialIcon path={s.path} />

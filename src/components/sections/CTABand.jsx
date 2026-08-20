@@ -14,9 +14,11 @@ export default function CTABand({
         <div className="text-center relative pointer-events-auto">
           <AnimatedHeading text={title} className="text-3xl md:text-5xl font-bold text-white" />
           <p className="mt-5 text-slate-300 max-w-xl mx-auto text-base md:text-lg">{subtitle}</p>
+          {/* The subtitle promises a 45-minute call, so this goes to the
+              calendar rather than the enquiry form. */}
           <Link
             href="/contact"
-            className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-white hover:text-cyan-400 transition-colors"
+            className="mt-8 inline-flex items-center justify-center gap-2 text-lg font-bold text-white hover:text-brand-blue transition-colors"
           >
             <span>Book Free Consultation</span>
             <ArrowRightIcon />

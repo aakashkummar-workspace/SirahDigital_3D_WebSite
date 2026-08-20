@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { PrimaryButton } from '@/components/ui/Button';
 // Lives at the app root so it also covers paths outside the (site) group.
 export const metadata = {
   title: 'Page not found',
@@ -18,12 +19,9 @@ export default function NotFound() {
           The site is now split across several pages. Try services, industries, our work, or head back to the start.
         </p>
         <div className="mt-10 flex flex-wrap gap-4 justify-center">
-          <Link
-            href="/"
-            className="px-6 py-3 rounded-full font-medium text-white bg-brand-cyan hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-opacity"
-          >
-            Back to home
-          </Link>
+          <PrimaryButton href="/hub">
+            Back to the hub
+          </PrimaryButton>
           <Link
             href="/contact"
             className="px-6 py-3 rounded-full font-medium border transition-all border-white/10 bg-white/5 hover:bg-white/10"

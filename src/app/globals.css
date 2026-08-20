@@ -1,10 +1,164 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---------------------------------------------------------------------- */
+/* Typefaces                                                               */
+/*                                                                         */
+/* Three self-hosted variable webfonts, in public/fonts/. Satoshi and       */
+/* Zodiak come from Fontshare; Cormorant Garamond is Google's, taken as the */
+/* latin subset of its variable roman rather than through next/font/google, */
+/* so that all three faces load the same way.                               */
+/*                                                                         */
+/*   Cormorant Garamond  every heading                                     */
+/*   Satoshi            every paragraph, label, button and description     */
+/*   Zodiak             every digit, in both of the above                  */
+/*                                                                         */
+/* Licence: Fontshare releases are free for personal AND commercial use.    */
+/* Nothing here needs a purchase before it ships.                           */
+/*                                                                         */
+/* All three are true VARIABLE, ROMAN cuts, verified against the files.     */
+/*                                                                         */
+/* Re-fetching these is a two-part trap and both halves fail silently.      */
+/* Fontshare's "@variable" CSS lists many @font-face blocks: several static */
+/* weights, then a variable roman, then (for faces that have one) a         */
+/* variable ITALIC. Taking the first gives a static Light and everything    */
+/* renders thin; taking the last gives the italic and the whole site        */
+/* renders slanted. Neither errors.                                        */
+/*                                                                         */
+/* Pick the block that has BOTH a font-weight RANGE and font-style: normal. */
+/* Verify with fontTools: 'fvar' in TTFont(f) must be True, and nameID 2    */
+/* must not say Italic.                                                    */
+/*                                                                         */
+/* Google's css2 API has the same shape of trap for a different reason: it  */
+/* returns one block PER SUBSET — cyrillic, cyrillic-ext, vietnamese,       */
+/* latin-ext, latin — each a different file behind the same family name.    */
+/* Take the one whose unicode-range starts U+0000-00FF. Taking another      */
+/* gives a font with no Latin letters in it at all, and the page silently   */
+/* renders every heading in the fallback.                                   */
+/* ---------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond.woff2') format('woff2');
+  /* The real fvar axis read off the file. Declaring a wider range than the
+     font carries lets the browser synthesise weights outside it — and note
+     this one stops at 700, so a heading asking for 800 gets a fake bold. */
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+
+  /*
+   * The one line that makes a Garamond usable as a drop-in heading face.
+   *
+   * Cormorant is drawn with a deliberately small x-height — 0.386em, against
+   * 0.500em for Satoshi and 0.504em for the Clash Display this replaced. Set
+   * at the same font-size it therefore looks about a quarter smaller than
+   * either, and every heading clamp on this site was tuned against the taller
+   * faces. Without a correction the whole site's headings quietly shrink.
+   *
+   * 110% is cap-height parity, not x-height parity, and the difference is the
+   * whole decision:
+   *
+   *   cap-height  0.625 x 1.10 = 0.688em   vs Clash Display's 0.670em
+   *   x-height    0.386 x 1.10 = 0.425em   vs Clash Display's 0.504em
+   *
+   * Correcting all the way to x-height parity would need 130%, which would
+   * blow the caps out to 0.81em and make the ascenders and descenders
+   * enormous. Matching caps keeps the silhouette of a heading where it was
+   * while leaving the small x-height alone — that is not a defect to be
+   * corrected, it is what makes the face look like the reference.
+   *
+   * size-adjust scales advance widths too, which is why this number is also
+   * a layout constant. At 110% every measured string on the site lands within
+   * a few percent of where Clash Display had it, so nothing that was fitted
+   * to a container had to move. Changing it means re-checking those: the
+   * uppercase category on the products cylinder, the hub row's product names,
+   * and the "ABOUT" wordmark in about-statement.module.css.
+   */
+  size-adjust: 110%;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * The numerals.
+ *
+ * `unicode-range` does the whole job. Zodiak is declared for U+0030-0039 and
+ * nothing else, so sitting first in a stack it supplies only the digits and
+ * the browser falls through to Cormorant or Satoshi for every letter. One
+ * declaration, and every number on the site changes — the 01/02/03 on
+ * /products, the client-systems numbering, the ROI figures, the metrics, the
+ * phone number in the footer.
+ *
+ * The alternative was a utility class on each numeral, which would have meant
+ * finding all of them and would have missed the next one anyone wrote.
+ *
+ * Digits only, deliberately. Adding the comma or period to the range would
+ * pull those out of Zodiak in running prose too, where they would not match
+ * the text around them.
+ *
+ * ── why not Melodrama ────────────────────────────────────────────────────
+ * Melodrama was the first choice here and is curvier still, but its zero is
+ * SLASHED by design and the font ships no unslashed alternate — checked
+ * against its GSUB, where ss01 and salt make no digit substitution and aalt
+ * offers only oldstyle/superior/inferior cuts of the same slashed glyph. That
+ * turns "40%" into "4Ø%" and "10,000+" into "1Ø,ØØØ+", which reads as the
+ * letter O-slash rather than as a number. Zodiak is the next curviest with a
+ * conventional zero.
+ */
+@font-face {
+  font-family: 'Zodiak Numerals';
+  src: url('/fonts/zodiak.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+
+/*
+ * The same file again, under a second name, with NO unicode-range.
+ *
+ * 'Zodiak Numerals' above is deliberately restricted to the digits, which is
+ * what lets it sit first in both stacks without touching the letters. But the
+ * file itself carries a full Latin alphabet, and the client row wants a third
+ * face to set names in — one that is neither the heading serif nor the body
+ * sans.
+ *
+ * Aliasing it costs nothing. Same URL, so the browser has already fetched and
+ * decoded it for the digits by the time this is asked for; there is no second
+ * request and no second preload. Two @font-face rules pointing at one file is
+ * the supported way to expose one font under two coverage rules.
+ *
+ * Only the client row uses this. Do not reach for it as a general heading
+ * face — that is what --font-display is for.
+ */
+@font-face {
+  font-family: 'Zodiak Text';
+  src: url('/fonts/zodiak.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* Brand identity, mirrored as custom properties so SVG fills, gradients and
    inline styles use the same values as the Tailwind tokens. */
 :root {
+  /*
+   * Zodiak sits first in both stacks and covers only U+0030-0039, so it
+   * supplies the digits while Cormorant Garamond or Satoshi supplies
+   * everything else.
+   * See the @font-face note above.
+   */
+  --font-sans: 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
+  --font-display: 'Zodiak Numerals', 'Cormorant Garamond', Georgia, serif;
+
   --space: #0b0e17;
   --space-deep: #070910;
   --space-raised: #111522;
@@ -13,11 +167,94 @@
   --cyan: #38bdf8;
   --text: #ffffff;
   --muted: #94a3b8;
+
+  /*
+   * The CTA palette. Every primary button, and every accent that sits next
+   * to one, is drawn from these four and nothing else.
+   *
+   * They are new rather than reused because the two that were already here
+   * are the wrong colours for the job: --purple is #a855f7, a step lighter
+   * and pinker than the violet the logo and the hero particle field are
+   * built on, and --cyan is not in the brand at all. Pointing the buttons at
+   * the existing tokens would have quietly restated the same mismatch.
+   *
+   * -- one thing to know about these ------------------------------------
+   * White type on the resting pair does not reach WCAG AA. Measured against
+   * white, at the 15px/600 a button label is set at (so 4.5:1 is the bar):
+   *
+   *     #3b82f6  3.68:1   FAIL      #2563eb  5.17:1   pass
+   *     #8b5cf6  4.23:1   FAIL      #7c3aed  5.70:1   pass
+   *
+   * The -deep pair — which the brief specifies as the HOVER end — is the one
+   * that passes, so as specified the button is compliant only while the
+   * pointer is on it, and the state most visitors see is the failing one.
+   *
+   * The resting values are kept because they are the brand's, and swapping a
+   * brand colour is not a call to make silently. The fix, if it is wanted, is
+   * to move each value one line up: set --brand-blue to #2563eb and
+   * --brand-violet to #7c3aed, then pick a darker pair for the -deep hover.
+   * Nothing else has to change — every button, the skip link, the chat send
+   * control and the chat panel's own primaries all read these four.
+   *
+   * #8b5cf6 is also below AA as TEXT on the page ground (4.24:1), which is
+   * why links and menu items use --brand-blue (4.88:1) and go to white on
+   * hover rather than to violet.
+   */
+  --brand-blue: #3b82f6;
+  --brand-blue-deep: #2563eb;
+  --brand-violet: #8b5cf6;
+  --brand-violet-deep: #7c3aed;
+
+  /*
+   * The focus ring, one step lighter than --brand-blue on purpose: the ring
+   * has to stay legible where it lands on a primary button as well as on the
+   * page, and --brand-blue against the button's own blue is 1.45:1. This is
+   * 7.2:1 against the page and still clearly not the button's fill.
+   */
+  --focus-ring: #60a5fa;
+}
+
+/*
+ * Every in-page anchor eases rather than jumps — the services rail and its
+ * mobile chips, the products anchors, the contact hero's link down to its own
+ * form. Declared once here instead of passing `behavior: 'smooth'` at each of
+ * the call sites, several of which are plain <a href="#..."> and could not
+ * take it anyway.
+ *
+ * The reduced-motion block further down already forces `scroll-behavior: auto
+ * !important` on everything, so there is nothing extra to write for that
+ * case.
+ *
+ * Sections that anchors land on carry their own `scroll-mt-*`, which is what
+ * keeps a heading clear of the 72px fixed navbar at the end of the glide.
+ */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--space);
   color: var(--text);
+}
+
+/*
+ * Every heading on the site, in the display face.
+ *
+ * A blanket element rule rather than a utility on each of the ~40 heading
+ * sites: this is meant to apply everywhere, and the one-by-one version means
+ * the next heading anyone writes silently misses it.
+ *
+ * h4 is deliberately excluded. The only h4s on the site are the footer's
+ * column titles — 16px UI labels, where a display face reads as a mistake
+ * rather than as emphasis. Two <h2>s have the same problem because they are
+ * styled as quiet 11px labels rather than as headings; they opt back out
+ * immediately below, and the products stage does the same for its own label
+ * inside its CSS module.
+ */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -31,7 +268,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -44,8 +281,14 @@ textarea:focus-visible,
   z-index: 100;
   padding: 0.75rem 1.25rem;
   border-radius: 0.75rem;
-  background: var(--cyan);
-  color: #04121a;
+  /* Treated as a primary, because it is one — and the first one a keyboard
+     visitor meets. Opaque rather than 4% glass, though: it appears over
+     whatever happens to be at the top of the page, so it cannot borrow its
+     legibility from the backdrop the way a button sitting in a section can. */
+  position: relative;
+  isolation: isolate;
+  background-color: #0b091a;
+  color: #ffffff;
   font-weight: 700;
   transition: top 160ms ease;
 }
@@ -127,6 +370,598 @@ textarea:focus-visible,
 @keyframes scroll-hint {
   0%   { transform: translateY(-100%); }
   100% { transform: translateY(400%); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Chat launcher                                                           */
+/*                                                                         */
+/* The robot that opens the chat panel below. It used to stand in for a      */
+/* LeadConnector bubble hidden inside a shadow root; the panel is ours now,  */
+/* so the launcher is simply a button. See components/layout/ChatWidget.jsx. */
+/*                                                                         */
+/* Resting state is deliberately the *visible* one: under the reduced-      */
+/* motion block above the animations collapse to nothing, and an element    */
+/* whose only visible state lives inside a keyframe would disappear.        */
+/* ---------------------------------------------------------------------- */
+
+.sirah-launcher {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  transition: opacity 0.25s cubic-bezier(.22,.61,.36,1),
+              transform 0.25s cubic-bezier(.22,.61,.36,1);
+}
+
+/* Open panel — get out of its way rather than stack above it. */
+.sirah-launcher--hidden {
+  opacity: 0;
+  transform: translateY(8px) scale(0.9);
+  pointer-events: none;
+}
+
+.sirah-launcher__btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* "Ask Sirah AI". Sits left of the robot on a plate dark enough to hold the
+   two accent colours at small size over any section behind it. */
+.sirah-launcher__pill {
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 9px 16px;
+  border-radius: 9999px;
+  /* Darker than the surrounding chrome on purpose: the pill carries two
+     accent words at 14px, and the brand violet only clears AA against a
+     ground this deep. */
+  background: rgba(11, 9, 26, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  transition: border-color 0.25s cubic-bezier(.22,.61,.36,1),
+              transform 0.25s cubic-bezier(.22,.61,.36,1);
+}
+
+.sirah-launcher__btn:hover .sirah-launcher__pill {
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateX(-2px);
+}
+
+.sirah-launcher__robot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  flex: none;
+}
+
+.sirah-launcher__img {
+  position: relative;
+  z-index: 1;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(59, 130, 246, 0.35));
+  animation: launcher-bob 4.5s ease-in-out infinite;
+}
+
+.sirah-launcher__btn:hover .sirah-launcher__img {
+  animation-play-state: paused;
+}
+
+/* Concentric radar sweep behind the robot. */
+.sirah-launcher__rings {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.sirah-launcher__rings i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border-radius: 9999px;
+  border: 1px solid rgba(59, 130, 246, 0.55);
+  /* Resting state — what shows when motion is reduced. */
+  transform: scale(0.72);
+  opacity: 0.4;
+  animation: launcher-radar 3.3s cubic-bezier(.22,.61,.36,1) infinite;
+}
+
+/* Soft core glow so the rings read as emitted rather than drawn. */
+.sirah-launcher__rings::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+}
+
+@keyframes launcher-radar {
+  0%   { transform: scale(0.62); opacity: 0.55; }
+  80%  { opacity: 0; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+
+@keyframes launcher-bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -5px, 0); }
+}
+
+/* Phones: the pill costs more width than it earns next to a thumb-sized
+   target, and the corner is tighter. Robot only. */
+@media (max-width: 640px) {
+  .sirah-launcher {
+    right: 16px;
+    bottom: 16px;
+  }
+  .sirah-launcher__pill {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Chat panel                                                              */
+/*                                                                         */
+/* The panel the launcher opens. Sits in the same corner and on the same    */
+/* stacking layer; the launcher hides rather than raising, so the two are   */
+/* never both in the corner at once.                                       */
+/*                                                                         */
+/* Visibility is opacity + transform rather than display, so the open and   */
+/* close transitions have something to animate. visibility:hidden is what   */
+/* actually takes the closed panel out of the accessibility tree and out of */
+/* the way of clicks.                                                      */
+/* ---------------------------------------------------------------------- */
+
+.sirah-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483001;
+  display: flex;
+  flex-direction: column;
+  width: min(400px, calc(100vw - 40px));
+  height: min(600px, calc(100dvh - 120px));
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(13, 12, 26, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 32px 80px -24px rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.97);
+  transform-origin: bottom right;
+  transition: opacity 0.28s cubic-bezier(.22,.61,.36,1),
+              transform 0.28s cubic-bezier(.22,.61,.36,1),
+              visibility 0s linear 0.28s;
+}
+
+.sirah-panel--open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0s, 0s, 0s;
+}
+
+/* ---- header ---- */
+
+.sirah-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.14), rgba(139, 92, 246, 0.14));
+  flex: none;
+}
+
+.sirah-panel__avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.sirah-panel__avatar img { width: 34px; height: 34px; object-fit: contain; }
+
+.sirah-panel__id { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.sirah-panel__id b { font-size: 0.9375rem; font-weight: 600; color: #fff; letter-spacing: -0.01em; }
+.sirah-panel__id i {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-style: normal;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+.sirah-panel__id i em {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+}
+
+.sirah-panel__lang,
+.sirah-panel__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.sirah-panel__lang:hover,
+.sirah-panel__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* ---- log ---- */
+
+.sirah-panel__log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+.sirah-panel__log::-webkit-scrollbar { width: 6px; }
+/* Undoes the site scrollbar's treatment as well as setting its own. That bar
+   is 10px with a 2px transparent inset border and a held-back opacity; at the
+   6px this panel wants, the same inset would leave a 2px sliver. This is a
+   quiet grey thumb inside a narrow gutter, which is what a transcript in a
+   floating panel should have — the brand ramp belongs to the page. */
+.sirah-panel__log::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border: 0;
+  border-radius: 9999px;
+  opacity: 1;
+}
+
+.sirah-msg { display: flex; flex-direction: column; gap: 8px; max-width: 100%; }
+.sirah-msg--user { align-items: flex-end; }
+.sirah-msg--bot { align-items: flex-start; }
+
+.sirah-msg__bubble {
+  max-width: 88%;
+  padding: 10px 13px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.sirah-msg--bot .sirah-msg__bubble {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 6px;
+  color: rgba(255, 255, 255, 0.88);
+}
+.sirah-msg--user .sirah-msg__bubble {
+  background-image: linear-gradient(
+    135deg,
+    var(--brand-blue) 0%,
+    var(--brand-violet) 100%
+  );
+  border-bottom-right-radius: 6px;
+  color: #ffffff;
+  font-weight: 500;
+}
+.sirah-msg__text { margin: 0; }
+.sirah-msg__text strong { font-weight: 700; color: #fff; }
+.sirah-msg--user .sirah-msg__text strong { color: #0b0a16; }
+
+.sirah-msg__bubble--typing { padding: 14px 16px; }
+
+.sirah-msg__lead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  color: #fff;
+  text-decoration: none;
+}
+.sirah-msg__lead b { font-size: 0.8125rem; font-weight: 600; }
+.sirah-msg__lead i {
+  font-style: normal;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.sirah-msg__bullets {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sirah-msg__bullets li { display: flex; flex-direction: column; gap: 1px; }
+.sirah-msg__bullets a,
+.sirah-msg__bullets b {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #7dd3fc;
+  text-decoration: none;
+}
+.sirah-msg__bullets a:hover { text-decoration: underline; }
+.sirah-msg__bullets span {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sirah-msg__extra {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sirah-msg__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 0.8125rem;
+}
+.sirah-msg__contact a { color: #7dd3fc; text-decoration: none; }
+.sirah-msg__contact a:hover { text-decoration: underline; }
+.sirah-msg__contact span { color: rgba(255, 255, 255, 0.55); font-size: 0.75rem; }
+
+.sirah-msg__links { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+
+.sirah-panel__link {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 13px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.sirah-panel__link:hover { border-color: rgba(59, 130, 246, 0.6); color: #fff; }
+.sirah-panel__link--primary {
+  position: relative;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  /* The ring is the pseudo-element; the real border would sit on top of it. */
+  border-color: transparent;
+}
+.sirah-panel__link--primary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: transparent;
+}
+.sirah-panel__link--primary:hover::before { opacity: 1; }
+
+/* ---- suggestion chips ---- */
+
+.sirah-panel__chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.sirah-panel__chips button {
+  padding: 7px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.sirah-panel__chips button:hover {
+  color: #fff;
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* ---- typing ---- */
+
+.sirah-typing { display: inline-flex; gap: 4px; align-items: center; }
+.sirah-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.55);
+  animation: sirah-typing-bounce 1.2s ease-in-out infinite;
+}
+.sirah-typing i:nth-child(2) { animation-delay: 0.15s; }
+.sirah-typing i:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes sirah-typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ---- lead form ---- */
+
+.sirah-panel__lead {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sirah-panel__leadtitle {
+  margin: 0 0 2px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.5);
+}
+.sirah-panel__lead input,
+.sirah-panel__lead textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  resize: none;
+}
+.sirah-panel__lead input::placeholder,
+.sirah-panel__lead textarea::placeholder { color: rgba(255, 255, 255, 0.35); }
+.sirah-panel__lead input:focus,
+.sirah-panel__lead textarea:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.65);
+}
+.sirah-panel__leadrow { display: flex; gap: 7px; align-items: center; }
+.sirah-panel__leadrow button[type='submit'] {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 9999px;
+  border: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  position: relative;
+  isolation: isolate;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.sirah-panel__leadrow button[type='submit']:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.sirah-panel__leadrow button[type='submit']:not(:disabled):hover::before {
+  opacity: 1;
+}
+.sirah-panel__leadrow button[type='submit']:disabled { opacity: 0.6; cursor: default; }
+.sirah-panel__leadcancel {
+  padding: 9px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+}
+.sirah-panel__leaderror { margin: 0; font-size: 0.75rem; color: #fca5a5; }
+.sirah-panel__leaddone {
+  margin: 0;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 0.8125rem;
+  color: #86efac;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+}
+
+/* ---- compose ---- */
+
+.sirah-panel__compose {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 11px 12px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sirah-panel__compose input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 14px;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.sirah-panel__compose input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.sirah-panel__compose input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.65);
+}
+.sirah-panel__compose button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  border: 0;
+  /* A primary at 40px: same glass, same ring, same angle as .btn-primary, so
+     the send control reads as the same species of button as every other
+     primary on the site — it is one, it is just round. */
+  position: relative;
+  isolation: isolate;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s;
+}
+.sirah-panel__compose button:disabled { opacity: 0.4; cursor: default; }
+.sirah-panel__compose button:not(:disabled):hover { transform: scale(1.06); }
+
+.sirah-panel__foot {
+  flex: none;
+  margin: 0;
+  padding: 0 14px 11px;
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+/* Phones: full-bleed sheet. A 400px card floating in a 360px viewport is a
+   card with no margins pretending to be a window. */
+@media (max-width: 640px) {
+  .sirah-panel {
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    border-width: 0;
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -250,7 +1085,7 @@ textarea:focus-visible,
 .roi-range:focus-visible::-webkit-slider-thumb { transform: scale(1.18); }
 .roi-range:focus-visible { outline: none; }
 .roi-range:focus-visible::-webkit-slider-thumb {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--focus-ring);
 }
 
 /* Native select, restyled. Same reasoning as the range input. */
@@ -277,6 +1112,71 @@ textarea:focus-visible,
 /* ---------------------------------------------------------------------- */
 /* Utilities                                                               */
 /* ---------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------- */
+/* The scrollbar                                                           */
+/*                                                                         */
+/* The default bar is a pale system chrome strip down the right of a page   */
+/* that is otherwise #16142C — the one part of the window that never got    */
+/* designed. This is the site's own: a transparent gutter and a thumb in    */
+/* the brand gradient, cyan at the top through indigo to purple.            */
+/*                                                                         */
+/* Two engines, two mechanisms, and they are not interchangeable:           */
+/*                                                                         */
+/*   WebKit/Blink  ::-webkit-scrollbar and friends. Takes a gradient, so    */
+/*                 this is where the brand ramp actually renders.           */
+/*   Firefox       scrollbar-color, which takes exactly two flat colours    */
+/*                 and no gradient. It gets the indigo midpoint of the      */
+/*                 ramp — the nearest single colour to the whole of it.     */
+/*                                                                         */
+/* The transparent border on the thumb is what insets it: background-clip   */
+/* keeps the paint off the border box, so the visible thumb is 6px inside   */
+/* a 10px track rather than filling it edge to edge.                        */
+/*                                                                         */
+/* Element selectors, so both of the existing overrides still win on        */
+/* specificity: .no-scrollbar (the swipe rails) and .sirah-panel__log (the  */
+/* chat transcript) each carry a class and are untouched by this.           */
+/* ---------------------------------------------------------------------- */
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--indigo) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-image: linear-gradient(
+    180deg,
+    var(--cyan) 0%,
+    var(--indigo) 55%,
+    var(--purple) 100%
+  );
+  /* Held back at rest so the bar reads as a quiet marker rather than a
+     ribbon of accent running down every page. */
+  opacity: 0.55;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  opacity: 1;
+}
+
+/* The little square where a vertical and a horizontal bar meet. Left to
+   itself it paints as a light system tile against the dark page. */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
 
 /* Horizontal swipe rails (the mobile industry carousel) hide their bar. */
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -315,4 +1215,944 @@ textarea:autofill {
   filter: none;
   background-color: #100e20 !important;
   color: #ffffff !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Workflow line — shared by /industries and /work                         */
+/*                                                                         */
+/* "Enquiry → Appointment → Follow-up". Both pages show what was automated  */
+/* as a line of text rather than a diagram, and both want it quieter than   */
+/* the copy above it, so the rules live here once. See ui/StepFlow.jsx.     */
+/*                                                                         */
+/* Spacing is a margin on each step rather than a gap on the list: with a   */
+/* gap, a flow wrapping to a second row can start that row with an arrow    */
+/* sitting apart from the step it belongs to.                              */
+/* ---------------------------------------------------------------------- */
+
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.flow__step {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 2px;
+  font-size: 0.8125rem;
+  line-height: 1.9;
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.62);
+  white-space: nowrap;
+}
+
+.flow__arrow {
+  margin: 0 8px;
+  color: rgba(255, 255, 255, 0.24);
+  transition: color 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Industries grid                                                         */
+/*                                                                         */
+/* These were image-first tiles: an edge-to-edge photograph per sector with */
+/* a caption over it, and a hover that zoomed the image and faded a veil    */
+/* across it. Twelve of those, each photograph sourced differently, read as */
+/* a stock gallery. The card is typographic now and the photograph is a     */
+/* 9% desaturated grain behind it — one treatment across all twelve, so the */
+/* set reads as one surface rather than twelve competing pictures.          */
+/*                                                                         */
+/* Nothing here paints a page background. The gaps between cards are where  */
+/* the site's particle field shows through, which is why the card's own     */
+/* fill is a wash of black rather than of white: it knocks the field back   */
+/* under the type without hiding it between the cards.                      */
+/*                                                                         */
+/* Only transform, opacity and colour animate — a grid of twelve cards      */
+/* reacting to a pointer never touches layout.                              */
+/* ---------------------------------------------------------------------- */
+
+.ind-card {
+  border-color: rgba(255, 255, 255, 0.07);
+  background-color: rgba(0, 0, 0, 0.28);
+  transition: transform 240ms cubic-bezier(.22, .61, .36, 1),
+              border-color 240ms cubic-bezier(.22, .61, .36, 1),
+              background-color 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Desaturated and almost invisible, identically for every sector. The point
+   is that no card's photograph can be told apart from another's at a glance
+   — that is what stops the grid reading as a gallery. */
+.ind-card__media {
+  opacity: 0.09;
+  filter: grayscale(1) contrast(0.92);
+  transition: opacity 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.ind-card__go { transition: color 240ms cubic-bezier(.22, .61, .36, 1); }
+.ind-card__go-arrow { transition: transform 240ms cubic-bezier(.22, .61, .36, 1); }
+
+/*
+ * Hover: 3px up, the border and the plate a shade more present, the texture
+ * a shade less hidden, the workflow arrows lifting out of the background,
+ * and the Explore arrow sliding 4px. Nothing scales, nothing tilts, nothing
+ * glows. Gated on (hover: hover) so a phone does not get it stuck on after
+ * a tap; the keyboard equivalents sit outside the gate.
+ */
+@media (hover: hover) {
+  .ind-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(0, 0, 0, 0.36);
+  }
+  .ind-card:hover .ind-card__media { opacity: 0.15; }
+  .ind-card:hover .flow__arrow { color: rgba(255, 255, 255, 0.5); }
+  .ind-card:hover .ind-card__go { color: rgba(255, 255, 255, 0.92); }
+  .ind-card:hover .ind-card__go-arrow { transform: translateX(4px); }
+}
+
+.ind-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(0, 0, 0, 0.36);
+  /* The global ring rounds itself to 4px, which cuts the corners off a card
+     built on a 14px radius. Colour and width stay the site's. */
+  border-radius: 14px;
+  outline-offset: 4px;
+}
+.ind-card:focus-visible .ind-card__media { opacity: 0.15; }
+.ind-card:focus-visible .flow__arrow { color: rgba(255, 255, 255, 0.5); }
+.ind-card:focus-visible .ind-card__go { color: rgba(255, 255, 255, 0.92); }
+.ind-card:focus-visible .ind-card__go-arrow { transform: translateX(4px); }
+
+/* ---------------------------------------------------------------------- */
+/* Our Work — project rows                                                 */
+/*                                                                         */
+/* This page was a status board: a coloured dot per group, monospace client */
+/* labels, an impact figure floating at the end of every line. The row is   */
+/* an editorial two-column entry now — what the system is on the left, and  */
+/* what it produced on the right — and the only thing separating one from   */
+/* the next is a hairline at 6% white.                                      */
+/*                                                                         */
+/* Nothing paints a background: the particle field runs behind this page    */
+/* untouched, and these rows are type on top of it.                        */
+/* ---------------------------------------------------------------------- */
+
+.work-group__label {
+  /* An <h2> by markup, a label by job. Opts out of the site-wide display
+     face: Cormorant is a high-contrast Garamond, and at 11px uppercase on
+     0.32em tracking its hairlines drop out altogether. */
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/*
+ * One row. Grid rather than flex so the outcome column is sized by its own
+ * content and the description column takes what is left — a fixed split
+ * would either crowd "Administrative reduction" or strand "12K+".
+ *
+ * The divider is a top border, so the first row sits directly under its
+ * section label with a line between them and the last row of a group does
+ * not draw one into the whitespace below it.
+ */
+.work-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  padding: 36px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+@media (min-width: 768px) {
+  .work-row {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+    gap: 64px;
+    padding: 48px 0;
+  }
+}
+
+.work-row__num {
+  display: block;
+  margin-bottom: 18px;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.work-row__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  transition: transform 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.work-row__industry {
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.work-row__desc {
+  margin-top: 18px;
+  max-width: 34em;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: rgba(203, 213, 225, 0.72);
+}
+
+.work-row__flow { margin-top: 20px; }
+
+/* Left-aligned under the description on a phone, right-aligned opposite it
+   on a desktop — the outcome only reads as a result of the row when it sits
+   across from the system that produced it. */
+.work-row__outcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+  .work-row__outcome { align-items: flex-end; text-align: right; }
+}
+
+.work-row__metric {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  transition: color 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.work-row__metric-label {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* In-development rows carry this instead of a metric. Sized as a label
+   rather than a figure, because it is not an outcome. */
+.work-row__phase {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.work-row__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.work-row__go-arrow { transition: transform 240ms cubic-bezier(.22, .61, .36, 1); }
+
+/*
+ * Hover, on the live rows only — a development row is not a link and must
+ * not behave like one. The title shifts 3px, the divider comes up from 6% to
+ * 14%, the metric goes to full white, the workflow arrows lift out of the
+ * background and the action arrow slides 4px. Nothing scales or glows.
+ *
+ * Gated on (hover: hover) so a phone does not leave it stuck on after a tap;
+ * the keyboard equivalents sit outside the gate.
+ */
+@media (hover: hover) {
+  .work-row--link:hover { border-color: rgba(255, 255, 255, 0.14); }
+  .work-row--link:hover .work-row__title { transform: translateX(3px); }
+  .work-row--link:hover .work-row__metric { color: #ffffff; }
+  .work-row--link:hover .work-row__go { color: rgba(255, 255, 255, 0.95); }
+  .work-row--link:hover .work-row__go-arrow { transform: translateX(4px); }
+  .work-row--link:hover .flow__arrow { color: rgba(255, 255, 255, 0.5); }
+}
+
+.work-row--link:focus-visible {
+  border-color: rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  outline-offset: 6px;
+}
+.work-row--link:focus-visible .work-row__title { transform: translateX(3px); }
+.work-row--link:focus-visible .work-row__go { color: rgba(255, 255, 255, 0.95); }
+.work-row--link:focus-visible .work-row__go-arrow { transform: translateX(4px); }
+.work-row--link:focus-visible .flow__arrow { color: rgba(255, 255, 255, 0.5); }
+
+/* ---------------------------------------------------------------------- */
+/* Buttons — the site's one primary treatment                              */
+/*                                                                         */
+/* This replaces .hero-cta, which was written when the hero was the only   */
+/* place with a solid button. It stopped being true: the site had drifted  */
+/* to six different primary treatments — cyan pill, white pill, cyan       */
+/* rounded-xl with a 38px glow, three different on-cyan text colours —     */
+/* and the contact page happened to carry the odd one out. There is no     */
+/* Tailwind plugin here (plugins: []), so the shared thing is a class,     */
+/* declared next to the other component classes in this file.              */
+/*                                                                         */
+/* -- why the class is still the source of truth -------------------------- */
+/* PrimaryButton / SecondaryButton in components/ui/Button.jsx are the      */
+/* things call sites reach for, but they only pick a class name from here. */
+/* Nothing about how a button LOOKS lives in the component, which is what   */
+/* stops the two descriptions of a button drifting apart again — and it is  */
+/* why a plain className="btn-primary" on a hand-written <a> still comes    */
+/* out identical to one the component rendered.                            */
+/*                                                                         */
+/* -- the fill ------------------------------------------------------------ */
+/* The cyan is gone. It read as a different product from the hero particle */
+/* field and the logo, both of which are blue into purple, so the primary   */
+/* now runs the same 135° blue-to-violet the brand is built on.            */
+/*                                                                         */
+/* The hover gradient is painted on a ::before rather than swapped onto     */
+/* background-image, and that is not decoration — background-image is not   */
+/* an animatable property. Swapping it directly gives a hard cut at the     */
+/* moment the pointer lands while the lift and the shadow ease over 300ms,  */
+/* which reads as a glitch. Cross-fading the second gradient's opacity is   */
+/* the only way the whole state change arrives together.                    */
+/*                                                                         */
+/* z-index: -1 on that pseudo-element puts it above the element's own       */
+/* background and below its text, and `isolation: isolate` keeps the        */
+/* negative index from escaping into whatever section is behind the button. */
+/* ---------------------------------------------------------------------- */
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  /* 48px, comfortably over the 44px touch minimum the site holds to. */
+  min-height: 48px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/*
+ * The primary.
+ *
+ * Glass with a blue-to-violet ring, white type, and a 2px lift. No fill
+ * gradient and no glow — the gradient is a 1px edge and nothing else.
+ *
+ * -- how the ring is drawn ------------------------------------------------
+ * A gradient cannot be a border-color, so the ring is a pseudo-element the
+ * size of the button, painted with the gradient and then masked down to its
+ * own 1px rim: two identical masks, one clipped to the content box and one
+ * to the whole box, composited so that only the difference between them
+ * survives. What is left is the border and nothing else.
+ *
+ * The alternative — background-clip: padding-box, border-box with the fill
+ * as the top layer — does not work here. It needs the fill to be opaque
+ * enough to hide the gradient underneath it, and this fill is 4% white. The
+ * gradient would show straight through the middle of the button, which is
+ * the exact thing this treatment exists to avoid.
+ *
+ * z-index: -1 puts the ring above the button's own background and below its
+ * text; isolation: isolate keeps that negative index from escaping into the
+ * section behind.
+ */
+.btn-primary {
+  --btn-lift: -2px;
+
+  position: relative;
+  isolation: isolate;
+  padding: 0 1.75rem;
+  border: none;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  color: #ffffff;
+  /* Deliberately none. The brief's double drop-shadow read as a glow, and a
+     glowing button was the tell that made the old primary look bolted on. */
+  box-shadow: none;
+  transform: translateY(0);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/*
+ * The ring, declared once for every primary on the site — the pill, the skip
+ * link, and the three inside the chat panel. One rule, so the edge cannot
+ * drift between them.
+ */
+.btn-primary::before,
+.skip-link::before,
+.sirah-panel__link--primary::before,
+.sirah-panel__compose button::before,
+.sirah-panel__leadrow button[type='submit']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background-image: linear-gradient(
+    135deg,
+    var(--brand-blue) 0%,
+    var(--brand-violet) 100%
+  );
+  /*
+   * Keep the rim, discard the middle: two identical masks, the top one
+   * clipped to the content box and the one under it to the whole box, then
+   * composited so only the difference between them survives.
+   *
+   * Longhands, not the `mask` shorthand, and that is not a style choice.
+   * Autoprefixer re-emits a `-webkit-mask` shorthand after the rules it
+   * prefixes, and a shorthand resets mask-composite to its initial value —
+   * so the composite silently reverted to source-over and the mask became
+   * the whole box. The button came out as a solid gradient fill, which is
+   * the one thing this treatment exists to avoid. Longhands cannot reset
+   * each other, so the order stops mattering.
+   */
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+          mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-clip: content-box, border-box;
+          mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .btn-primary:hover {
+    transform: translateY(var(--btn-lift));
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  .btn-primary:hover::before { opacity: 1; }
+}
+
+/* Keyboard focus gets the hover treatment too — without it the only signal
+   is the outline, and a button that never changes under focus reads as
+   disabled to anyone driving the page from the keyboard. */
+.btn-primary:focus-visible {
+  transform: translateY(var(--btn-lift));
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  outline-offset: 4px;
+}
+.btn-primary:focus-visible::before { opacity: 1; }
+
+/* Pressed. Back down to the resting plane. */
+.btn-primary:active { transform: translateY(0); }
+
+/* Used by the contact form and the booking intake while a submission is in
+   flight. A disabled button must not lift and must not brighten — both read
+   as "this did something". */
+.btn-primary:disabled,
+.btn-primary[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+@media (hover: hover) {
+  .btn-primary:disabled:hover,
+  .btn-primary[aria-disabled='true']:hover {
+    transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .btn-primary:disabled:hover::before,
+  .btn-primary[aria-disabled='true']:hover::before { opacity: 0.9; }
+}
+
+/*
+ * The secondary.
+ *
+ * Glass rather than gradient, and deliberately: two filled buttons side by
+ * side are two primaries, and the pair loses its hierarchy. This is the
+ * treatment for the second action in a row, and for a primary standing on a
+ * photograph — .btn-ghost is a text link, and a text link over an image is
+ * barely a control at all, since there is no edge to tell you where it
+ * starts and its contrast depends on whatever pixels happen to be behind it.
+ *
+ * .btn-outline is the same thing under its original name. Both are kept so
+ * the call sites written against either keep working, and so there is one
+ * declaration rather than two that can drift.
+ */
+.btn-secondary,
+.btn-outline {
+  padding: 0 1.625rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  backdrop-filter: blur(20px);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .btn-secondary:hover,
+  .btn-outline:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.btn-secondary:focus-visible,
+.btn-outline:focus-visible {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  outline-offset: 4px;
+}
+
+/* The tertiary: a bare text link, for the quiet second action in a row that
+   already has a filled primary. No fill, so nothing to restyle here. */
+.btn-ghost {
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 0.3s ease;
+}
+
+.btn-arrow { transition: transform 220ms cubic-bezier(.22, .61, .36, 1); }
+
+@media (hover: hover) {
+  .btn-ghost:hover { color: rgba(255, 255, 255, 0.95); }
+  .btn-primary:hover .btn-arrow,
+  .btn-secondary:hover .btn-arrow,
+  .btn-ghost:hover .btn-arrow,
+  .btn-outline:hover .btn-arrow { transform: translateX(4px); }
+}
+
+.btn-ghost:focus-visible { color: rgba(255, 255, 255, 0.95); }
+.btn-primary:focus-visible .btn-arrow,
+.btn-secondary:focus-visible .btn-arrow,
+.btn-ghost:focus-visible .btn-arrow,
+.btn-outline:focus-visible .btn-arrow { transform: translateX(4px); }
+
+/*
+ * Reduced motion. The global block at the top of this file already collapses
+ * every duration, which leaves the 2px lift arriving as a jump rather than a
+ * movement — smaller than the thing the preference is asking us not to do,
+ * but still a thing that moves. The fill still changes, so the state is
+ * never signalled by motion alone.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary { --btn-lift: 0px; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Trusted Across Industries — one row of client wordmarks                 */
+/*                                                                         */
+/* A press strip: one line of client names travelling left, each set in a   */
+/* different typeface, all sitting on a shared baseline.                    */
+/*                                                                         */
+/* This replaced two tilted bands that criss-crossed over each other. That  */
+/* version was doing a lot — a fan, a weave, two counter-rotating tracks,   */
+/* nine tiles each on a bordered plate — and all of it competed with the    */
+/* names it existed to show. What is here now is names on the page and      */
+/* nothing else: no tile, no plate, no border, no fill.                     */
+/*                                                                         */
+/* -- the baseline is the idea ------------------------------------------- */
+/* Six voices at six different sizes would normally look like an accident.  */
+/* `align-items: baseline` on the track is what makes it read as a          */
+/* deliberate composition instead: a 28px didone and a 15px monospace sit   */
+/* on one line, the way mastheads do in a real press strip. Centring them   */
+/* on their boxes instead — which is what `center` would do — is the single */
+/* change that would make this look broken.                                 */
+/*                                                                         */
+/* -- no JavaScript ------------------------------------------------------ */
+/* Still entirely CSS, which is what keeps the section a server component   */
+/* with nothing to hydrate. That matters more here than usual: this is the  */
+/* one thing on the page running continuously, and the WebGL particle field */
+/* behind it already wants the main thread. Only `transform` animates, so   */
+/* the track stays on the compositor.                                       */
+/*                                                                         */
+/* -- how the loop is seamless ------------------------------------------- */
+/* The track holds the client list three times and animates to              */
+/* translateX(-33.3333%), which lands exactly on the start of the second    */
+/* copy. Three copies rather than two so that one copy is always wider than */
+/* the stage, even on a very wide display, where two would let the tail run */
+/* out before the cycle restarts.                                           */
+/*                                                                         */
+/* The spacing is margin-right on every item rather than `gap` on the       */
+/* track. With `gap`, n items have n-1 gaps, the three copies are therefore */
+/* not the same width, and the loop visibly jumps once per cycle.           */
+/* ---------------------------------------------------------------------- */
+
+.cmarquee {
+  --c-size: 1rem;      /* the row's base; every voice is an em multiple of it */
+  --c-gap: 40px;
+  --c-fade: 8%;
+
+  position: relative;
+  font-size: var(--c-size);
+  /* clip, not hidden: the track overhangs both edges by design and this stops
+     it widening the page, without creating a scroll container. */
+  overflow-x: clip;
+
+  /* The row does not end, it dissolves. Both edges, so the loop has no seam
+     to notice at either side. */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--c-fade),
+    #000 calc(100% - var(--c-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--c-fade),
+    #000 calc(100% - var(--c-fade)),
+    transparent 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .cmarquee { --c-size: 1.0625rem; --c-gap: 60px; --c-fade: 10%; }
+}
+
+@media (min-width: 1280px) {
+  .cmarquee { --c-size: 1.125rem; --c-gap: 76px; --c-fade: 12%; }
+}
+
+.cmarquee__track {
+  display: flex;
+  /* See the note above. This is the load-bearing line in the block. */
+  align-items: baseline;
+  width: max-content;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  animation: c-marquee 60s linear infinite;
+  will-change: transform;
+}
+
+.cmarquee__item {
+  flex: none;
+  margin-right: var(--c-gap);
+}
+
+@keyframes c-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-33.3333%, 0, 0); }
+}
+
+/* Reading a name should be possible without chasing it across the screen. */
+.cmarquee:hover .cmarquee__track,
+.cmarquee:focus-within .cmarquee__track {
+  animation-play-state: paused;
+}
+
+/* ── one mark ────────────────────────────────────────────────────────── */
+
+.cmark {
+  display: block;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.74);
+  transition:
+    color 300ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+a.cmark { cursor: pointer; }
+
+/*
+ * Hovering the row dims it; hovering one name lights that one. The two rules
+ * together are the whole interaction — with the pause above, the row stops
+ * and resolves to the single name under the cursor.
+ *
+ * The second selector has to out-specify the first, hence `.cmarquee .cmark`
+ * rather than a bare `.cmark:hover`: that would be (0,2,0) against the
+ * dimming rule's (0,2,0) and would win only on source order, which is too
+ * fragile to rely on in a file this size.
+ */
+@media (hover: hover) {
+  .cmarquee:hover .cmark { opacity: 0.4; }
+  .cmarquee .cmark:hover { opacity: 1; color: #ffffff; }
+}
+
+.cmarquee .cmark:focus-visible {
+  opacity: 1;
+  color: #ffffff;
+  outline-offset: 6px;
+}
+
+/* Real artwork, when a client has any. Flattened to the row's one colour, so
+   a full-colour logo can be dropped in unprepared. `voice` does not apply to
+   an entry that has one — the artwork is its own identity. */
+.cmark-logo {
+  display: block;
+  height: 1.75em;
+  width: auto;
+  filter: grayscale(1) brightness(0) invert(1);
+  opacity: 0.74;
+}
+
+/* ── the six voices ──────────────────────────────────────────────────────
+   Assigned per client in data/clients.js. Each is a face, a weight, a case
+   and a size, and the sizes differ on purpose — a press strip is not a row of
+   things set at one size. They hold together because they share a baseline,
+   not because they share a scale. */
+
+/* The VOGUE register: light, all caps, tracked wide open. */
+.cmark--didone {
+  font-family: var(--font-display);
+  font-size: 1.55em;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  /* Tracking adds space AFTER the last letter too, which pushes the name off
+     its own centre. Pulling that trailing space back is what keeps the gaps
+     between neighbours even. */
+  margin-right: calc(var(--c-gap) - 0.2em);
+}
+
+/* The Forbes register: a heavy serif, sentence case, tightly fitted. */
+.cmark--serif {
+  font-family: var(--font-display);
+  font-size: 1.75em;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* A modern tech wordmark. */
+.cmark--grotesk {
+  font-family: var(--font-sans);
+  font-size: 1.25em;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+/* The quiet one — small, and it earns its place by being the opposite of
+   whatever loud thing lands beside it. */
+.cmark--caps {
+  font-family: var(--font-sans);
+  font-size: 0.8125em;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-right: calc(var(--c-gap) - 0.3em);
+}
+
+/* The third serif. Zodiak, which the site already loads for its digits — see
+   the 'Zodiak Text' alias at the top of this file. */
+.cmark--book {
+  font-family: 'Zodiak Text', Georgia, serif;
+  font-size: 1.5em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* A technical mark, in whatever monospace the reader's system has. Nothing to
+   download for this one. */
+.cmark--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9375em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-right: calc(var(--c-gap) - 0.14em);
+}
+
+/* ── reduced motion ──────────────────────────────────────────────────────
+   No travel. The row becomes a centred, wrapped block showing each client
+   once — the clones exist only to make the loop seamless and have nothing to
+   say to someone reading a static list. */
+@media (prefers-reduced-motion: reduce) {
+  .cmarquee {
+    -webkit-mask-image: none;
+    mask-image: none;
+    overflow-x: visible;
+  }
+
+  .cmarquee__track {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    width: auto;
+    transform: none;
+    /* Later in the file than the animation and at the same specificity. The
+       global reduced-motion block at the top of this file collapses durations
+       but does not remove an animation, and a track that still travels -33%
+       instantly is a row that has jumped a third of the way off screen. */
+    animation-name: none;
+    row-gap: 28px;
+  }
+
+  .cmarquee__item[data-clone] { display: none; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Industry workflow timeline                                              */
+/*                                                                         */
+/* Three layouts off one DOM: a vertical timeline on mobile, a two-column  */
+/* stagger on tablet, and a horizontal zig-zag on desktop. What changes is  */
+/* the grid and which rail is visible — the markup and the animation are    */
+/* identical at every width.                                               */
+/*                                                                         */
+/* Only transform and opacity are ever animated. The rail "grows" by        */
+/* scaling, never by width, and the travelling pulse is a transform inside  */
+/* an overflow-hidden rail.                                                 */
+/* ---------------------------------------------------------------------- */
+
+.wf-list {
+  position: relative;
+  display: grid;
+  gap: 12px;
+}
+
+.wf-rail {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+.wf-pulse { position: absolute; }
+
+/* ── Mobile: vertical timeline ─────────────────────────────────────────── */
+
+.wf-rail--v {
+  left: 21px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  transform-origin: top;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.5), rgba(99, 102, 241, 0.38));
+}
+.wf-rail--v .wf-pulse {
+  left: -1px;
+  right: -1px;
+  height: 54px;
+  top: -54px;
+  background: linear-gradient(180deg, transparent, rgba(34, 211, 238, 0.95), transparent);
+  animation: wf-travel-v 3.8s cubic-bezier(.55, 0, .45, 1) infinite;
+}
+.wf-rail--h { display: none; }
+
+.wf-item { position: relative; padding-left: 54px; }
+
+.wf-dot {
+  position: absolute;
+  left: 15px;
+  top: 26px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #0d1020;
+  border: 2px solid rgba(34, 211, 238, 0.75);
+  transition: box-shadow 300ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.wf-stub { display: none; }
+
+/* ── Tablet: two columns, staggered, no rail ───────────────────────────── */
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .wf-list { grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+  .wf-item { padding-left: 0; }
+  /* The offset is what makes it a stagger rather than a plain two-up grid.
+     It sits on the <li>, never on the animated child, so it cannot collide
+     with the entrance transform. */
+  .wf-item:nth-child(even) { transform: translateY(26px); }
+  .wf-rail, .wf-dot { display: none; }
+}
+
+/* ── Desktop: horizontal zig-zag ───────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  .wf-list {
+    /* Three rows: cards above the rail, the rail's own band, cards below.
+       The outer rows share 1fr so the band is exactly centred, which is what
+       lets the rail be positioned at a flat 50%. */
+    grid-template-columns: repeat(var(--wf-steps), minmax(0, 1fr));
+    grid-template-rows: 1fr 64px 1fr;
+    gap: 0 10px;
+  }
+
+  .wf-item {
+    padding-left: 0;
+    grid-column: var(--wf-col);
+    grid-row: var(--wf-row);
+  }
+
+  .wf-rail--v { display: none; }
+  .wf-rail--h {
+    display: block;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    transform-origin: left;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.5), rgba(99, 102, 241, 0.38));
+  }
+  .wf-rail--h .wf-pulse {
+    top: -1px;
+    bottom: -1px;
+    width: 90px;
+    left: -90px;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.95), transparent);
+    animation: wf-travel-h 3.8s cubic-bezier(.55, 0, .45, 1) infinite;
+  }
+
+  .wf-stub {
+    display: block;
+    position: absolute;
+    left: 50%;
+    width: 2px;
+    margin-left: -1px;
+    height: 25px;
+    background: linear-gradient(180deg, rgba(148, 163, 184, 0.05), rgba(34, 211, 238, 0.4));
+  }
+  .wf-item[data-side='top'] .wf-stub { top: 100%; }
+  .wf-item[data-side='bottom'] .wf-stub { bottom: 100%; transform: scaleY(-1); }
+
+  .wf-dot { left: 50%; margin-left: -7px; top: auto; }
+  .wf-item[data-side='top'] .wf-dot { top: calc(100% + 25px); }
+  .wf-item[data-side='bottom'] .wf-dot { bottom: calc(100% + 25px); }
+}
+
+/* ── Node ──────────────────────────────────────────────────────────────── */
+
+.wf-card {
+  height: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.8);
+  transition: transform 300ms cubic-bezier(.22, .61, .36, 1),
+              border-color 300ms cubic-bezier(.22, .61, .36, 1),
+              box-shadow 300ms cubic-bezier(.22, .61, .36, 1),
+              background-color 300ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.wf-icon { transition: transform 300ms cubic-bezier(.22, .61, .36, 1); }
+
+.wf-item:hover .wf-card {
+  transform: translateY(-4px);
+  border-color: rgba(34, 211, 238, 0.42);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 20px 44px -22px rgba(34, 211, 238, 0.4);
+}
+.wf-item:hover .wf-icon { transform: rotate(3deg); }
+/* The connector's single pulse on hover — a ring off the node's own dot,
+   rather than re-running the rail's travelling highlight. */
+.wf-item:hover .wf-dot { box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.13); }
+
+/* Percentages here are of the pulse's own width, so the multiplier just has
+   to overshoot the longest rail; the rail clips whatever is left. */
+@keyframes wf-travel-h {
+  0%   { transform: translateX(0); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateX(1700%); opacity: 0; }
+}
+@keyframes wf-travel-v {
+  0%   { transform: translateY(0); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(1700%); opacity: 0; }
 }

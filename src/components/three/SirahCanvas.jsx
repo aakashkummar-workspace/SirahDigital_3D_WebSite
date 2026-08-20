@@ -1,7 +1,6 @@
 "use client";
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 import { LOGO_OUTER, LOGO_HOLES, LOGO_PX } from './sirahLogoOutline';
@@ -277,6 +276,7 @@ const SWAY_Y = 0.22;       // radians
 const SWAY_Y_RATE = 0.16;
 const SWAY_X = 0.085;
 const SWAY_X_RATE = 0.12;
+
 
 const PARALLAX_ROT = 0.10; // radians of lean at the edge of the screen
 const PARALLAX_POS = 0.20; // world units of travel at the edge of the screen
@@ -755,7 +755,26 @@ export default function SirahCanvas({ mode = 'scroll', align = 'hero', tint = nu
         <pointLight position={[-6, 4, -5]} intensity={0.7} color="#a855f7" />
         <pointLight position={[6, -4, 5]} intensity={1.0} color="#06b6d4" />
 
-        <Environment preset="studio" />
+        {/*
+         * No <Environment> here, deliberately.
+         *
+         * This canvas renders one thing — ParticleLogo, which is a <points>
+         * with a <pointsMaterial>. That material has no envMap channel: it is
+         * not a PBR material and an environment map cannot affect it. The
+         * `<Environment preset="studio" />` that used to sit on this line
+         * therefore lit nothing, while fetching ~1MB from GitHub's raw CDN on
+         * every cold load of every route — this canvas is the site-wide
+         * background, so that was all of them.
+         *
+         * When GitHub rate-limited that host the fetch threw inside the R3F
+         * loop and took whole pages down with an unhandled runtime error. It
+         * was pure cost: no pixel on this canvas ever changed because of it.
+         *
+         * The lights above are what shade the particles. Sirah3DLogoShape,
+         * the meshPhysicalMaterial export further up this file, does want an
+         * environment — it gets one from StudioEnvironment where it is
+         * actually mounted, in AnimationLab.
+         */}
         <ParticleLogo mode={mode} align={align} tint={tint} energy={energy} />
       </Canvas>
     </div>

@@ -190,7 +190,7 @@ export default function IndustryOrbit() {
       <div className="md:hidden mt-14">
         <ul
           className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-2"
-          aria-label="Industries we serve — swipe to browse"
+          aria-label="Industries we serve - swipe to browse"
         >
           {ORBITING.map((industry, i) => {
             const accent = ACCENTS[i % ACCENTS.length];

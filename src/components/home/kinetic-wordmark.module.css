@@ -1,0 +1,293 @@
+/*
+ * The oversized wordmark.
+ *
+ * Everything here is a calc() off `--kt-p`, a single 0-to-1 progress value
+ * that GSAP scrubs from the scroll position. See KineticWordmark.jsx for why
+ * the effect is built that way; what matters at this end is that --kt-p is
+ * the only input, so the size, the two parallax offsets and both fades cannot
+ * fall out of step with each other.
+ *
+ * --kt-p is declared with @property so it interpolates as a number rather
+ * than as a string. Without that, a browser treats a custom property as an
+ * opaque token, and anything animating it steps between integers instead of
+ * moving smoothly. The fallback for browsers without @property is the plain
+ * declaration on .stage below, which still works — GSAP writes the value
+ * every frame itself, so the only thing lost is the CSS-level interpolation.
+ */
+@property --kt-p {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+.track {
+  position: relative;
+  /*
+   * Two viewports of scroll: one for the panel to be stuck through, one for
+   * the transition to happen over. Less than this and the type moves faster
+   * than the page, which reads as a jump however smooth the easing is.
+   */
+  height: 220svh;
+}
+
+.stage {
+  --kt-p: 0;
+
+  /*
+   * How much of the stage width the name fills at --kt-p 0, and how large it
+   * is left at --kt-p 1 as a fraction of that.
+   *
+   * These two are the actual design decisions; --kt-max and --kt-min below
+   * are only their solution, and KineticWordmark.jsx overwrites both on mount
+   * with a measured answer. 0.94 fills the screen edge to edge with a hair of
+   * margin either side — the name reads whole at every point in the
+   * transition, which is what it is for.
+   */
+  --kt-fill: 0.94;
+  --kt-end: 0.26;
+
+  /*
+   * The size endpoints at --kt-p 0 and 1, and the unit they are in.
+   *
+   * Both are replaced with measured pixel values by the component, which also
+   * flips --kt-unit to 1px. What is declared here is the pre-measurement
+   * fallback, and it is in vw because a stylesheet has no way to know how
+   * wide this string renders. It is deliberately conservative: too small
+   * rather than too large, since a wordmark that has to grow into place is
+   * invisible for a frame, while one that has to shrink is a flash of cut-off
+   * letters. In practice neither is seen — the fit runs in a layout effect,
+   * before the browser paints.
+   */
+  --kt-unit: 1vw;
+  --kt-max: 11;
+  --kt-min: 2.9;
+
+  position: sticky;
+  top: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100svh - 72px);
+  /* The name is fitted to this box, so nothing should overflow it. Kept as a
+     guarantee rather than a mechanism: if a measurement ever fails and the
+     fallback size above is used at an unlucky viewport, this is what stops it
+     becoming a horizontal scrollbar on the whole page. */
+  overflow: hidden;
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Optical centring: the settled wordmark and its footer read as one block,
+     and the footer only exists at the end, so the group is nudged up rather
+     than mathematically centred around type that is not there yet. */
+  justify-content: center;
+  gap: clamp(20px, 3.5svh, 44px);
+}
+
+/* ── the word ────────────────────────────────────────────────────────── */
+
+.word {
+  display: flex;
+  justify-content: center;
+  gap: 0.24em;
+
+  margin: 0;
+  font-family: var(--font-sans);
+  /* The brief asks for 900+; Satoshi is a variable face running 300-900, so
+     900 is the top of what this typeface has. */
+  font-weight: 900;
+  /* Tight, and tighter than any other heading on the site. At this size the
+     default fitting reads as loose. */
+  letter-spacing: -0.045em;
+  line-height: 0.84;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #ffffff;
+
+  /* The interpolation. --kt-max at p=0, --kt-min at p=1. */
+  font-size: calc(
+    (var(--kt-max) + (var(--kt-min) - var(--kt-max)) * var(--kt-p)) *
+      var(--kt-unit)
+  );
+
+  /*
+   * scaleX is the condensing.
+   *
+   * Satoshi has no width axis, so a true condensed cut is not available in
+   * the fonts this site already loads, and adding a fourth face for one
+   * section is not worth 30KB and another render-blocking preload. 0.92 is
+   * enough to read as condensed and gentle enough that the verticals do not
+   * visibly thin against the horizontals, which is what gives a heavier
+   * squeeze away as a distortion.
+   *
+   * translateY is the parallax: the word drifts up through the transition
+   * while the footer under it drifts down, so the two separate rather than
+   * moving as one plate. Written in the same transform because a second one
+   * would overwrite this.
+   */
+  transform: translateY(calc((0.5 - var(--kt-p)) * 26px)) scaleX(0.92);
+  transform-origin: center center;
+
+  /*
+   * Only transform. font-size is deliberately NOT listed: will-change is a
+   * hint to promote something to its own compositing layer, and font-size
+   * cannot be composited — it relayouts by definition — so naming it buys a
+   * layer and no saving.
+   *
+   * Which is the trade this section makes, and it is worth stating plainly.
+   * Scaling type with `transform: scale()` composites beautifully and
+   * rasterises once, so it goes soft the moment it is scaled far from the
+   * size it was rasterised at. Driving font-size instead re-renders the
+   * glyphs crisply at every step and costs a layout pass per scroll frame.
+   * For one line of text in a centred flex box the relayout is trivial and
+   * the crispness is the entire point of a monumental wordmark, so: size for
+   * the scale, transform for the parallax.
+   */
+  will-change: transform;
+}
+
+.part {
+  display: inline-block;
+}
+
+/* ── the footer, which only exists at the end ────────────────────────── */
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 46ch;
+  padding: 0 24px;
+  text-align: center;
+
+  /*
+   * Arrives in the last third. Nothing clamps this: opacity is defined as
+   * 0-1 and a browser clamps out-of-range values itself, so the expression
+   * is flat 0 until p reaches 0.62 and flat 1 from p = 1.
+   */
+  opacity: calc((var(--kt-p) - 0.62) * 2.7);
+  /* Counter-parallax against the word above it. */
+  transform: translateY(calc((1 - var(--kt-p)) * 34px));
+  will-change: opacity, transform;
+}
+
+.line {
+  margin: 0;
+  font-size: clamp(0.9375rem, 0.9rem + 0.3vw, 1.125rem);
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  transition: color 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.arrow {
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .go:hover {
+    color: #ffffff;
+  }
+  .go:hover .arrow {
+    transform: translateX(4px);
+  }
+}
+
+.go:focus-visible .arrow {
+  transform: translateX(4px);
+}
+
+/* ── tablet ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .stage {
+    /* Settles a little larger than on desktop: at this width the end state
+       still has to hold a whole section on its own. */
+    --kt-end: 0.3;
+    --kt-max: 13;
+    --kt-min: 3.9;
+  }
+}
+
+/* ── phone ───────────────────────────────────────────────────────────── */
+
+/*
+ * Two lines. Thirteen characters cannot be monumental and legible across
+ * 390px at once, and shrinking the type until they fit gives up the only
+ * thing this section is for. Stacked, each word gets the full width and the
+ * block gets the height it needs to still feel oversized.
+ */
+@media (max-width: 767px) {
+  .stage {
+    /* Stacked, the fitted width is that of the longer word, so 0.92 is
+       measured against DIGITAL rather than the whole name. */
+    --kt-fill: 0.92;
+    --kt-end: 0.34;
+    --kt-max: 20;
+    --kt-min: 6.8;
+    top: 72px;
+    height: calc(100svh - 72px);
+  }
+
+  .word {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    line-height: 0.88;
+    letter-spacing: -0.035em;
+  }
+
+  .track {
+    height: 200svh;
+  }
+
+  .footer {
+    gap: 14px;
+  }
+}
+
+/* ── reduced motion ──────────────────────────────────────────────────── */
+
+/*
+ * No pin, no track, no scrub — and no GSAP either: the component checks the
+ * same query and returns before importing it. The section becomes an
+ * ordinary block at the settled end of the transition, which is the state
+ * the copy was written for.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    height: auto;
+  }
+
+  .stage {
+    --kt-p: 1;
+    position: static;
+    height: auto;
+    padding: clamp(64px, 12svh, 140px) 0;
+  }
+
+  .word,
+  .footer {
+    transform: none;
+    will-change: auto;
+  }
+
+  .footer {
+    opacity: 1;
+  }
+}

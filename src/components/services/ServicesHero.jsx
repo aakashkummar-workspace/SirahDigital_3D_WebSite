@@ -66,7 +66,7 @@ export default function ServicesHero() {
             : 'opacity 900ms cubic-bezier(.22,.61,.36,1) 620ms, transform 900ms cubic-bezier(.22,.61,.36,1) 620ms',
         }}
       >
-        Ten core capabilities, delivered end to end — scoped, built, deployed and handed over running.
+        Ten core capabilities, delivered end to end - scoped, built, deployed and handed over running.
         Scroll to explore the ecosystem.
       </p>
 

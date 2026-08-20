@@ -1,40 +1,51 @@
 import React from 'react';
-import Link from 'next/link';
 import Reveal from '@/components/ui/Reveal';
 import { ArrowRightIcon } from '@/components/ui/icons';
 import { COMPANY } from '@/data/company';
 
+import { PrimaryButton, GhostButton } from '@/components/ui/Button';
 /**
  * The homepage hero.
  *
- * Two columns, but only one of them has anything in it. The right-hand column
- * is an empty spacer, and it is load-bearing rather than decoration: it is
- * what keeps the copy to the left half of the grid.
+ * It used to be a pinned stage, and it is worth knowing what it was, because
+ * most of what has been deleted here only made sense as part of it: a tall
+ * track whose scroll advanced a timeline, a viewport-sized sticky child, a 3D
+ * scene of product cards circling a robot, and a frame loop that faded a DOM
+ * card in as its 3D counterpart finished flying to the centre of the screen.
  *
- * It originally reserved room for the site's fixed particle canvas, and later
- * for a 3D experiment. Both have been removed. The column stays because the
- * copy column's width is what decides where the heading wraps — drop the
- * spacer and the heading reflows across the full grid.
+ * The scene went first, then the product run. With nothing left to drive there
+ * is no track, no sticky child, no frame loop and no scroll timeline — the hero
+ * is one screen of copy standing over the site layout's particle field. That is
+ * also why this is no longer a client component: nothing here needs the browser.
  *
- * The copy column is capped at 520px and the paragraph at 420px. Both are
- * deliberately narrower than the grid: at these sizes the measure is what
- * makes the heading read as a display setting rather than a wall of text, and
- * the column's width is what decides where the heading wraps.
+ * Two files are deliberately left in place rather than deleted, both now
+ * unreferenced:
+ *   heroStageTimeline.js  — the sequence as arithmetic, so it can come back
+ *                           without being rewritten
+ *   components/experiments/ — the robot scene
  *
- * The entrance is a single sequence — eyebrow, heading, paragraph, CTA — at
- * 700ms each on the brand ease-out, 120ms apart. Reveal fires on
- * IntersectionObserver, and the hero is above the fold, so in practice that is
- * "on load", once.
- *
- * NB: this used to run the heading through AnimatedHeading, which lifts it a
- * word at a time. Over five lines that ran past a second before the paragraph
- * could start. The heading now moves as one block, which is both what the
- * brief asked for and the quieter of the two.
+ * HOME_PRODUCTS is no longer read here. The three products currently appear
+ * nowhere on the homepage; the chat knowledge base is the only other consumer.
  */
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[90vh] items-center lg:min-h-[92vh]">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center px-6 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
+    <section
+      aria-labelledby="hero-title"
+      // Top-aligned on a phone, centred from lg — the copy takes most of a
+      // small viewport, so centring it there only pushes it off the fold.
+      // The 72px is the fixed navbar the site layout clears with padding.
+      //
+      // pt-12 on a phone, not pt-24: the layout already spends 72px clearing
+      // the navbar, and another 96px on top of that pushed the second CTA
+      // below the fold on a 667px screen. The generous spacing the brief asks
+      // for is still there from sm up, where there is room for it.
+      className="relative flex min-h-[calc(100svh-72px)] items-start overflow-hidden pt-12 sm:pt-24 lg:items-center lg:pt-0"
+    >
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-6">
+        {/* Capped well under the grid: at this measure the heading reads as a
+            display setting rather than a wall of text, and this width is what
+            decides where it wraps. Leaving the right-hand half clear is also
+            what gives the particle mark somewhere to sit. */}
         <div className="max-w-[520px]">
           <Reveal duration={700} y={12}>
             <span className="block text-[0.6875rem] font-medium uppercase tracking-[0.42em] text-white/40">
@@ -45,11 +56,13 @@ export default function Hero() {
           {/* 32px under the eyebrow, 40px under the heading, 56px under the
               paragraph — the hero's whole rhythm is these three numbers. */}
           <Reveal delay={120} duration={700} y={24}>
-            {/* text-pretty, not text-balance. The column's width is what
-                decides the wrap and that is deliberate; all this does is stop
-                the greedy fill from leaving "scale." alone on the last line.
-                Browsers without it just wrap normally. */}
-            <h1 className="mt-8 text-pretty text-[clamp(2.5rem,1.15rem+3.5vw,3.375rem)] font-bold leading-[0.98] tracking-[-0.03em] text-white">
+            {/* text-pretty, not text-balance. The column's width is what decides
+                the wrap and that is deliberate; all this does is stop the greedy
+                fill from leaving "scale." alone on the last line. */}
+            <h1
+              id="hero-title"
+              className="mt-8 text-pretty text-[clamp(2.5rem,1.15rem+3.5vw,3.375rem)] font-bold leading-[0.98] tracking-[-0.03em] text-white"
+            >
               {COMPANY.tagline}
             </h1>
           </Reveal>
@@ -63,33 +76,18 @@ export default function Hero() {
 
           <Reveal delay={360} duration={700} y={16}>
             <div className="mt-14 flex flex-wrap items-center gap-x-10 gap-y-5">
-              <Link
-                href="/contact"
-                className="hero-cta hero-cta--primary inline-flex min-h-[52px] items-center gap-2.5 rounded-full bg-white pl-7 pr-6 text-[0.9375rem] font-semibold text-space"
-              >
+              <PrimaryButton href="/contact">
                 Start an automation audit
-                <ArrowRightIcon className="hero-cta__arrow h-4 w-4" />
-              </Link>
+                <ArrowRightIcon className="btn-arrow h-4 w-4" />
+              </PrimaryButton>
 
-              <Link
-                href="/work"
-                className="hero-cta hero-cta--ghost inline-flex min-h-[52px] items-center gap-2 text-[0.9375rem] font-semibold text-white/55"
-              >
+              <GhostButton href="/products#client-systems">
                 See our work
-                <ArrowRightIcon className="hero-cta__arrow h-4 w-4" />
-              </Link>
+                <ArrowRightIcon className="btn-arrow h-4 w-4" />
+              </GhostButton>
             </div>
           </Reveal>
         </div>
-
-        {/* An empty second column, so the copy keeps to the left half of the
-            grid rather than running the full width.
-
-            It used to reserve room for the particle mark, and briefly for a 3D
-            experiment; both are gone and the space is now just space. Removing
-            the column entirely would widen the heading measure, which is what
-            decides where it wraps — so the spacer stays. */}
-        <div aria-hidden className="h-[32vh] lg:h-auto" />
       </div>
     </section>
   );
