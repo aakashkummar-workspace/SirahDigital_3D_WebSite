@@ -4,8 +4,8 @@ import CoverImage from './CoverImage';
 /**
  * One card.
  *
- * Cover, then the title. Nothing else: no category, no excerpt, no author, no
- * date, no reading time.
+ * Cover, then the title, then a description if the CMS carries one. Nothing
+ * else: no category, no author, no date, no reading time.
  *
  * The cover is the card. It carries roughly nine tenths of the height, and the
  * single line beneath it is the only text on screen.
@@ -92,6 +92,16 @@ export default function MediaCard({ item, tone = 0 }) {
         <p className="mt-5 text-fluid-base font-semibold leading-snug text-white line-clamp-3">
           {item.title}
         </p>
+
+        {/* The description, when the CMS carries one.
+            Optional on purpose: most entries are a cover and a caption, and an
+            empty paragraph would leave uneven gaps down the row. Two lines,
+            dimmer and lighter than the title, so the hierarchy holds. */}
+        {item.description ? (
+          <p className="mt-2 text-fluid-sm leading-relaxed text-brand-muted/80 line-clamp-2">
+            {item.description}
+          </p>
+        ) : null}
       </a>
     </li>
   );

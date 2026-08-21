@@ -143,10 +143,6 @@ const COLLECTIONS = [
     path: 'insights', tag: 'insights', source: 'LATEST_INSIGHTS', kind: 'Insight',
     url: (d) => (d.href || d.url || '/about'),
   },
-  {
-    path: 'posts', tag: 'posts', source: 'LATEST_INSIGHTS', kind: 'Insight',
-    url: (d) => (d.slug ? `/about#${d.slug}` : '/about'),
-  },
 ];
 
 /**

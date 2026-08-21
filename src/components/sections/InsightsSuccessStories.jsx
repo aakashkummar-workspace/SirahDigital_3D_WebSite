@@ -1,7 +1,8 @@
 import React from 'react';
 import AnimatedHeading from '@/components/ui/AnimatedHeading';
 import MediaCarousel from './insights/MediaCarousel';
-import { LATEST_INSIGHTS, CHANNEL_URL } from '@/data/insightsData';
+import { CHANNEL_URL } from '@/data/insightsData';
+import { getLatestInsights } from '@/lib/insights';
 
 /**
  * Insights.
@@ -18,8 +19,15 @@ import { LATEST_INSIGHTS, CHANNEL_URL } from '@/data/insightsData';
  * runs on the page's own background, so the covers are the only bright thing
  * in view. That is the whole idea: the imagery leads, the title follows, and
  * there is nothing else to read until you click.
+ *
+ * The cards come from the CMS now — see lib/insights.js, which falls back to
+ * the bundled array when the CMS is unreachable or has nothing published yet.
+ * Async server component: the fetch is cached under the `insights` tag the CMS
+ * already invalidates on save, so this costs nothing per visitor.
  */
-export default function InsightsSuccessStories() {
+export default async function InsightsSuccessStories() {
+  const items = await getLatestInsights();
+
   return (
     <section
       aria-labelledby="insights-title"
@@ -47,7 +55,7 @@ export default function InsightsSuccessStories() {
         <div className="mt-20 md:mt-28">
           <MediaCarousel
             title="Latest Insights"
-            items={LATEST_INSIGHTS}
+            items={items}
             exploreUrl={CHANNEL_URL}
           />
         </div>
