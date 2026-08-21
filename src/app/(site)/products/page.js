@@ -3,7 +3,6 @@ import PortfolioCylinder from '@/components/portfolio/PortfolioCylinder';
 import { PRODUCT_DETAILS } from '@/data/productDetails';
 import ProductScrollStage from '@/components/products/ProductScrollStage';
 import { PORTFOLIO_CATEGORIES, PORTFOLIO_CTA } from '@/data/portfolio';
-import ProjectList from '@/components/projects/ProjectList';
 import Reveal from '@/components/ui/Reveal';
 import CTABand from '@/components/sections/CTABand';
 
@@ -169,16 +168,6 @@ export default function ProductsPage() {
         />
       </div>
 
-      {/* ── client work ──────────────────────────────────────────────────── */}
-      {/* scroll-mt-28 clears the fixed navbar — every inbound link that used
-          to point at /work now points at this anchor.
-          The anchor is #client-systems, not #case-studies. There are no case
-          studies to link to yet — no per-project page exists — so nothing on
-          the site promises one any more. Renamed rather than dropped because
-          several inbound links land here. */}
-      <div id="client-systems" className="scroll-mt-28 pt-28 md:pt-40">
-        <ProjectList />
-      </div>
 
       <div className="mt-28 md:mt-36">
         <CTABand

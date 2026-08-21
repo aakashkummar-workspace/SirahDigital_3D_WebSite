@@ -127,7 +127,7 @@ export default function ProductPage({ params }) {
                 </SecondaryButton>
               ) : (
                 <Link
-                  href="/products#client-systems"
+                  href="/products"
                   className="text-fluid-sm font-medium text-brand-muted transition-colors hover:text-white"
                 >
                   See our work

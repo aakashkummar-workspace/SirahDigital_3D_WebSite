@@ -469,7 +469,7 @@ const INTENTS = [
           : null,
         links: [
           { label: 'Estimate your savings', href: '/services', primary: true },
-          { label: 'See the work', href: '/products#client-systems' },
+          { label: 'See the work', href: '/products' },
         ],
         followUps: ['How can I scale my business?', 'Book a free call'],
       };
@@ -563,7 +563,7 @@ const INTENTS = [
           ta: `${clients.length} நிறுவனங்கள் தங்கள் அமைப்புகளை எங்களிடம் ஒப்படைத்துள்ளன:`,
         },
         bullets: clients.map(toBullet),
-        links: [{ label: 'See the work', href: '/products#client-systems', primary: true }],
+        links: [{ label: 'See the work', href: '/products', primary: true }],
         followUps: ['Book a free call'],
       };
     },
@@ -798,7 +798,7 @@ const INTENTS = [
           ta: `${live.length} அமைப்புகள் நடைமுறையில் இயங்குகின்றன, மேலும் ${building.length} உருவாக்கத்தில் உள்ளன.`,
         },
         bullets: [...live, ...building].map(toBullet),
-        links: [{ label: 'See all work', href: '/products#client-systems', primary: true }],
+        links: [{ label: 'See all work', href: '/products', primary: true }],
         followUps: ['Book a free call'],
       };
     },
@@ -910,7 +910,7 @@ const INTENTS = [
             `${industries.length} துறைகளில் ${services.length} சேவைகள். பணிகள்:`,
         },
         bullets: live.map(toBullet),
-        links: [{ label: 'See the work', href: '/products#client-systems', primary: true }],
+        links: [{ label: 'See the work', href: '/products', primary: true }],
         followUps: ['Book a free call', 'Which industries do you work with?'],
       };
     },
@@ -944,7 +944,7 @@ const INTENTS = [
         links: [
           { label: 'About us', href: '/about', primary: true },
           { label: 'See all services', href: '/services' },
-          { label: 'See the work', href: '/products#client-systems' },
+          { label: 'See the work', href: '/products' },
         ],
         followUps: ['What services do you provide?', 'Which industries do you work with?'],
       };

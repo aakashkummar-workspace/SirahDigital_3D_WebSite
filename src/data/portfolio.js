@@ -89,14 +89,13 @@ export const PORTFOLIO_CATEGORIES = [
   },
 ];
 
-// The panel CTA. One destination for all five: the client systems live in
-// one place, and five deep links to anchors that do not exist yet would be
-// five broken promises.
+// The panel CTA.
 //
-// The label was "View Case Studies". Nothing on the far end is a case study —
-// the rows it lands on carry a metric and a line each, and no project has a
-// write-up of its own — so it now names what is actually there.
+// It pointed at the client-systems band on /products, which held five example
+// builds. Those were removed, so the honest destination is now the contact
+// form: the panel describes what we build, and the next step is asking about
+// a build rather than reading about ones that are no longer shown.
 export const PORTFOLIO_CTA = {
-  label: 'View client systems',
-  href: '/products#client-systems',
+  label: 'Enquire about a build',
+  href: '/contact',
 };

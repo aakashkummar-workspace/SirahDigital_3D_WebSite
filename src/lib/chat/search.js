@@ -271,7 +271,7 @@ function buildIndex(entries) {
    * is reached by INDUSTRIES, INDUSTRY_INTELLIGENCE and INDUSTRY_CARDS, which
    * are three descriptions of one industry, and the visitor should see it once.
    * A URL that dozens of entries share is a *listing*:
-   * `/products#client-systems` is where every client, every project and every
+   * `/products` is where every client, every project and every
    * portfolio row points, and collapsing those would leave one client standing
    * for all of them.
    *

@@ -328,7 +328,7 @@ export const FAQ = [
           ta: `நாங்கள் வெளியிடும் புள்ளிவிவரங்கள்: ${figures.join(', ')}. ${INDUSTRIES.length} துறைகளில் ${SERVICES.length} சேவைகள்.`,
         },
         links: [
-          { label: 'See the work', href: '/products#client-systems', primary: true },
+          { label: 'See the work', href: '/products', primary: true },
           { label: 'About us', href: '/about' },
         ],
         followUps: ['Who is the founder?', 'Which industries do you work with?'],
@@ -372,7 +372,7 @@ export const FAQ = [
             'விரும்புவதை உருவாக்குவது சரியா என்பதை நேர்மையாகச் சொல்வோம்.',
         },
         links: [
-          { label: 'See the work', href: '/products#client-systems', primary: true },
+          { label: 'See the work', href: '/products', primary: true },
           { label: 'Book a free consultation', href: '/book' },
         ],
         followUps: ['What services do you provide?', 'Who are your clients?'],
@@ -401,7 +401,7 @@ export const FAQ = [
           `பட்டியலிடப்பட்டிருப்பது எங்கள் பணிதான்: ${INDUSTRIES.length} துறைகளில் ${SERVICES.length} சேவைகள்.`,
       },
       links: [
-        { label: 'See the work', href: '/products#client-systems', primary: true },
+        { label: 'See the work', href: '/products', primary: true },
         { label: 'Contact page', href: '/contact' },
       ],
     }),

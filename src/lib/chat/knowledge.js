@@ -119,9 +119,9 @@ const ROUTE_BY_EXPORT = {
   INDUSTRY_INTELLIGENCE: (item) => (item.slug ? `/industries/${item.slug}` : '/industries'),
   INDUSTRY_WORKFLOWS: (item) => (item.slug ? `/industries/${item.slug}` : '/industries'),
   INDUSTRY_CARDS: (item) => (item.slug ? `/industries/${item.slug}` : '/industries'),
-  PRODUCTION_PROJECTS: () => '/products#client-systems',
-  DEVELOPMENT_PROJECTS: () => '/products#client-systems',
-  CLIENTS: () => '/products#client-systems',
+  PRODUCTION_PROJECTS: () => '/products',
+  DEVELOPMENT_PROJECTS: () => '/products',
+  CLIENTS: () => '/products',
   TEAM: () => '/about',
   FOUNDER: () => '/about',
   LATEST_INSIGHTS: () => '/about',
@@ -129,9 +129,9 @@ const ROUTE_BY_EXPORT = {
   COMPANY: () => '/contact',
   SOCIALS: (item) => item.href || item.url || '/contact',
   PRODUCT_DETAILS: (item) => (item.slug ? `/products/${item.slug}` : '/products'),
-  PORTFOLIO_CATEGORIES: () => '/products#client-systems',
-  MEMBER_PROJECTS: () => '/products#client-systems',
-  TESTIMONIALS: () => '/products#client-systems',
+  PORTFOLIO_CATEGORIES: () => '/products',
+  MEMBER_PROJECTS: () => '/products',
+  TESTIMONIALS: () => '/products',
 };
 
 /**

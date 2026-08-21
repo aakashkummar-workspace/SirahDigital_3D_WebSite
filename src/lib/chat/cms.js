@@ -122,11 +122,11 @@ const COLLECTIONS = [
     // and the bot quotes those counts, so it has to split them the same way.
     source: (d) => (d.stage === 'development' ? 'DEVELOPMENT_PROJECTS' : 'PRODUCTION_PROJECTS'),
     kind: (d) => (d.stage === 'development' ? 'Project in build' : 'Live project'),
-    url: () => '/products#client-systems',
+    url: () => '/products',
   },
   {
     path: 'clients', tag: 'clients', source: 'CLIENTS', kind: 'Client',
-    url: () => '/products#client-systems',
+    url: () => '/products',
   },
   {
     path: 'team', tag: 'team',
@@ -137,7 +137,7 @@ const COLLECTIONS = [
   },
   {
     path: 'testimonials', tag: 'testimonials', source: 'TESTIMONIALS', kind: 'Testimonial',
-    url: () => '/products#client-systems',
+    url: () => '/products',
   },
   {
     path: 'insights', tag: 'insights', source: 'LATEST_INSIGHTS', kind: 'Insight',

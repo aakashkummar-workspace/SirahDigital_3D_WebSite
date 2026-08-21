@@ -81,7 +81,7 @@ export default function Hero() {
                 <ArrowRightIcon className="btn-arrow h-4 w-4" />
               </PrimaryButton>
 
-              <GhostButton href="/products#client-systems">
+              <GhostButton href="/products">
                 See our work
                 <ArrowRightIcon className="btn-arrow h-4 w-4" />
               </GhostButton>

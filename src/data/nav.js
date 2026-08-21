@@ -28,23 +28,10 @@ export const NAV_LINKS = [
     // Each product is a whole route rather than an anchor, unlike Services.
     // Only three, so the menu is the full set.
     //
-    // "Client systems" is the exception, and it is load-bearing: /products
-    // absorbed /work, so the client systems now live at the bottom of that
-    // page. Without this entry they would be reachable only by scrolling
-    // past the products, under a nav item that reads as "things for sale".
-    // This is what keeps them findable.
-    //
-    // It said "Case studies" and pointed at #case-studies. There are no case
-    // studies — no project has a page of its own — so the label was promising
-    // something the site cannot deliver.
-    //
     // Note the desktop dropdown is the only place any of this appears:
     // Navbar's mobile sheet renders NAV_LINKS flat and ignores `menu`. On a
-    // phone this is one "Products" link to the page that holds both.
-    menu: [
-      ...HOME_PRODUCTS.map((p) => ({ label: p.title, href: p.href })),
-      { label: 'Client systems', href: '/products#client-systems' },
-    ],
+    // phone this is one "Products" link to the page itself.
+    menu: HOME_PRODUCTS.map((p) => ({ label: p.title, href: p.href })),
     menuFooter: { label: 'All products', href: '/products' },
   },
   { label: 'Industries', href: '/industries' },
@@ -101,7 +88,7 @@ export const LEGACY_ANCHORS = {
   '#hub': '/',
   '#offer': '/services',
   '#industries': '/industries',
-  '#work': '/products#client-systems',
+  '#work': '/products',
   '#process': '/about',
   '#brains': '/about',
   '#contact': '/contact',
