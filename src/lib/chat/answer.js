@@ -952,6 +952,15 @@ const INTENTS = [
   },
 ];
 
+/*
+ * The ids answer.js will actually dispatch.
+ *
+ * Exported for lib/chat/router.js, which asks Claude to pick one of these and
+ * must be able to reject anything else. Derived from INTENTS rather than
+ * written out, so the router cannot drift away from the handlers.
+ */
+export const INTENT_IDS = INTENTS.map((intent) => intent.id);
+
 /* ------------------------------------------------------------------ */
 /* Public API                                                          */
 /* ------------------------------------------------------------------ */
@@ -1091,7 +1100,35 @@ export function answerQuestion(question, ctx = {}) {
     };
   }
 
-  // 3 — content intents.
+  // 3 — the routed intent, when something upstream understood the question.
+  //
+  // lib/chat/router.js asks Claude which intent this is and passes the id in.
+  // It runs ahead of the regexes because that is the whole point: the regexes
+  // are what could not read "how to call sirah digital" as a request for a
+  // phone number.
+  //
+  // Persona and the FAQ still come first. Both are narrow and authored, and a
+  // greeting should never cost an API round trip.
+  //
+  // A handler that returns null falls through to the regexes below rather than
+  // failing the turn — the scoped intents return null when the question does
+  // not rank against anything, and that is a miss, not an error.
+  if (ctx.routedIntent) {
+    const routed = INTENTS.find((intent) => intent.id === ctx.routedIntent);
+    const reply = routed ? routed.respond(normalized) : null;
+    if (reply) {
+      return {
+        ...reply,
+        text: resolve(reply.text, lang),
+        extra: resolve(reply.extra, lang),
+        confidence: 'high',
+        intent: routed.id,
+        routed: true,
+      };
+    }
+  }
+
+  // 4 — content intents, by regex.
   //
   // `test` may be a function as well as a regex — the product intent has to
   // read the live index to know the product names, which a constant regex

@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "@react-three/drei": "^9.105.0",
     "@react-three/fiber": "^8.16.0",
     "framer-motion": "^13.0.0",
