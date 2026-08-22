@@ -45,7 +45,8 @@
  */
 
 import { COMPANY } from '@/data/company';
-import { FOUNDER } from '@/data/team';
+import { FOUNDER, TEAM } from '@/data/team';
+import { MEMBER_PROJECTS } from '@/data/teamProjects';
 import { KNOWLEDGE } from './knowledge';
 import { FAQ, CONSULT } from './faq';
 import { search, bySource, correctQuery, tokenize, unknownTerms } from './search';
@@ -798,37 +799,6 @@ const INTENTS = [
     },
   },
 
-  {
-    id: 'team',
-    // A bare `team` matched "my team wastes time on data entry" — a visitor
-    // describing their own problem, answered with our staff list. `people` was
-    // worse for the same reason. The question has to be about *our* team.
-    test: bilingual(/\b(your|the|sirah'?s) (team|staff|people|engineers|developers)\b|\bfounder\b|\bceo\b|\bwho (works|is) (at|in|for)\b|\bteam members?\b|\bmeet the team\b/, /குழு|அணி|நிறுவனர|பணியாளர|யார் யார்|டீம்|ஊழியர/),
-    respond: () => {
-      // Read off the record rather than the index. knowledge.js picks an
-      // entry's title from `title` before `name`, and FOUNDER carries both —
-      // so the indexed entry is "Founder & Technical Architect" and the man's
-      // name is not in it. Answering "who is the founder?" without naming him
-      // is the one thing that question cannot do.
-      const team = listEntries('TEAM');
-      const lead = FOUNDER?.name
-        ? `${FOUNDER.name}, ${FOUNDER.title || FOUNDER.role}`
-        : null;
-      const bio = FOUNDER?.bio || '';
-      return {
-        text: {
-          en: lead
-            ? `${lead} - ${bio} The wider team is ${team.length} specialists across AI automation, solution engineering and digital growth.`
-            : `Our team is ${team.length} specialists across AI automation, solution engineering and digital growth.`,
-          ta: lead
-            ? `${lead} - ${bio} விரிவான குழுவில் AI தானியக்கம், தீர்வு பொறியியல், டிஜிட்டல் வளர்ச்சி ஆகியவற்றில் ${team.length} நிபுணர்கள் உள்ளனர்.`
-            : `எங்கள் குழுவில் AI தானியக்கம், தீர்வு பொறியியல், டிஜிட்டல் வளர்ச்சி ஆகியவற்றில் ${team.length} நிபுணர்கள் உள்ளனர்.`,
-        },
-        bullets: team.map(toBullet),
-        links: [{ label: 'Meet the team', href: '/about', primary: true }],
-      };
-    },
-  },
 
   {
     id: 'work',
@@ -855,7 +825,7 @@ const INTENTS = [
     // employees" is not a request for our phone number. They are spelled out
     // as the phrases people actually use instead.
     test: bilingual(
-      /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (do|can) i (call|reach|contact)|get in touch|address|office|located|location|where are you|directions|map)\b/,
+      /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (to|do i|can i|shall i|should i) (call|reach|contact)|call (riyaz|him|her|them|someone|anyone|the founder)|get in touch|address|office|located|location|where are you|directions|map)\b/,
       /தொடர்பு|தொடர்பக|தொலைபேச|மின்னஞ்சல|முகவரி|அலுவலக|எங்கே இரு|எங்க இரு|அழைக்க|அழைப்ப|போன் நம்பர|நம்பர்|வாட்ஸ்அப/,
     ),
     /*
@@ -896,6 +866,109 @@ const INTENTS = [
       ],
       followUps: ['What are your working hours?', 'Book a free call'],
     }),
+  },
+  {
+    id: 'team',
+    // A bare `team` matched "my team wastes time on data entry" — a visitor
+    // describing their own problem, answered with our staff list. `people` was
+    // worse for the same reason. The question has to be about *our* team.
+    test: bilingual(/\b(your|the|sirah'?s) (team|staff|people|engineers|developers)\b|\bfounder\b|\bceo\b|\bwho (works|is) (at|in|for)\b|\bteam members?\b|\bmeet the team\b/, /குழு|அணி|நிறுவனர|பணியாளர|யார் யார்|டீம்|ஊழியர/),
+    respond: () => {
+      // Read off the record rather than the index. knowledge.js picks an
+      // entry's title from `title` before `name`, and FOUNDER carries both —
+      // so the indexed entry is "Founder & Technical Architect" and the man's
+      // name is not in it. Answering "who is the founder?" without naming him
+      // is the one thing that question cannot do.
+      const team = listEntries('TEAM');
+      const lead = FOUNDER?.name
+        ? `${FOUNDER.name}, ${FOUNDER.title || FOUNDER.role}`
+        : null;
+      const bio = FOUNDER?.bio || '';
+      return {
+        text: {
+          en: lead
+            ? `${lead} - ${bio} The wider team is ${team.length} specialists across AI automation, solution engineering and digital growth.`
+            : `Our team is ${team.length} specialists across AI automation, solution engineering and digital growth.`,
+          ta: lead
+            ? `${lead} - ${bio} விரிவான குழுவில் AI தானியக்கம், தீர்வு பொறியியல், டிஜிட்டல் வளர்ச்சி ஆகியவற்றில் ${team.length} நிபுணர்கள் உள்ளனர்.`
+            : `எங்கள் குழுவில் AI தானியக்கம், தீர்வு பொறியியல், டிஜிட்டல் வளர்ச்சி ஆகியவற்றில் ${team.length} நிபுணர்கள் உள்ளனர்.`,
+        },
+        bullets: team.map(toBullet),
+        links: [{ label: 'Meet the team', href: '/about', primary: true }],
+      };
+    },
+  },
+
+  {
+    id: 'builder',
+    /*
+     * "who built Aura" — a question about people, asked through a product.
+     *
+     * It used to land on `product`, which answered with what Aura does and
+     * never named anybody, or on `team`, which answered with a bio and two
+     * product bullets underneath. Both read as evasions of a question the site
+     * can actually answer: data/teamProjects.js maps every member to what they
+     * built, and nothing was reading it.
+     *
+     * Placed above `product` and `team` deliberately — both match these
+     * questions and both answer the wrong half.
+     */
+    test: bilingual(
+      /\bwho\s+(built|build|builds|made|created|developed|designed|worked on|is behind)\b/,
+      /யார் (உருவாக்க|கட்டமைத்|செய்த|வடிவமைத்)|யாரு (உருவாக்க|செய்த)|எவர் உருவாக்க/,
+    ),
+    respond: (question) => {
+      const asked = question.toLowerCase();
+      const credits = [];
+
+      for (const [slug, projects] of Object.entries(MEMBER_PROJECTS)) {
+        const hit = projects.find((project) => {
+          const name = (project.name || '').toLowerCase();
+          if (!name) return false;
+          // The whole name, or its first word when that word is distinctive —
+          // "Aura" for "Aura Transcriber". Same rule productNamed() uses.
+          const first = name.split(/\s+/)[0];
+          // Word equality rather than a \b regex: \b is ASCII-only and the
+          // escaping through a template literal is a trap this file has already
+          // fallen into twice. Splitting is exact and needs no escapes.
+          const askedWords = asked.split(/[^a-z0-9]+/).filter(Boolean);
+          return asked.includes(name) || (first.length >= 4 && askedWords.includes(first));
+        });
+        if (!hit) continue;
+        const member = TEAM.find((m) => m.slug === slug);
+        if (member) credits.push({ member, project: hit });
+      }
+
+      // No named project means this is not answerable from the roster. Fall
+      // through rather than guess — `team` and `product` are both below.
+      if (!credits.length) return null;
+
+      const names = credits.map((c) => c.member.name);
+      const project = credits[0].project;
+
+      return {
+        text: {
+          en:
+            `${sentenceList(names, names.length)} built ${project.name}. ` +
+            `${project.desc}`,
+          ta: `${project.name} — ${sentenceList(names, names.length)} உருவாக்கியது. ${project.desc}`,
+        },
+        bullets: credits.map(({ member }) => ({
+          title: member.name,
+          detail: member.role,
+          href: `/${member.slug}`,
+        })),
+        links: [
+          ...credits.slice(0, 1).map(({ member }) => ({
+            label: member.name,
+            href: `/${member.slug}`,
+            primary: true,
+          })),
+          { label: 'Meet the team', href: '/about#team' },
+        ],
+        followUps: ['Who is the founder?', 'Book a free call'],
+      };
+    },
   },
 
   {
@@ -1067,6 +1140,52 @@ function resolve(value, lang) {
   return typeof value === 'string' ? value : pick(value, lang);
 }
 
+/*
+ * Suggestion chips, in the language of the answer.
+ *
+ * followUps are authored English everywhere — 13 distinct strings across the
+ * three modules — and they are what the panel renders as tappable chips. A
+ * Tamil answer with English chips under it is what a visitor actually sees,
+ * and tapping one used to send English and flip the conversation back.
+ *
+ * A table rather than {en,ta} pairs at all 35 call sites: there are only
+ * thirteen strings, they repeat, and threading a pair through every respond()
+ * would touch far more code for the same result. Anything not in the table
+ * falls through as-is, so an unlisted chip degrades to English rather than
+ * disappearing.
+ *
+ * The Tamil is the question a visitor would type, not a literal translation of
+ * the English — these get sent back as queries, so they have to route.
+ */
+const FOLLOW_UP_TA = {
+  'Book a free call': 'இலவச ஆலோசனை பதிவு செய்ய',
+  'How much does it cost?': 'விலை எவ்வளவு?',
+  'How do I contact you?': 'எப்படி தொடர்பு கொள்வது?',
+  'What services do you provide?': 'என்ன சேவைகள் வழங்குகிறீர்கள்?',
+  'Which industries do you work with?': 'எந்த துறைகளில் பணியாற்றுகிறீர்கள்?',
+  'What are Sirah’s products?': 'உங்கள் தயாரிப்புகள் என்ன?',
+  'Who are your clients?': 'உங்கள் வாடிக்கையாளர்கள் யார்?',
+  'Who is the founder?': 'நிறுவனர் யார்?',
+  'What is your process?': 'எப்படி வேலை செய்கிறீர்கள்?',
+  'What are your working hours?': 'உங்கள் வேலை நேரம் என்ன?',
+  'Where are you located?': 'உங்கள் அலுவலகம் எங்கே?',
+  'How is automation useful for my business?': 'தானியக்கம் எப்படி உதவும்?',
+  'How can I scale my business?': 'வணிகத்தை எப்படி வளர்ப்பது?',
+};
+
+/** Chips carry either a bare string or a { label, send } pair. Both translate. */
+function localiseFollowUps(followUps, lang) {
+  if (lang !== 'ta' || !Array.isArray(followUps)) return followUps;
+  return followUps.map((chip) => {
+    if (typeof chip === 'string') return FOLLOW_UP_TA[chip] || chip;
+    const label = FOLLOW_UP_TA[chip.label] || chip.label;
+    // `send` is dropped when it translates: the Tamil label routes on its own,
+    // and leaving an English `send` behind is what flipped the conversation.
+    const translated = label !== chip.label;
+    return translated ? { ...chip, label, send: undefined } : chip;
+  });
+}
+
 /**
  * Answer a question.
  *
@@ -1078,7 +1197,7 @@ function resolve(value, lang) {
  * count. Any change the reply wants to make to that state comes back on the
  * reply itself as `setName` / `clearName`.
  */
-export function answerQuestion(question, ctx = {}) {
+function answerQuestionInner(question, ctx = {}) {
   // Set before anything reads it, and never awaited past — see ACTIVE's note.
   ACTIVE = Array.isArray(ctx.knowledge) && ctx.knowledge.length ? ctx.knowledge : KNOWLEDGE;
   const lang = LANGS_SET.has(ctx.lang) ? ctx.lang : DEFAULT_LANG;
@@ -1367,3 +1486,17 @@ export const GREETING = GREETING_PAIR[DEFAULT_LANG];
 
 /** Language-aware versions, for the panel. */
 export { QUICK_REPLIES_BY_LANG, GREETING_PAIR };
+
+/*
+ * The single exit.
+ *
+ * answerQuestionInner returns from eight branches — persona, FAQ, routed
+ * intent, content intent, follow-up replay, clarify, refusal, retrieval — and
+ * every one of them can carry followUps. Wrapping is how the chips get
+ * localised once instead of at eight call sites that will not stay in sync.
+ */
+export function answerQuestion(question, ctx = {}) {
+  const lang = LANGS_SET.has(ctx.lang) ? ctx.lang : DEFAULT_LANG;
+  const reply = answerQuestionInner(question, ctx);
+  return { ...reply, followUps: localiseFollowUps(reply.followUps, lang) };
+}

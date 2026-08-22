@@ -343,6 +343,26 @@ const ANSWER_FIXTURES = [
   { q: 'என்ன சேவைகள் வழங்குகிறீர்கள்?', intent: 'services' },
   { q: 'எந்த துறைகளில் பணியாற்றுகிறீர்கள்?', intent: 'industries' },
   { q: 'தானியக்கம் எப்படி உதவும்?', intent: 'automation-benefit' },
+
+  /*
+   * Three things real use turned up that fixtures had not.
+   */
+  // A Tamil answer was arriving with English chips under it.
+  { q: 'எந்த சேவைகளை வழங்குகிறீர்கள்', intent: 'services', expect: /இலவச|விலை|தானியக்க/ },
+  // "How to call riyaz" was claimed by team: his bio, then two Aura
+  // Transcriber bullets. Any "how to call X" is a question about reaching
+  // someone, whoever X is.
+  { q: 'How to call riyaz', intent: 'contact', reject: /Aura/ },
+  { q: 'how to call the founder', intent: 'contact' },
+  // "who built X" is a question about people asked through a product. It
+  // landed on product, which never named anybody, while teamProjects.js has
+  // held the answer all along.
+  { q: 'who build Aura', intent: 'builder', expect: /Samad/ },
+  { q: 'who built NUSI', intent: 'builder' },
+  { q: 'who made Sheizen Wellness', intent: 'builder' },
+  // …without swallowing the neighbours it sits above.
+  { q: 'tell me about aura', intent: 'product' },
+  { q: 'who is the founder', intent: 'team' },
 ];
 
 /**
@@ -412,6 +432,9 @@ function haystack(reply) {
     ...(reply.bullets || []).flatMap((b) => [b.title, b.detail]),
     ...(reply.links || []).map((l) => l.label),
     reply.contact && [reply.contact.phone, reply.contact.email, reply.contact.address].join(' '),
+    // The chips are on screen and tappable, so they are part of what the
+    // visitor reads — and their language is a thing worth asserting.
+    ...(reply.followUps || []).map((c) => (typeof c === 'string' ? c : c.label)),
   ]
     .filter(Boolean)
     .join(' · ');
