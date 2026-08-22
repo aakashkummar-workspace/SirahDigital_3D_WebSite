@@ -319,6 +319,30 @@ const ANSWER_FIXTURES = [
   { q: 'தானியக்கம் எப்படி உதவும்', intent: 'automation-benefit' },
   { q: 'நீங்கள் எப்படி உதவ முடியும்', intent: 'capabilities' },
   { q: 'Aura பற்றி சொல்லுங்கள்', intent: 'product' },
+
+  /*
+   * Tamil reaching English content, and the chips staying in Tamil.
+   *
+   * The corpus is English and stays English — a service added in the CMS this
+   * morning has no Tamil anywhere. These pass through the cross-lingual
+   * concept layer instead: the query expands to English variants and matches
+   * the document the visitor was asking about. No translation, no staleness.
+   *
+   * The last four are the quick-reply chips. They carried an English `send`
+   * because nothing could route the Tamil, so tapping one flipped the
+   * conversation back to English on the visitor's first tap.
+   */
+  // Claimed by services before it reaches retrieval, because the Tamil for
+  // 'what do you do' is in that intent. Listing the ten is a fair answer to
+  // 'what do you do for hospitals'; pinned as-is so a future widening of
+  // industry-fit shows up here as a deliberate change rather than a surprise.
+  { q: 'மருத்துவமனைகளுக்கு என்ன செய்கிறீர்கள்', intent: 'services' },
+  { q: 'பள்ளிகளுக்கான தீர்வு', expect: /Education|education/ },
+  { q: 'கிடங்கு மேலாண்மை', expect: /Logistics|logistics/ },
+  { q: 'இலவச ஆலோசனை பதிவு', intent: 'booking' },
+  { q: 'என்ன சேவைகள் வழங்குகிறீர்கள்?', intent: 'services' },
+  { q: 'எந்த துறைகளில் பணியாற்றுகிறீர்கள்?', intent: 'industries' },
+  { q: 'தானியக்கம் எப்படி உதவும்?', intent: 'automation-benefit' },
 ];
 
 /**

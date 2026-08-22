@@ -39,6 +39,18 @@ const STOPWORDS = new Set([
   // Site-specific: true of almost every entry, so they separate nothing
   'sirah', 'digital', 'business', 'businesses', 'solution', 'solutions',
   'service', 'services', 'company', 'help', 'provide', 'offer',
+  // Tamil. Function words, question words and the copula — the same job the
+  // English half above does. Tamil marks case and number with suffixes rather
+  // than separate words, so this list is shorter than its English counterpart
+  // and the stripping in tamilStem() does the rest.
+  'ஒரு', 'இந்த', 'அந்த', 'இது', 'அது', 'இவை', 'அவை', 'என்ன', 'எந்த', 'எப்படி',
+  'எங்கே', 'எப்போது', 'ஏன', 'ஏன்', 'யார்', 'எவ்வளவு', 'எத்தனை', 'நான்', 'நீ',
+  'நீங்கள்', 'உங்கள்', 'உன்', 'நாங்கள்', 'எங்கள்', 'நம்', 'அவர்', 'அவள்',
+  'மற்றும்', 'அல்லது', 'ஆனால்', 'இல்லை', 'உள்ளது', 'இருக்கு', 'இருக்கிறது',
+  'வேண்டும்', 'முடியும்', 'முடியுமா', 'தான்', 'கூட', 'மிக', 'மிகவும்', 'சற்று',
+  'சொல்லுங்கள்', 'சொல்லு', 'கொஞ்சம்', 'தயவு', 'பற்றி', 'குறித்து', 'ஆகும்',
+  // Site-specific, exactly as the English half: true of nearly every entry.
+  'சேவை', 'சேவைகள்', 'தீர்வு', 'நிறுவனம்', 'வணிகம்', 'உதவி',
 ]);
 
 /**
@@ -160,7 +172,115 @@ const SYNONYMS = {
   integrate: ['integration'],
   crm: ['erp'],
   erp: ['crm'],
+
+  /*
+   * Tamil and Tanglish, mapped onto the English index.
+   *
+   * The corpus is English and will stay English — a service added in the CMS
+   * this morning has no Tamil anywhere. This is what lets a Tamil question
+   * reach it: the query expands to English variants and matches the document
+   * a Tamil speaker was asking about.
+   *
+   * Query side only, which inherits the argument already made above for the
+   * English synonyms: the mapping decides which of our own pages gets read
+   * out. It can state nothing the site does not.
+   *
+   * Tanglish — Tamil written in Latin script — rides the same table. The site
+   * this bot serves has an audience that writes that way (there is a note
+   * about it in data/productDetails.js), and none of it is reachable
+   * otherwise: replyLanguage sees Latin letters and the words match nothing.
+   */
+  // Healthcare
+  'மருத்துவமனை': ['healthcare', 'clinic', 'patient'],
+  'மருத்துவர்': ['healthcare', 'clinic'],
+  'மருந்தகம்': ['healthcare', 'pharmacy'],
+  'நோயாளி': ['healthcare', 'patient'],
+  maruthuvamanai: ['healthcare', 'clinic'],
+  // Education
+  'பள்ளி': ['education', 'student'],
+  'கல்லூரி': ['education', 'student'],
+  'கல்வி': ['education', 'student'],
+  'மாணவர்': ['education', 'student'],
+  palli: ['education', 'student'],
+  kalvi: ['education', 'student'],
+  // Manufacturing, logistics, retail, property
+  'தொழிற்சாலை': ['manufacturing', 'factory', 'production'],
+  'உற்பத்தி': ['manufacturing', 'production'],
+  'கிடங்கு': ['warehouse', 'logistics', 'inventory'],
+  'போக்குவரத்து': ['logistics', 'transport'],
+  'சரக்கு': ['logistics', 'shipping', 'inventory'],
+  'கடை': ['retail', 'shop', 'ecommerce'],
+  'விற்பனை': ['sales', 'retail'],
+  'சொத்து': ['real', 'estate', 'property'],
+  'கட்டிடம்': ['construction', 'property'],
+  'உணவகம்': ['restaurant', 'food', 'hospitality'],
+  kadai: ['retail', 'shop'],
+  // What we build
+  'இணையதளம்': ['web', 'website', 'app'],
+  'செயலி': ['app', 'mobile', 'application'],
+  'அரட்டை': ['chatbot', 'chat', 'assistant'],
+  'சாட்பாட்': ['chatbot', 'chat', 'assistant'],
+  'தானியக்கம்': ['automation', 'automate', 'workflow'],
+  'ஆட்டோமேஷன்': ['automation', 'automate', 'workflow'],
+  'செயற்கை': ['ai', 'intelligence'],
+  'நுண்ணறிவு': ['ai', 'intelligence'],
+  'ஆவணம்': ['document', 'ocr', 'processing'],
+  'தரவு': ['data', 'analytics'],
+  'அறிக்கை': ['report', 'dashboard', 'analytics'],
+  'கணக்கு': ['accounting', 'invoice', 'billing'],
+  'விலைப்பட்டியல்': ['invoice', 'billing'],
+  'வாட்ஸ்அப்': ['whatsapp', 'messaging'],
+  'குரல்': ['voice', 'assistant'],
+  chatbot_ta: ['chatbot', 'chat'],
+  automation_ta: ['automation', 'automate'],
+  sevai: ['service'],
+  vilai: ['price', 'cost'],
+  thodarbu: ['contact'],
+  aavanam: ['document', 'ocr'],
+  tharavu: ['data', 'analytics'],
+  inaiyathalam: ['web', 'website'],
+  seyali: ['app', 'mobile'],
 };
+
+/*
+ * Tamil suffix stripping, longest first.
+ *
+ * Tamil is agglutinative: case, number and postposition all attach to the
+ * noun, so "hospital" appears as மருத்துவமனை, மருத்துவமனைகள்,
+ * மருத்துவமனைகளுடன், மருத்துவமனைகளுக்கு … and a synonym table keyed on the
+ * bare noun matches none of them.
+ *
+ * Applied repeatedly rather than once, because the endings stack: the
+ * comitative sits on the plural, which sits on the stem. Two passes covers
+ * every form the questions here actually take.
+ *
+ * This is not a real Tamil morphological analyser and does not pretend to be
+ * one — sandhi and compounds are untouched. It is the same bargain as stem()
+ * above: crude rules on a hundred short entries, chosen over 200 lines that
+ * would buy very little here.
+ */
+const TAMIL_SUFFIXES = [
+  'களுக்கான', 'களுடைய', 'களுக்கு', 'களுடன்', 'களில்', 'களை', 'களின்', 'கள்',
+  'உடைய', 'உக்கு', 'ுடன்', 'ுக்கு', 'ில்', 'ின்', 'ால்', 'ோடு',
+];
+
+const hasTamil = (word) => /[\u0B80-\u0BFF]/.test(word);
+
+function tamilStem(word) {
+  let out = word;
+  for (let pass = 0; pass < 2; pass += 1) {
+    for (const suffix of TAMIL_SUFFIXES) {
+      if (out.length - suffix.length >= 2 && out.endsWith(suffix)) {
+        out = out.slice(0, out.length - suffix.length);
+        break;
+      }
+    }
+  }
+  // Sandhi: nouns in -ம் pluralise as -ங்கள் (ஆவணம் → ஆவணங்கள்), so removing
+  // the plural leaves a stem ending ங் that is not the dictionary form.
+  if (out.endsWith(`ங்`)) out = out.slice(0, -2) + `ம்`;
+  return out;
+}
 
 /**
  * Query words plus their synonyms — expanded before stemming, not after.
@@ -179,6 +299,13 @@ function synonymsFor(word) {
   if (word.endsWith('ies')) forms.push(`${word.slice(0, -3)}y`);
   if (word.endsWith('es')) forms.push(word.slice(0, -2));
   if (word.endsWith('s')) forms.push(word.slice(0, -1));
+
+  // Tamil fuses case and number onto the noun, so the written word is almost
+  // never the key. Strip progressively and try each form.
+  if (hasTamil(word)) {
+    const bare = tamilStem(word);
+    if (bare !== word && bare.length > 1) forms.push(bare);
+  }
 
   for (const form of forms) {
     if (SYNONYMS[form]) return SYNONYMS[form];

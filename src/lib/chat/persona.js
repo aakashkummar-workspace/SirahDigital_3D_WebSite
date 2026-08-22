@@ -103,11 +103,20 @@ export const QUICK_REPLIES = {
     { label: 'Which industries do you work with?' },
     { label: 'How is automation useful for my business?' },
   ],
+  /*
+   * The Tamil chips send their own label now.
+   *
+   * They used to carry send: 'Book a free call' — the Tamil was the caption
+   * and the English was the message — because no Tamil pattern existed to
+   * route the Tamil. The side effect was that tapping a Tamil chip sent
+   * Latin text, replyLanguage read it as English, and the conversation
+   * flipped out of Tamil on the visitor's first tap.
+   */
   ta: [
-    { label: 'இலவச ஆலோசனை பதிவு', primary: true, send: 'Book a free call' },
-    { label: 'என்ன சேவைகள் வழங்குகிறீர்கள்?', send: 'What services do you provide?' },
-    { label: 'எந்த துறைகளில் பணியாற்றுகிறீர்கள்?', send: 'Which industries do you work with?' },
-    { label: 'தானியக்கம் எப்படி உதவும்?', send: 'How is automation useful for my business?' },
+    { label: 'இலவச ஆலோசனை பதிவு', primary: true },
+    { label: 'என்ன சேவைகள் வழங்குகிறீர்கள்?' },
+    { label: 'எந்த துறைகளில் பணியாற்றுகிறீர்கள்?' },
+    { label: 'தானியக்கம் எப்படி உதவும்?' },
   ],
 };
 
