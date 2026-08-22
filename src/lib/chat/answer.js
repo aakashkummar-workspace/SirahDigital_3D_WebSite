@@ -246,7 +246,7 @@ function bilingual(en, ta) {
 }
 
 const CAPABILITY_SHAPE =
-  /\b(do|does|can|could|would|will) (you|u|sirah|sirah digital)\b[\s\S]{0,40}\b(do|build|make|develop|create|handle|offer|provide|automate|design|integrate|implement|deliver|support|manage|help|connect|link|sync|have)\b|\bare you able to\b|\bable to build\b|\bcan you help me\b|முடியுமா|செய்ய முடி|உருவாக்க முடி|கட்ட முடி|பண்ண முடி/;
+  /\b(do|does|can|could|would|will) (you|u|your team|sirah|sirah digital)\b[\s\S]{0,40}\b(do|build|make|develop|create|handle|offer|provide|sell|automate|design|integrate|implement|deliver|support|manage|help|connect|link|sync|have)\b|\bcan (your|the) team\b|\bare you able to\b|\bable to build\b|\bcan you help me\b|முடியுமா|செய்ய முடி|உருவாக்க முடி|கட்ட முடி|பண்ண முடி/;
 
 // Run through tokenize so these are stemmed exactly as the question will be —
 // "automate", "automating" and "automation" all collapse to the same root, and
@@ -401,6 +401,9 @@ function toBullet(entry) {
  * specific patterns sit above the broader ones. `respond` returns `text` as an
  * `{ en, ta }` pair, resolved against the caller's language before it leaves.
  */
+const SERVICES_SHAPE = bilingual(/\bservice(s)?\b|\bsolution(s)?\b|\bwhat do you (do|offer|provide)\b|\bcapabilit(y|ies)\b|\boffering(s)?\b/, /சேவை|சேவைகள|என்ன செய்கிற|என்ன வழங|வழங்குகிற|எதெல்லாம் செய/);
+const SERVICE_QUALIFIERS = new Set(['what','which','all','your','our','the','sirah','digital','other','more','many','offer','provide','do','of','these','those','list']);
+
 const INTENTS = [
   {
     id: 'booking',
@@ -454,7 +457,24 @@ const INTENTS = [
     // `solution(s)` sits here rather than with the problem-shaped questions
     // below, and the order is what decides it: "what solutions do you offer"
     // is someone asking for the menu, not describing a problem.
-    test: bilingual(/\bservice(s)?\b|\bsolution(s)?\b|\bwhat do you (do|offer|provide)\b|\bcapabilit(y|ies)\b|\boffering(s)?\b/, /சேவை|சேவைகள|என்ன செய்கிற|என்ன வழங|வழங்குகிற|எதெல்லாம் செய/),
+    /*
+     * The general question — "what do you offer" — belongs here.
+     *
+     * "do you offer visa services" does not: it names a thing we do not do,
+     * and answering it with the list of ten reads as a yes. capability says
+     * "I cannot match that to anything we list" instead, which is the honest
+     * answer, so this defers when the word in front of "services" is a subject
+     * rather than one of the ordinary ways of asking.
+     */
+    test: (question) => {
+      if (!SERVICES_SHAPE(question)) return false;
+      const named = question.match(/\b([a-z]+)\s+services?\b/);
+      // Four characters minimum: a short word in front of "services" is a typo
+      // of "what", not the name of a thing. "wat servcies do u provide" is the
+      // fixture that makes that concrete — the spellchecker leaves words under
+      // four characters alone, so "wat" arrives intact.
+      return !named || named[1].length < 4 || SERVICE_QUALIFIERS.has(named[1]);
+    },
     respond: () => {
       const services = listEntries('SERVICES');
       if (!services.length) return null;
@@ -569,6 +589,10 @@ const INTENTS = [
     // "do you have packages" was being refused as off-topic — a buying
     // question, turned away by the bot whose job is to catch buying questions.
     test: (question) =>
+      // "do you sell X" asks whether we offer X at all, not what it costs.
+      // capability answers that honestly — "I cannot match that to anything we
+      // list" — where pricing answered with a policy and implied a yes.
+      !/\b(do|does|can|could) (you|u) sell\b/.test(question) &&
       (/\b(price|pricing|cost|costs|quote|quotation|budget|how much|fee(s)?|charge(s)?|packages?|plans?|tiers?|retainer|rate(s)?|expensive|cheap|afford)\b/.test(question) ||
         /விலை|கட்டணம|செலவ|எவ்வளவ|எவ்ளோ|ரேட்|பட்ஜெட|மலிவ|விலைப்பட்டியல/.test(question)) &&
       // …and about our work, not about gold, petrol or anything else that has
@@ -673,6 +697,115 @@ const INTENTS = [
     },
   },
 
+
+  {
+    id: 'process',
+    test: bilingual(/\b(process|how do you work|methodology|approach|steps|what happens next|onboard)\b/, /எப்படி வேலை|செயல்முறை|நடைமுறை|அணுகுமுறை|எப்படி செய்கிற|வழிமுறை/),
+    respond: () => {
+      const pillars = listEntries('METHODOLOGY');
+      if (!pillars.length) return null;
+      return {
+        text: {
+          en: `How we work, in ${pillars.length} steps:`,
+          ta: `நாங்கள் எப்படி பணியாற்றுகிறோம் - ${pillars.length} படிகளில்:`,
+        },
+        bullets: pillars.map(toBullet),
+        links: [{ label: 'How we work', href: '/about', primary: true }],
+        followUps: ['Book a free call'],
+      };
+    },
+  },
+
+  {
+    id: 'tech-stack',
+    // Was `…|tools?|integrat\w+`, and those two took questions this cannot
+    // answer. "do you do CRM integration" is a question about the CRM & ERP
+    // *service* and was being answered with a list of eight technologies; so
+    // was "can you integrate with my ERP". The test now needs the question to
+    // actually be about tooling, and the services intent above keeps the rest.
+    test: bilingual(/\b(tech stack|technolog\w+|what tech|which tech|built with|what (tools|frameworks?)|which (tools|frameworks?|platforms?)|tools do you use|platform(s)? do you use|programming language)\b/, /தொழில்நுட்ப|டெக்னாலஜி|எந்த மொழி|கருவிகள|பயன்படுத்துகிற/),
+    respond: () => {
+      const tech = listEntries('TECHNOLOGIES');
+      if (!tech.length) return null;
+      return {
+        text: {
+          en: `We build on ${tech.length} core technologies:`,
+          ta: `${tech.length} முக்கிய தொழில்நுட்பங்களின் மேல் நாங்கள் கட்டமைக்கிறோம்:`,
+        },
+        bullets: tech.map(toBullet),
+        links: [{ label: 'See our services', href: '/services', primary: true }],
+      };
+    },
+  },
+
+
+  {
+    id: 'work',
+    test: bilingual(/\b(case stud(y|ies)|portfolio|project(s)?|example(s)?|work you)\b/, /முந்தைய பணி|வேலைகள|திட்டங்கள|உதாரண|போர்ட்ஃபோலி|செய்த வேலை/),
+    respond: () => {
+      const live = listEntries('PRODUCTION_PROJECTS');
+      const building = listEntries('DEVELOPMENT_PROJECTS');
+      return {
+        text: {
+          en: `${live.length} systems are live in production and ${building.length} more are in build.`,
+          ta: `${live.length} அமைப்புகள் நடைமுறையில் இயங்குகின்றன, மேலும் ${building.length} உருவாக்கத்தில் உள்ளன.`,
+        },
+        bullets: [...live, ...building].map(toBullet),
+        links: [{ label: 'See all work', href: '/products', primary: true }],
+        followUps: ['Book a free call'],
+      };
+    },
+  },
+
+  {
+    id: 'contact',
+    // `mobile` and a bare `number` were in here and both were too greedy:
+    // "can you build a mobile app" is a services question, and "how many
+    // employees" is not a request for our phone number. They are spelled out
+    // as the phrases people actually use instead.
+    test: bilingual(
+      /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (to|do i|can i|shall i|should i) (call|reach|contact)|call (riyaz|him|her|them|someone|anyone|the founder)|get in touch|address|(your|the|our) office|office (address|hours|location)|located|location|where are you|directions|map)\b/,
+      /தொடர்பு|தொடர்பக|தொலைபேச|மின்னஞ்சல|முகவரி|அலுவலக|எங்கே இரு|எங்க இரு|அழைக்க|அழைப்ப|போன் நம்பர|நம்பர்|வாட்ஸ்அப/,
+    ),
+    /*
+     * Read straight off the company record, so a change of address or number
+     * never leaves a stale copy in the bot — the same record the footer and the
+     * contact page render.
+     *
+     * ── why this answer leads with the phone number ──────────────────────
+     * "whatsapp number" and "I want to talk to someone" used to be taken by the
+     * social_media persona intent, which replied "WhatsApp is the fastest if
+     * you want a person" and offered a row of social profiles. A visitor asking
+     * how to reach a company is asking for its phone number, and being handed a
+     * link out to a messaging app instead is a redirect away from the thing
+     * they asked for. persona.js no longer claims those questions; they land
+     * here, and here answers with the number, the address and a time to book.
+     */
+    respond: () => ({
+      // The sentence names the number and stops there. Email and address are
+      // in the card directly beneath it, already tappable — restating them
+      // here printed every detail twice in one bubble.
+      text: {
+        en:
+          `Call ${COMPANY.phone} — that is the quickest way to us. Email and the office address ` +
+          `are below. If you would rather have a proper conversation, pick a time: the ` +
+          `${CONSULT.minutes}-minute consultation is free.`,
+        ta:
+          `${COMPANY.phone} என்ற எண்ணில் அழைப்பதுதான் வேகமானது. மின்னஞ்சலும் அலுவலக முகவரியும் கீழே ` +
+          `உள்ளன. விரிவாகப் பேச வேண்டுமெனில் நேரம் தேர்வு செய்யுங்கள் — ${CONSULT.minutes} நிமிட ` +
+          `ஆலோசனை இலவசம்.`,
+      },
+      contact: CONTACT_CARD,
+      // No "Call us" button here: the contact card above already renders the
+      // number as a tel: link and the address below it, so a second one would
+      // be the same action twice. These are the two things the card cannot do.
+      links: [
+        { label: 'Book a free consultation', href: '/book', primary: true },
+        { label: 'Contact page', href: '/contact' },
+      ],
+      followUps: ['What are your working hours?', 'Book a free call'],
+    }),
+  },
   {
     /*
      * "do you build websites", "can you automate invoices", "do you do OCR".
@@ -757,115 +890,6 @@ const INTENTS = [
         followUps: ['Book a free call', 'How do I contact you?'],
       };
     },
-  },
-
-  {
-    id: 'process',
-    test: bilingual(/\b(process|how do you work|methodology|approach|steps|what happens next|onboard)\b/, /எப்படி வேலை|செயல்முறை|நடைமுறை|அணுகுமுறை|எப்படி செய்கிற|வழிமுறை/),
-    respond: () => {
-      const pillars = listEntries('METHODOLOGY');
-      if (!pillars.length) return null;
-      return {
-        text: {
-          en: `How we work, in ${pillars.length} steps:`,
-          ta: `நாங்கள் எப்படி பணியாற்றுகிறோம் - ${pillars.length} படிகளில்:`,
-        },
-        bullets: pillars.map(toBullet),
-        links: [{ label: 'How we work', href: '/about', primary: true }],
-        followUps: ['Book a free call'],
-      };
-    },
-  },
-
-  {
-    id: 'tech-stack',
-    // Was `…|tools?|integrat\w+`, and those two took questions this cannot
-    // answer. "do you do CRM integration" is a question about the CRM & ERP
-    // *service* and was being answered with a list of eight technologies; so
-    // was "can you integrate with my ERP". The test now needs the question to
-    // actually be about tooling, and the services intent above keeps the rest.
-    test: bilingual(/\b(tech stack|technolog\w+|what tech|which tech|built with|what (tools|frameworks?)|which (tools|frameworks?|platforms?)|tools do you use|platform(s)? do you use|programming language)\b/, /தொழில்நுட்ப|டெக்னாலஜி|எந்த மொழி|கருவிகள|பயன்படுத்துகிற/),
-    respond: () => {
-      const tech = listEntries('TECHNOLOGIES');
-      if (!tech.length) return null;
-      return {
-        text: {
-          en: `We build on ${tech.length} core technologies:`,
-          ta: `${tech.length} முக்கிய தொழில்நுட்பங்களின் மேல் நாங்கள் கட்டமைக்கிறோம்:`,
-        },
-        bullets: tech.map(toBullet),
-        links: [{ label: 'See our services', href: '/services', primary: true }],
-      };
-    },
-  },
-
-
-  {
-    id: 'work',
-    test: bilingual(/\b(case stud(y|ies)|portfolio|project(s)?|example(s)?|work you)\b/, /முந்தைய பணி|வேலைகள|திட்டங்கள|உதாரண|போர்ட்ஃபோலி|செய்த வேலை/),
-    respond: () => {
-      const live = listEntries('PRODUCTION_PROJECTS');
-      const building = listEntries('DEVELOPMENT_PROJECTS');
-      return {
-        text: {
-          en: `${live.length} systems are live in production and ${building.length} more are in build.`,
-          ta: `${live.length} அமைப்புகள் நடைமுறையில் இயங்குகின்றன, மேலும் ${building.length} உருவாக்கத்தில் உள்ளன.`,
-        },
-        bullets: [...live, ...building].map(toBullet),
-        links: [{ label: 'See all work', href: '/products', primary: true }],
-        followUps: ['Book a free call'],
-      };
-    },
-  },
-
-  {
-    id: 'contact',
-    // `mobile` and a bare `number` were in here and both were too greedy:
-    // "can you build a mobile app" is a services question, and "how many
-    // employees" is not a request for our phone number. They are spelled out
-    // as the phrases people actually use instead.
-    test: bilingual(
-      /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (to|do i|can i|shall i|should i) (call|reach|contact)|call (riyaz|him|her|them|someone|anyone|the founder)|get in touch|address|office|located|location|where are you|directions|map)\b/,
-      /தொடர்பு|தொடர்பக|தொலைபேச|மின்னஞ்சல|முகவரி|அலுவலக|எங்கே இரு|எங்க இரு|அழைக்க|அழைப்ப|போன் நம்பர|நம்பர்|வாட்ஸ்அப/,
-    ),
-    /*
-     * Read straight off the company record, so a change of address or number
-     * never leaves a stale copy in the bot — the same record the footer and the
-     * contact page render.
-     *
-     * ── why this answer leads with the phone number ──────────────────────
-     * "whatsapp number" and "I want to talk to someone" used to be taken by the
-     * social_media persona intent, which replied "WhatsApp is the fastest if
-     * you want a person" and offered a row of social profiles. A visitor asking
-     * how to reach a company is asking for its phone number, and being handed a
-     * link out to a messaging app instead is a redirect away from the thing
-     * they asked for. persona.js no longer claims those questions; they land
-     * here, and here answers with the number, the address and a time to book.
-     */
-    respond: () => ({
-      // The sentence names the number and stops there. Email and address are
-      // in the card directly beneath it, already tappable — restating them
-      // here printed every detail twice in one bubble.
-      text: {
-        en:
-          `Call ${COMPANY.phone} — that is the quickest way to us. Email and the office address ` +
-          `are below. If you would rather have a proper conversation, pick a time: the ` +
-          `${CONSULT.minutes}-minute consultation is free.`,
-        ta:
-          `${COMPANY.phone} என்ற எண்ணில் அழைப்பதுதான் வேகமானது. மின்னஞ்சலும் அலுவலக முகவரியும் கீழே ` +
-          `உள்ளன. விரிவாகப் பேச வேண்டுமெனில் நேரம் தேர்வு செய்யுங்கள் — ${CONSULT.minutes} நிமிட ` +
-          `ஆலோசனை இலவசம்.`,
-      },
-      contact: CONTACT_CARD,
-      // No "Call us" button here: the contact card above already renders the
-      // number as a tel: link and the address below it, so a second one would
-      // be the same action twice. These are the two things the card cannot do.
-      links: [
-        { label: 'Book a free consultation', href: '/book', primary: true },
-        { label: 'Contact page', href: '/contact' },
-      ],
-      followUps: ['What are your working hours?', 'Book a free call'],
-    }),
   },
   {
     id: 'team',

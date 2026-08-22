@@ -363,6 +363,27 @@ const ANSWER_FIXTURES = [
   // …without swallowing the neighbours it sits above.
   { q: 'tell me about aura', intent: 'product' },
   { q: 'who is the founder', intent: 'team' },
+
+  /*
+   * "Do you do X" where X is not something we do.
+   *
+   * These were written as refusals and they should not be. capability answers
+   * them with "I cannot match that to anything we list, and I would rather say
+   * so than guess", then the ten it does — which is the same argument faq's
+   * not-offered entry already makes in its own note: saying nothing "costs the
+   * visitor's belief in everything else the bot said".
+   *
+   * They were reaching services, pricing and team instead, each answering the
+   * wrong half: the list of ten as though it were a yes, a pricing policy for
+   * something we do not sell, the staff roster for a painting job. All six now
+   * land on the one honest answer.
+   */
+  { q: 'Do you sell pet insurance?', intent: 'capability', reject: /Book a free consultation$/ },
+  { q: 'do you sell laptops', intent: 'capability' },
+  { q: 'do you offer visa services', intent: 'capability' },
+  { q: 'do you sell mobile data plans', intent: 'capability' },
+  { q: 'do you sell health insurance for my team', intent: 'capability' },
+  { q: 'can your team paint my office', intent: 'capability' },
 ];
 
 /**
@@ -377,7 +398,6 @@ const ANSWER_FIXTURES = [
  */
 const REFUSE_FIXTURES = [
   'can I drink hot water during winter season?',
-  'Do you sell pet insurance?',
   'what is the capital of France?',
   'how do I cook plain rice?',
   'who won the cricket world cup?',
@@ -401,18 +421,13 @@ const REFUSE_FIXTURES = [
    * locate one of them. Do not move a threshold against a set that lacks
    * these.
    */
-  'do you sell laptops',
   'what is the price of bitcoin today',
   'how do I contact my bank',
-  'do you offer visa services',
   'what time does the post office open',
   'who is the CEO of Google',
-  'do you sell mobile data plans',
   'can you repair my laptop screen',
-  'can your team paint my office',
   'how much does a flight to Delhi cost',
   'what are the office timings of the passport seva kendra',
-  'do you sell health insurance for my team',
   'can you teach me python programming',
 ];
 
