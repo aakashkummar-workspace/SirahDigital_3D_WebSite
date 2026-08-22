@@ -365,7 +365,49 @@ console.log(`entries : ${KNOWLEDGE_STATS.entries}`);
 console.log(`sources : ${KNOWLEDGE_STATS.sources.join(', ')}`);
 console.log(`kinds   : ${KNOWLEDGE_STATS.kinds.join(', ')}`);
 
-const custom = process.argv.slice(2);
+const argv = process.argv.slice(2);
+
+/*
+ * --scores — the calibration table.
+ *
+ * answer.js:86-88 says of the gates: "These are empirical… Move a number, run
+ * the check." The check could not show you a number. It reported pass or fail
+ * against a threshold without ever printing what the threshold was compared
+ * to, so a change that moved every score halfway to a cliff looked identical
+ * to one that moved nothing.
+ *
+ * This prints the raw retrieval score and coverage behind every fixture,
+ * whether or not an intent claimed it. Diff it across a change:
+ *
+ *     node scripts/chat-check.mjs --scores > /tmp/before.txt
+ *     …edit…
+ *     node scripts/chat-check.mjs --scores | diff /tmp/before.txt -
+ *
+ * For a change that must not touch English — the Unicode tokenizer — an empty
+ * diff is the whole proof.
+ */
+if (argv.includes('--scores')) {
+  const { search } = chat.search;
+  const K = chat.knowledge.KNOWLEDGE;
+  const rows = [
+    ...ANSWER_FIXTURES.map((f) => [f.q, f.intent || '']),
+    ...REFUSE_FIXTURES.map((q) => [q, 'REFUSE']),
+  ];
+  console.log("\n═══ SCORES ═══");
+  for (const [q, want] of rows) {
+    const reply = answerQuestion(q);
+    const top = search(q, K, { limit: 1 })[0];
+    const score = top ? top.score.toFixed(3) : '—';
+    const cov = top ? top.coverage.toFixed(2) : '—';
+    console.log(
+      [String(score).padStart(7), String(cov).padStart(5), (reply.intent || 'retrieval').padEnd(22), want.padEnd(22), q].join('  '),
+    );
+  }
+  await chat.cleanup();
+  process.exit(0);
+}
+
+const custom = argv;
 
 if (custom.length) {
   console.log('\n═══ ANSWERS ═══');

@@ -189,7 +189,7 @@ function synonymsFor(word) {
 function words(text) {
   return String(text)
     .toLowerCase()
-    .replace(/[^a-z0-9\s+#-]/g, ' ')
+    .replace(/[^\p{L}\p{N}\p{M}\s+#-]/gu, ' ')
     .split(/\s+/)
     .filter((word) => word.length > 1 && !STOPWORDS.has(word));
 }

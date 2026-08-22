@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { answerQuestion, INTENT_IDS } from '@/lib/chat/answer';
-import { routeIntent } from '@/lib/chat/router';
+import { answerQuestion } from '@/lib/chat/answer';
 import { replyLanguage } from '@/lib/chat/lang';
 import { KNOWLEDGE } from '@/lib/chat/knowledge';
 import { fetchCmsKnowledge, mergeKnowledge } from '@/lib/chat/cms';
@@ -61,23 +60,12 @@ export async function POST(request) {
    */
   const lang = replyLanguage(question, body?.lang);
 
-  /*
-   * Routing and the CMS read are independent, so they run together — the
-   * router's latency is hidden behind a fetch that was happening anyway.
-   * routeIntent resolves to null whenever it cannot help (no API key, a
-   * timeout, an unknown id), and answerQuestion then falls back to its
-   * regexes exactly as before.
-   */
-  const [cms, routedIntent] = await Promise.all([
-    fetchCmsKnowledge(),
-    routeIntent(question, INTENT_IDS),
-  ]);
+  const cms = await fetchCmsKnowledge();
   const knowledge = mergeKnowledge(KNOWLEDGE, cms);
 
   const reply = answerQuestion(question, {
     knowledge,
     lang,
-    routedIntent,
     // Conversation state is the panel's, and it is echoed back on every
     // request rather than held here. This route is stateless by construction:
     // there is no session to leak between visitors.
