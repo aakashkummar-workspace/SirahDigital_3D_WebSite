@@ -206,6 +206,49 @@ const ANSWER_FIXTURES = [
    * so the precedence cannot drift silently. */
   { q: 'what services do you offer and how much do they cost', intent: 'services' },
   { q: 'i need a chatbot for my clinic, what will it cost', intent: 'pricing' },
+
+  /*
+   * Adjacent services the site does not sell. The right answer is a plain
+   * "no, here is what we do" from faq:not-offered — not a refusal. That
+   * entry's own note puts it better than I can: going silent "costs the
+   * visitor's belief in everything else the bot said".
+   */
+  { q: 'do you do wedding photography', intent: 'faq:not-offered' },
+  { q: 'what is the best software for video editing', intent: 'faq:not-offered' },
+
+  /*
+   * Out-of-scope asks that must NOT be refused.
+   *
+   * capability already answers these honestly — "I cannot match that to
+   * anything we list, and I would rather say so than guess", then the ten
+   * it does. That is the right reply to "can you build me a house": a
+   * refusal would tell the visitor nothing, and a yes would be a lie.
+   *
+   * Pinned as fixtures because the fix for the genuine over-triggers below
+   * is to narrow these same intents, and narrowing them too far turns these
+   * five into refusals without anyone noticing.
+   */
+  { q: 'can you build me a house', intent: 'capability' },
+  { q: 'do you provide loans for small business', intent: 'capability' },
+  { q: 'can you automate my car', intent: 'capability' },
+  { q: 'do you provide accounting and tax filing', intent: 'capability' },
+  { q: 'can you help me write a resume', intent: 'faq:careers' },
+
+  /*
+   * The reported bug, pinned.
+   *
+   * "how to call sirah digital" returned Aura Transcriber, an AI call
+   * recording product: contact matched "call you" and "call us" but not the
+   * company by name, so the question fell through to retrieval and the word
+   * "call" scored against the product.
+   *
+   * Worth remembering that no retriever could have answered it — the number
+   * is read from COMPANY.phone inside the handler and was never indexed.
+   * Only the intent can reach it.
+   */
+  { q: 'how to call sirah digital', intent: 'contact', reject: /Aura/ },
+  { q: 'how do i call you', intent: 'contact' },
+  { q: 'i want to call sirah', intent: 'contact' },
 ];
 
 /**
@@ -229,6 +272,34 @@ const REFUSE_FIXTURES = [
   'what is the price of gold today?',
   'how do I fix my car engine?',
   'tell me a joke about elephants',
+
+  /*
+   * Near misses — off-topic questions built out of the site's own vocabulary.
+   *
+   * The ten above share almost no words with the corpus, so they are refused
+   * by term coverage alone and would stay refused under almost any gate. They
+   * cannot tell you a threshold is too loose. These can: every one contains a
+   * word the index is full of — automate, business, price, contact, build,
+   * offer, services, software, data, team — while asking for something the
+   * site does not do.
+   *
+   * A gate is a boundary between two populations. Ten far-away negatives only
+   * locate one of them. Do not move a threshold against a set that lacks
+   * these.
+   */
+  'do you sell laptops',
+  'what is the price of bitcoin today',
+  'how do I contact my bank',
+  'do you offer visa services',
+  'what time does the post office open',
+  'who is the CEO of Google',
+  'do you sell mobile data plans',
+  'can you repair my laptop screen',
+  'can your team paint my office',
+  'how much does a flight to Delhi cost',
+  'what are the office timings of the passport seva kendra',
+  'do you sell health insurance for my team',
+  'can you teach me python programming',
 ];
 
 /* ------------------------------------------------------------------ */

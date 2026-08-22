@@ -34,7 +34,7 @@ const CHAT_DIR = path.join(ROOT, 'src', 'lib', 'chat');
  * failure mode that matters, because a module the harness cannot see is a
  * module whose answers are never tested.
  */
-const CHAT_MODULES = ['search', 'faq', 'persona', 'answer'];
+const CHAT_MODULES = ['search', 'faq', 'persona', 'lang', 'answer'];
 
 export async function buildChat({ tmpDir = '.chat-check' } = {}) {
   const TMP = path.join(ROOT, tmpDir);
@@ -88,12 +88,22 @@ export async function buildChat({ tmpDir = '.chat-check' } = {}) {
 
   const knowledgeModule = await import(pathToFileURL(path.join(TMP, 'knowledge.mjs')).href);
   const answerModule = await import(pathToFileURL(path.join(TMP, 'answer.mjs')).href);
+  /*
+   * search and lang are exposed as whole modules, not spread, because the
+   * check needs what answerQuestion throws away: the raw BM25 score and
+   * coverage behind a reply, and the language the question was read as.
+   * A finished reply cannot tell you why a gate opened.
+   */
+  const searchModule = await import(pathToFileURL(path.join(TMP, 'search.mjs')).href);
+  const langModule = await import(pathToFileURL(path.join(TMP, 'lang.mjs')).href);
 
   return {
     ...knowledgeModule,
     ...answerModule,
     knowledge: knowledgeModule,
     answer: answerModule,
+    search: searchModule,
+    lang: langModule,
     cleanup: () => rm(TMP, { recursive: true, force: true }),
   };
 }

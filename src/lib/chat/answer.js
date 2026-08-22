@@ -202,6 +202,29 @@ function bestIn(query, sources, { score = 2.0, coverage = 0.5 } = {}) {
  * shape rather than the subject of it. Both are read by the capability
  * intent's test — see the note there for why the second one is needed.
  */
+/*
+ * Questions about somebody else's organisation.
+ *
+ * "who is the CEO of Google" was answered with our founder's name. "what time
+ * does the post office open" got our consultation hours. "how do I contact my
+ * bank" got our phone number. Each is worse than a refusal — the bot did not
+ * fail to answer, it answered a question about someone else using our facts,
+ * confidently and in our voice.
+ *
+ * The tests that produced those are not wrong to be broad: `team` has to match
+ * "who is the ceo", `faq:hours` has to match "office timings". What is missing
+ * is any notion that the question might not be about us. This supplies it, and
+ * runs above every content intent because all of them assume the subject.
+ *
+ * Deliberately a short list of named parties rather than a rule. "my clinic",
+ * "for my school" and "our hospital" are the visitor's own business and belong
+ * in scope — they are who we build for. The possessives here are limited to
+ * organisations a visitor would be asking to *contact*, never to automate.
+ * Widening this is how you start refusing customers.
+ */
+const THIRD_PARTY =
+  /\b(my|their|his|her)\s+(bank|insurer|landlord|employer)\b|\bof\s+(google|microsoft|amazon|apple|meta|facebook|infosys|tcs|wipro)\b|\b(post office|passport seva|passport office|embassy|consulate)\b/i;
+
 const CAPABILITY_SHAPE =
   /\b(do|does|can|could|would|will) (you|u|sirah|sirah digital)\b[\s\S]{0,40}\b(do|build|make|develop|create|handle|offer|provide|automate|design|integrate|implement|deliver|support|manage|help|connect|link|sync|have)\b|\bare you able to\b|\bable to build\b|\bcan you help me\b/;
 
@@ -810,7 +833,7 @@ const INTENTS = [
     // "can you build a mobile app" is a services question, and "how many
     // employees" is not a request for our phone number. They are spelled out
     // as the phrases people actually use instead.
-    test: /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call you|call us|ring you|reach (you|us|the team)|get in touch|address|office|located|location|where are you|directions|map)\b/,
+    test: /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (do|can) i (call|reach|contact)|get in touch|address|office|located|location|where are you|directions|map)\b/,
     /*
      * Read straight off the company record, so a change of address or number
      * never leaves a stale copy in the bot — the same record the footer and the
@@ -1075,6 +1098,21 @@ export function answerQuestion(question, ctx = {}) {
       text: resolve(reply.text, lang),
       confidence: 'high',
       intent: intent.id,
+    };
+  }
+
+  // 1b — a question about somebody else.
+  //
+  // Above the FAQ and the content intents because every one of them answers
+  // about us without ever asking whether it was us being asked about. Below
+  // persona so "hi" and "thanks" still land, and skipped when the visitor
+  // names us, so "how does sirah compare to google" stays answerable.
+  if (THIRD_PARTY.test(raw) && !/\bsirah\b/i.test(raw)) {
+    return {
+      text: resolve(OUT_OF_SCOPE, lang),
+      followUps: QUICK_REPLIES_BY_LANG[lang],
+      confidence: 'none',
+      intent: 'out-of-scope',
     };
   }
 
