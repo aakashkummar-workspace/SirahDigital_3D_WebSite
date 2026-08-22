@@ -254,7 +254,7 @@ export const PERSONA_INTENTS = [
     // reduce manual work" — a description of a real problem, answered with the
     // bot's own menu. Only the standalone plea keeps it now; the rest is the
     // capability intent's, where a problem statement belongs.
-    test: /\b(what can you do|how (can|do) you help|what do you know)\b|^\s*(help|help me|options|menu|\?+|hlp)\s*[.!?]*$|என்ன செய்ய முடிய|எப்படி உதவ|என்ன தெரிய|உதவி வேண்ட|என்னென்ன செய்ய/i,
+    test: /\b(what can you do|how (can|do) you help|what do you know)\b|^\s*(help|help me|options|menu|\?+|hlp)\s*[.!?]*$|என்ன செய்ய முடிய|நீங்கள் எப்படி உதவ|நீ எப்படி உதவ|என்ன தெரிய|உதவி வேண்ட|என்னென்ன செய்ய/i,
     respond: (ctx, lang) => ({
       text: {
         en: 'I can walk you through any of these - or just ask in your own words.',

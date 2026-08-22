@@ -245,7 +245,7 @@ function bilingual(en, ta) {
 }
 
 const CAPABILITY_SHAPE =
-  /\b(do|does|can|could|would|will) (you|u|sirah|sirah digital)\b[\s\S]{0,40}\b(do|build|make|develop|create|handle|offer|provide|automate|design|integrate|implement|deliver|support|manage|help|connect|link|sync|have)\b|\bare you able to\b|\bable to build\b|\bcan you help me\b/;
+  /\b(do|does|can|could|would|will) (you|u|sirah|sirah digital)\b[\s\S]{0,40}\b(do|build|make|develop|create|handle|offer|provide|automate|design|integrate|implement|deliver|support|manage|help|connect|link|sync|have)\b|\bare you able to\b|\bable to build\b|\bcan you help me\b|முடியுமா|செய்ய முடி|உருவாக்க முடி|கட்ட முடி|பண்ண முடி/;
 
 // Run through tokenize so these are stemmed exactly as the question will be —
 // "automate", "automating" and "automation" all collapse to the same root, and
@@ -489,7 +489,7 @@ const INTENTS = [
      * The pillars answer is the right one for all of them: it says what
      * automation is worth, in three places, with real outcomes underneath.
      */
-    test: /(\bautomat\w*\b[\s\S]*\b(useful|benefit|help|why|worth|value|roi|save|saving|good|point|advantage)\b)|(\b(useful|benefit|help|why|worth|value|roi|save|saving|should i|advantage)\b[\s\S]*\bautomat)|(\b(problem(s)?|issue(s)?|challenge(s)?|pain|struggle|bottleneck)\b[\s\S]*\b(solve|fix|help|handle|address)\b)|(\b(solve|fix)\b[\s\S]*\b(problem(s)?|issue(s)?|challenge(s)?)\b)|(\b(wast(e|es|ing)|manual|manually|repetitive|tedious|by hand|too much time|time.?consuming|eating (up )?(my|our)|spend(ing|s)? (hours|too long|all day))\b)/,
+    test: /(\bautomat\w*\b[\s\S]*\b(useful|benefit|help|why|worth|value|roi|save|saving|good|point|advantage)\b)|(\b(useful|benefit|help|why|worth|value|roi|save|saving|should i|advantage)\b[\s\S]*\bautomat)|(\b(problem(s)?|issue(s)?|challenge(s)?|pain|struggle|bottleneck)\b[\s\S]*\b(solve|fix|help|handle|address)\b)|(\b(solve|fix)\b[\s\S]*\b(problem(s)?|issue(s)?|challenge(s)?)\b)|(\b(wast(e|es|ing)|manual|manually|repetitive|tedious|by hand|too much time|time.?consuming|eating (up )?(my|our)|spend(ing|s)? (hours|too long|all day))\b)|தானியக்க|ஆட்டோமேஷ|எதற்கு பயன|என்ன பயன|எப்படி உதவும|நேரம் வீணா|கைமுறை|மீண்டும் மீண்டும|பிரச்சனை.*தீர|தீர்க்க முடியும/,
     respond: () => {
       const pillars = listEntries('METHODOLOGY');
       // Real outcomes from shipped work, not claims — these come off the same
@@ -631,7 +631,7 @@ const INTENTS = [
     // of twelve sectors. Sector questions name a sector; "experience in
     // healthcare" still lands via `any … in`, and the rest is the capability
     // intent's.
-    test: /\b(work|worked|working|deal|dealt) (with|for|in)\b|\bdo you serve\b|\b(clients|projects|customers) (in|with|for)\b|\bany (clients|experience|work) in\b/,
+    test: /\b(work|worked|working|deal|dealt) (with|for|in)\b|\bdo you serve\b|\b(clients|projects|customers) (in|with|for)\b|\bany (clients|experience|work) in\b|வேலை செய்கிறீர்களா|வேலை பார்க்கிறீர்களா|கையாள்கிறீர்களா|சேவை செய்கிறீர்களா/,
     respond: (question) => {
       const industries = listEntries('INDUSTRIES');
       const match = bestIn(question, INDUSTRY_SOURCES, { score: 2.2, coverage: 0.5 });
@@ -973,7 +973,7 @@ const INTENTS = [
      * instead. The first alternative below covers both, and any other subject
      * in the middle: "what does sirah build", "what do you people actually do".
      */
-    test: /\bwhat (do|does|is|are)\b[\s\S]{0,24}\b(do|doing|build|make|offer|about|specialis\w+|specializ\w+)\b|\babout (you|us|sirah|the company|your company)\b|\b(who is sirah|what is sirah|company|agency|story|history|mission|vision|values|purpose)\b/,
+    test: /\bwhat (do|does|is|are)\b[\s\S]{0,24}\b(do|doing|build|make|offer|about|specialis\w+|specializ\w+)\b|\babout (you|us|sirah|the company|your company)\b|\b(who is sirah|what is sirah|company|agency|story|history|mission|vision|values|purpose)\b|us|sirah|the company|நிறுவனம் பற்றி|உங்கள் நிறுவன|சிரா பற்றி|என்ன செய்யும் நிறுவன|உங்களைப் பற்றி/,
     respond: () => {
       const services = listEntries('SERVICES');
       const industries = listEntries('INDUSTRIES');

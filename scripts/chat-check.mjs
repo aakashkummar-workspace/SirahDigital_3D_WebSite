@@ -298,6 +298,27 @@ const ANSWER_FIXTURES = [
   { q: 'ஏன் உங்களை தேர்வு செய்ய வேண்டும்', intent: 'faq:why-us' },
   { q: 'என் தரவு பாதுகாப்பாக இருக்குமா', intent: 'faq:data-privacy' },
   { q: 'வேலை வாய்ப்பு இருக்கிறதா', intent: 'faq:careers' },
+
+  /*
+   * The last five intents, and the two collisions they exposed.
+   *
+   * industry-fit keys on the interrogative -ஆ. Without it
+   * "எப்படி வேலை செய்கிறீர்கள்" — how do you work — was claimed by
+   * industry-fit instead of process, because Tamil marks a yes/no question
+   * with a particle on the verb rather than with word order.
+   *
+   * automation-benefit versus persona's capabilities: "தானியக்கம் எப்படி
+   * உதவும்" is a question about automation, "நீங்கள் எப்படி உதவ முடியும்"
+   * is a question about the bot. Both were the second, until capabilities was
+   * anchored to the second person.
+   */
+  { q: 'நீங்கள் சாட்பாட் உருவாக்க முடியுமா', intent: 'capability' },
+  { q: 'உங்கள் நிறுவனம் பற்றி சொல்லுங்கள்', intent: 'about' },
+  { q: 'மருத்துவமனைகளுடன் வேலை செய்கிறீர்களா', intent: 'industry-fit' },
+  { q: 'எப்படி வேலை செய்கிறீர்கள்', intent: 'process' },
+  { q: 'தானியக்கம் எப்படி உதவும்', intent: 'automation-benefit' },
+  { q: 'நீங்கள் எப்படி உதவ முடியும்', intent: 'capabilities' },
+  { q: 'Aura பற்றி சொல்லுங்கள்', intent: 'product' },
 ];
 
 /**
