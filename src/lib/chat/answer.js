@@ -225,6 +225,25 @@ function bestIn(query, sources, { score = 2.0, coverage = 0.5 } = {}) {
 const THIRD_PARTY =
   /\b(my|their|his|her)\s+(bank|insurer|landlord|employer)\b|\bof\s+(google|microsoft|amazon|apple|meta|facebook|infosys|tcs|wipro)\b|\b(post office|passport seva|passport office|embassy|consulate)\b/i;
 
+/*
+ * One intent, two languages.
+ *
+ * The dispatch loops already accept a function where a regex is expected, so
+ * a bilingual test needs no change to them. What it does need is `.sources`.
+ *
+ * INTENT_VOCAB scrapes protected spellings out of `test.source` and skips
+ * anything that is not a RegExp. Convert a test to a function without
+ * exposing its patterns and every word inside it silently leaves the
+ * spellchecker's protected set — which is how "how do I contact you" once
+ * became "how do I contract you" and got answered with the NDA note
+ * (search.js documents that failure at length). The array is not decoration.
+ */
+function bilingual(en, ta) {
+  const test = (question) => en.test(question) || ta.test(question);
+  test.sources = [en, ta];
+  return test;
+}
+
 const CAPABILITY_SHAPE =
   /\b(do|does|can|could|would|will) (you|u|sirah|sirah digital)\b[\s\S]{0,40}\b(do|build|make|develop|create|handle|offer|provide|automate|design|integrate|implement|deliver|support|manage|help|connect|link|sync|have)\b|\bare you able to\b|\bable to build\b|\bcan you help me\b/;
 
@@ -263,7 +282,8 @@ const CAPABILITY_VERBS = new Set(
  * rather than a list: the set of things we can be asked the price of is the
  * set of things we have written about, and that changes without this file.
  */
-const SELF_REFERENCE = /\b(you|your|yours|u|sirah|we|our|us|it|its|this|that|they|them|these|those)\b/;
+const SELF_REFERENCE =
+  /\b(you|your|yours|u|sirah|we|our|us|it|its|this|that|they|them|these|those)\b|நீங்கள|உங்கள|உன்|நாங்கள|எங்கள|இது|அது|இந்த|அந்த|சிராh?/;
 
 const vocabularies = new WeakMap();
 
@@ -383,7 +403,7 @@ function toBullet(entry) {
 const INTENTS = [
   {
     id: 'booking',
-    test: /\b(book|booking|appointment|consultation|schedule|meeting|call back|callback|demo|free call|talk to (you|someone|somebody|a human|a person)|speak to (someone|somebody|a human|a person)|slot)\b/,
+    test: bilingual(/\b(book|booking|appointment|consultation|schedule|meeting|call back|callback|demo|free call|talk to (you|someone|somebody|a human|a person)|speak to (someone|somebody|a human|a person)|slot)\b/, /நேரம் பதிவ|நேரம் ஒது|அப்பாயிண|புக் பண்ண|புக்கிங|ஆலோசனை|மீட்டிங|சந்திப்ப|கால் புக/),
     // The link used to be /contact, under a sentence promising a calendar.
     // /contact is a form, a map and the ROI calculator; the calendar is on
     // /book, and has been since the TidyCal flow was replaced. So the bot
@@ -412,7 +432,7 @@ const INTENTS = [
 
   {
     id: 'products',
-    test: /\bproduct(s)?\b|\bbuild\b.*\bown\b|\bplatform(s)?\b|\bapp(s)? (do|does) you\b/,
+    test: bilingual(/\bproduct(s)?\b|\bbuild\b.*\bown\b|\bplatform(s)?\b|\bapp(s)? (do|does) you\b/, /தயாரிப்ப|பொருட்கள|புராடக்ட|தளம்|சொந்த தயாரிப/),
     respond: () => {
       const products = listEntries('HOME_PRODUCTS');
       if (!products.length) return null;
@@ -433,7 +453,7 @@ const INTENTS = [
     // `solution(s)` sits here rather than with the problem-shaped questions
     // below, and the order is what decides it: "what solutions do you offer"
     // is someone asking for the menu, not describing a problem.
-    test: /\bservice(s)?\b|\bsolution(s)?\b|\bwhat do you (do|offer|provide)\b|\bcapabilit(y|ies)\b|\boffering(s)?\b/,
+    test: bilingual(/\bservice(s)?\b|\bsolution(s)?\b|\bwhat do you (do|offer|provide)\b|\bcapabilit(y|ies)\b|\boffering(s)?\b/, /சேவை|சேவைகள|என்ன செய்கிற|என்ன வழங|வழங்குகிற|எதெல்லாம் செய/),
     respond: () => {
       const services = listEntries('SERVICES');
       if (!services.length) return null;
@@ -501,7 +521,7 @@ const INTENTS = [
 
   {
     id: 'scale',
-    test: /\bscal(e|ing)\b|\bgrow(th|ing)?\b|\bexpand\b/,
+    test: bilingual(/\bscal(e|ing)\b|\bgrow(th|ing)?\b|\bexpand\b/, /வளர்ச்சி|விரிவாக்க|பெரிதாக்க|ஸ்கேல்/),
     respond: () => {
       const scale = listEntries('METHODOLOGY').find((m) => /scale/i.test(m.title));
       const relevant = search('scale infrastructure cloud integration growth', ACTIVE, {
@@ -526,7 +546,7 @@ const INTENTS = [
 
   {
     id: 'industries',
-    test: /\bindustr(y|ies)\b|\bsector(s)?\b|\bvertical(s)?\b|\bwho do you work with\b/,
+    test: bilingual(/\bindustr(y|ies)\b|\bsector(s)?\b|\bvertical(s)?\b|\bwho do you work with\b/, /துறை|துறைகள|தொழில்துறை|செக்டர்|எந்த துறை/),
     respond: () => {
       const industries = listEntries('INDUSTRIES');
       if (!industries.length) return null;
@@ -548,7 +568,8 @@ const INTENTS = [
     // "do you have packages" was being refused as off-topic — a buying
     // question, turned away by the bot whose job is to catch buying questions.
     test: (question) =>
-      /\b(price|pricing|cost|costs|quote|quotation|budget|how much|fee(s)?|charge(s)?|packages?|plans?|tiers?|retainer|rate(s)?|expensive|cheap|afford)\b/.test(question) &&
+      (/\b(price|pricing|cost|costs|quote|quotation|budget|how much|fee(s)?|charge(s)?|packages?|plans?|tiers?|retainer|rate(s)?|expensive|cheap|afford)\b/.test(question) ||
+        /விலை|கட்டணம|செலவ|எவ்வளவ|எவ்ளோ|ரேட்|பட்ஜெட|மலிவ|விலைப்பட்டியல/.test(question)) &&
       // …and about our work, not about gold, petrol or anything else that has
       // a price. See aboutUs().
       aboutUs(question, PRICING_TRIGGERS),
@@ -576,7 +597,7 @@ const INTENTS = [
 
   {
     id: 'clients',
-    test: /\b(testimonial(s)?|review(s)?|reference(s)?|who are your clients|client list|trusted by)\b/,
+    test: bilingual(/\b(testimonial(s)?|review(s)?|reference(s)?|who are your clients|client list|trusted by)\b/, /வாடிக்கையாள|கிளையண|சான்றிதழ|கருத்துக்கள|யார் உங்கள/),
     respond: () => {
       const clients = listEntries('CLIENTS');
       if (!clients.length) return null;
@@ -739,7 +760,7 @@ const INTENTS = [
 
   {
     id: 'process',
-    test: /\b(process|how do you work|methodology|approach|steps|what happens next|onboard)\b/,
+    test: bilingual(/\b(process|how do you work|methodology|approach|steps|what happens next|onboard)\b/, /எப்படி வேலை|செயல்முறை|நடைமுறை|அணுகுமுறை|எப்படி செய்கிற|வழிமுறை/),
     respond: () => {
       const pillars = listEntries('METHODOLOGY');
       if (!pillars.length) return null;
@@ -762,7 +783,7 @@ const INTENTS = [
     // *service* and was being answered with a list of eight technologies; so
     // was "can you integrate with my ERP". The test now needs the question to
     // actually be about tooling, and the services intent above keeps the rest.
-    test: /\b(tech stack|technolog\w+|what tech|which tech|built with|what (tools|frameworks?)|which (tools|frameworks?|platforms?)|tools do you use|platform(s)? do you use|programming language)\b/,
+    test: bilingual(/\b(tech stack|technolog\w+|what tech|which tech|built with|what (tools|frameworks?)|which (tools|frameworks?|platforms?)|tools do you use|platform(s)? do you use|programming language)\b/, /தொழில்நுட்ப|டெக்னாலஜி|எந்த மொழி|கருவிகள|பயன்படுத்துகிற/),
     respond: () => {
       const tech = listEntries('TECHNOLOGIES');
       if (!tech.length) return null;
@@ -782,7 +803,7 @@ const INTENTS = [
     // A bare `team` matched "my team wastes time on data entry" — a visitor
     // describing their own problem, answered with our staff list. `people` was
     // worse for the same reason. The question has to be about *our* team.
-    test: /\b(your|the|sirah'?s) (team|staff|people|engineers|developers)\b|\bfounder\b|\bceo\b|\bwho (works|is) (at|in|for)\b|\bteam members?\b|\bmeet the team\b/,
+    test: bilingual(/\b(your|the|sirah'?s) (team|staff|people|engineers|developers)\b|\bfounder\b|\bceo\b|\bwho (works|is) (at|in|for)\b|\bteam members?\b|\bmeet the team\b/, /குழு|அணி|நிறுவனர|பணியாளர|யார் யார்|டீம்|ஊழியர/),
     respond: () => {
       // Read off the record rather than the index. knowledge.js picks an
       // entry's title from `title` before `name`, and FOUNDER carries both —
@@ -811,7 +832,7 @@ const INTENTS = [
 
   {
     id: 'work',
-    test: /\b(case stud(y|ies)|portfolio|project(s)?|example(s)?|work you)\b/,
+    test: bilingual(/\b(case stud(y|ies)|portfolio|project(s)?|example(s)?|work you)\b/, /முந்தைய பணி|வேலைகள|திட்டங்கள|உதாரண|போர்ட்ஃபோலி|செய்த வேலை/),
     respond: () => {
       const live = listEntries('PRODUCTION_PROJECTS');
       const building = listEntries('DEVELOPMENT_PROJECTS');
@@ -833,7 +854,10 @@ const INTENTS = [
     // "can you build a mobile app" is a services question, and "how many
     // employees" is not a request for our phone number. They are spelled out
     // as the phrases people actually use instead.
-    test: /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (do|can) i (call|reach|contact)|get in touch|address|office|located|location|where are you|directions|map)\b/,
+    test: bilingual(
+      /\b(contact|email|e-mail|phone|mobile number|whatsapp number|contact number|phone number|call (you|us|sirah|sirah digital|the (team|office))|ring (you|us)|reach (you|us|sirah|the team)|how (do|can) i (call|reach|contact)|get in touch|address|office|located|location|where are you|directions|map)\b/,
+      /தொடர்பு|தொடர்பக|தொலைபேச|மின்னஞ்சல|முகவரி|அலுவலக|எங்கே இரு|எங்க இரு|அழைக்க|அழைப்ப|போன் நம்பர|நம்பர்|வாட்ஸ்அப/,
+    ),
     /*
      * Read straight off the company record, so a change of address or number
      * never leaves a stale copy in the bot — the same record the footer and the
@@ -916,7 +940,7 @@ const INTENTS = [
     id: 'achievements',
     // Counts read off the index, never a claim. "We have delivered a lot" is
     // the sentence this intent exists to avoid.
-    test: /\b(achievement(s)?|track record|results|stats|statistics|numbers|how many|accomplish\w*|success)\b/,
+    test: bilingual(/\b(achievement(s)?|track record|results|stats|statistics|numbers|how many|accomplish\w*|success)\b/, /சாதனை|முடிவுகள|பலன்கள|எத்தனை|சாதித்த/),
     respond: () => {
       const live = listEntries('PRODUCTION_PROJECTS');
       const clients = listEntries('CLIENTS');
@@ -1009,8 +1033,11 @@ const INTENT_VOCAB = (() => {
     CAPABILITY_SHAPE,
   ];
 
-  for (const test of sources) {
-    if (!(test instanceof RegExp)) continue; // several tests are functions
+  // A bilingual test hides its patterns behind a function; .sources is how it
+  // hands them back. Without this line every word in a converted intent stops
+  // being protected from the spellchecker.
+  for (const test of sources.flatMap((t) => (t && t.sources) || [t])) {
+    if (!(test instanceof RegExp)) continue; // a few tests are plain functions
     /*
      * Whole words only — a run of letters that the pattern does not go on to
      * extend. `technolog\w+` and `vacanc\w*` are stems, not words, and adding

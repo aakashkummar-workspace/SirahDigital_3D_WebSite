@@ -249,6 +249,32 @@ const ANSWER_FIXTURES = [
   { q: 'how to call sirah digital', intent: 'contact', reject: /Aura/ },
   { q: 'how do i call you', intent: 'contact' },
   { q: 'i want to call sirah', intent: 'contact' },
+
+  /*
+   * Tamil.
+   *
+   * Every answer these reach was already written — 113 lines of authored
+   * Tamil across answer.js, faq.js and persona.js — and none of it was
+   * reachable, because all 44 routing patterns were ASCII and the tokenizer
+   * deleted Tamil before retrieval ever saw it.
+   *
+   * These assert the trigger. The reply language is asserted by the harness
+   * itself: `ask()` runs replyLanguage(q) exactly as /api/chat does, so a
+   * Tamil question that came back in English would show up as a missing
+   * `expect` here rather than passing quietly.
+   */
+  { q: 'எப்படி தொடர்பு கொள்வது', intent: 'contact', expect: '97899' },
+  { q: 'உங்கள் தொலைபேசி எண் என்ன', intent: 'contact' },
+  { q: 'எந்த சேவைகளை வழங்குகிறீர்கள்', intent: 'services' },
+  { q: 'உங்கள் தயாரிப்புகள் என்ன', intent: 'products' },
+  { q: 'எந்த துறைகளில் வேலை செய்கிறீர்கள்', intent: 'industries' },
+  { q: 'நேரம் பதிவு செய்ய வேண்டும்', intent: 'booking' },
+  { q: 'உங்கள் விலை என்ன', intent: 'pricing' },
+  { q: 'எவ்வளவு செலவாகும்', intent: 'pricing' },
+  { q: 'உங்கள் குழுவில் யார் இருக்கிறார்கள்', intent: 'team' },
+  { q: 'எப்படி வேலை செய்கிறீர்கள்', intent: 'process' },
+  { q: 'எந்த தொழில்நுட்பம் பயன்படுத்துகிறீர்கள்', intent: 'tech-stack' },
+  { q: 'உங்கள் வாடிக்கையாளர்கள் யார்', intent: 'clients' },
 ];
 
 /**
@@ -357,6 +383,18 @@ function render(reply) {
 }
 
 const chat = await buildChat();
+const { replyLanguage } = chat.lang;
+
+/*
+ * Ask the way the route asks.
+ *
+ * /api/chat calls replyLanguage(question) before answerQuestion and passes the
+ * result in; the check used to call answerQuestion bare, so lang defaulted to
+ * 'en' and every reply came back English no matter what was asked. A Tamil
+ * fixture would have proved the trigger fired and nothing about the answer —
+ * which is the half that visitors read.
+ */
+const ask = (q, ctx = {}) => answerQuestion(q, { lang: replyLanguage(q), ...ctx });
 const { answerQuestion } = chat;
 const { KNOWLEDGE_STATS } = chat.knowledge;
 
@@ -395,7 +433,7 @@ if (argv.includes('--scores')) {
   ];
   console.log("\n═══ SCORES ═══");
   for (const [q, want] of rows) {
-    const reply = answerQuestion(q);
+    const reply = ask(q);
     const top = search(q, K, { limit: 1 })[0];
     const score = top ? top.score.toFixed(3) : '—';
     const cov = top ? top.coverage.toFixed(2) : '—';
@@ -413,7 +451,7 @@ if (custom.length) {
   console.log('\n═══ ANSWERS ═══');
   for (const q of custom) {
     console.log(`\nQ: ${q}`);
-    console.log(render(answerQuestion(q)));
+    console.log(render(ask(q)));
   }
   await chat.cleanup();
   process.exit(0);
@@ -423,7 +461,7 @@ console.log('\n═══ ANSWERS ═══');
 const failures = [];
 
 for (const fixture of ANSWER_FIXTURES) {
-  const reply = answerQuestion(fixture.q);
+  const reply = ask(fixture.q);
   const problems = reply.intent === 'out-of-scope' ? ['refused a question it must answer'] : check(fixture, reply);
 
   if (problems.length) {
@@ -438,7 +476,7 @@ for (const fixture of ANSWER_FIXTURES) {
 
 console.log('\n═══ REFUSALS ═══');
 for (const q of REFUSE_FIXTURES) {
-  const reply = answerQuestion(q);
+  const reply = ask(q);
   const refused = reply.intent === 'out-of-scope';
   if (refused) {
     console.log(`[PASS] ${q}`);
