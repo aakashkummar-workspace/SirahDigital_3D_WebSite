@@ -212,7 +212,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'my_name_query',
-    test: /\b(what('| i)s my name|do you (know|remember) my name|who am i)\b/i,
+    test: /\b(what('| i)s my name|do you (know|remember) my name|who am i)\b|என் பெயர் என்ன|என்னோட பெயர/i,
     respond: (ctx) => ({
       text: ctx.name
         ? {
@@ -228,7 +228,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'bot_identity',
-    test: /\b(who are you|what are you|are you (a )?(real|human|bot|robot|ai)|your name|chatgpt)\b/i,
+    test: /\b(who are you|what are you|are you (a )?(real|human|bot|robot|ai)|your name|chatgpt)\b|நீ யார|நீங்கள் யார|உன் பெயர|உங்கள் பெயர|யார் நீ|ரோபோ/i,
     respond: () => ({
       text: {
         en:
@@ -254,7 +254,7 @@ export const PERSONA_INTENTS = [
     // reduce manual work" — a description of a real problem, answered with the
     // bot's own menu. Only the standalone plea keeps it now; the rest is the
     // capability intent's, where a problem statement belongs.
-    test: /\b(what can you do|how (can|do) you help|what do you know)\b|^\s*(help|help me|options|menu|\?+|hlp)\s*[.!?]*$/i,
+    test: /\b(what can you do|how (can|do) you help|what do you know)\b|^\s*(help|help me|options|menu|\?+|hlp)\s*[.!?]*$|என்ன செய்ய முடிய|எப்படி உதவ|என்ன தெரிய|உதவி வேண்ட|என்னென்ன செய்ய/i,
     respond: (ctx, lang) => ({
       text: {
         en: 'I can walk you through any of these - or just ask in your own words.',
@@ -266,7 +266,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'fun_fact',
-    test: /\b(fun fact|tell me something|interesting|surprise me|did you know)\b/i,
+    test: /\b(fun fact|tell me something|interesting|surprise me|did you know)\b|சுவாரஸ்ய|ஏதாவது சொல்லு|தெரியுமா உங்களுக்கு/i,
     respond: (ctx, lang) => {
       const pool = FUN_FACTS[lang] || FUN_FACTS.en;
       // Indexed off the turn count rather than randomly, so repeated asks walk
@@ -322,7 +322,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'thanks',
-    test: /\b(thank|thanks|thx|appreciate|நன்றி)\b/i,
+    test: /\b(thank|thanks|thx|appreciate)\b|நன்றி/i,
     respond: (ctx) => ({
       text: ctx.name
         ? {
@@ -338,7 +338,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'bye',
-    test: /\b(bye|goodbye|see you|later|that('| i)s all|no thanks|nothing else)\b/i,
+    test: /\b(bye|goodbye|see you|later|that('| i)s all|no thanks|nothing else)\b|பை பை|போய் வருகிற|சரி போதும|வணக்கம் போகிற|முடிந்தது/i,
     respond: (ctx) => ({
       text: ctx.name
         ? {
@@ -356,7 +356,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'greeting',
-    test: /^\s*(hi|hey+|hello|yo|good (morning|afternoon|evening)|namaste|vanakkam|வணக்கம்)\b/i,
+    test: /^\s*(hi|hey+|hello|yo|good (morning|afternoon|evening)|namaste|vanakkam)\b|வணக்கம்|வனக்கம்/i,
     respond: (ctx, lang) => ({
       text: ctx.name
         ? {
@@ -370,7 +370,7 @@ export const PERSONA_INTENTS = [
 
   {
     id: 'casual',
-    test: /\b(how are you|how('| i)s it going|what('| i)s up|sup)\b/i,
+    test: /\b(how are you|how('| i)s it going|what('| i)s up|sup)\b|எப்படி இருக்கிற|நலமா|சௌக்கியமா|சுகமா/i,
     respond: () => ({
       text: {
         en: 'Running well, thank you - and pointed entirely at your business. What are you trying to fix?',

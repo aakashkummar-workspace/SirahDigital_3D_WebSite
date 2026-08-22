@@ -275,6 +275,29 @@ const ANSWER_FIXTURES = [
   { q: 'எப்படி வேலை செய்கிறீர்கள்', intent: 'process' },
   { q: 'எந்த தொழில்நுட்பம் பயன்படுத்துகிறீர்கள்', intent: 'tech-stack' },
   { q: 'உங்கள் வாடிக்கையாளர்கள் யார்', intent: 'clients' },
+
+  /*
+   * Tamil persona and FAQ.
+   *
+   * The first two are regression pins, not new coverage: வணக்கம் and நன்றி
+   * were already in persona.js and had never once matched. They sat inside
+   * \b(…)\b groups, and \b is defined on [A-Za-z0-9_] — there is no word
+   * boundary after a Tamil letter, so the alternative could not fire. Any
+   * Tamil added inside a \b group is dead on arrival; it has to be a
+   * top-level branch.
+   */
+  { q: 'வணக்கம்', intent: 'greeting' },
+  { q: 'நன்றி', intent: 'thanks' },
+  { q: 'நீங்கள் யார்', intent: 'bot_identity' },
+  { q: 'என்ன செய்ய முடியும்', intent: 'capabilities' },
+  { q: 'எப்படி இருக்கிறீர்கள்', intent: 'casual' },
+  { q: 'உங்கள் வேலை நேரம் என்ன', intent: 'faq:hours' },
+  { q: 'எவ்வளவு நாட்கள் ஆகும்', intent: 'faq:timeline' },
+  { q: 'தமிழில் பேச முடியுமா', intent: 'faq:languages' },
+  { q: 'இலவச டெமோ இருக்கிறதா', intent: 'faq:trial' },
+  { q: 'ஏன் உங்களை தேர்வு செய்ய வேண்டும்', intent: 'faq:why-us' },
+  { q: 'என் தரவு பாதுகாப்பாக இருக்குமா', intent: 'faq:data-privacy' },
+  { q: 'வேலை வாய்ப்பு இருக்கிறதா', intent: 'faq:careers' },
 ];
 
 /**

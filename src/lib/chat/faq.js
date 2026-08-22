@@ -96,7 +96,7 @@ function routes() {
 export const FAQ = [
   {
     id: 'hours',
-    test: /\b(working hours|office hours|business hours|opening hours|office timing|timings?|when are you (open|available)|open on (sunday|saturday|weekend)|weekend)\b|\bwhat time\b[\s\S]*\b(open|close|start)\b/,
+    test: /\b(working hours|office hours|business hours|opening hours|office timing|timings?|when are you (open|available)|open on (sunday|saturday|weekend)|weekend)\b|\bwhat time\b[\s\S]*\b(open|close|start)\b|வேலை நேரம|அலுவலக நேரம|எப்போது திற|எத்தனை மணி|ஞாயிறு/,
     respond: () => ({
       text: {
         en:
@@ -144,7 +144,7 @@ export const FAQ = [
 
   {
     id: 'timeline',
-    test: /\b(how long|how many (weeks|months|days)|time ?frame|timeline|turnaround|delivery time|lead time|how soon)\b|\bwhen (can|will) (you|it|we) (start|be (ready|done|delivered))\b/,
+    test: /\b(how long|how many (weeks|months|days)|time ?frame|timeline|turnaround|delivery time|lead time|how soon)\b|\bwhen (can|will) (you|it|we) (start|be (ready|done|delivered))\b|நாட்கள|நாள்|வாரம|மாதம|எவ்வளவு காலம|எவ்வளவு நேரம் ஆகும|எப்போது முடிய/,
     respond: () => ({
       text: {
         en:
@@ -166,7 +166,7 @@ export const FAQ = [
      * be quoted, and it is quoted rather than retyped. What a handover covers
      * contractually is not published anywhere, and is not stated here.
      */
-    test: /\b(support|maintenance|maintain|amc|warranty|after (launch|delivery|handover)|post[- ]?launch|bug ?fix\w*|ongoing)\b/,
+    test: /\b(support|maintenance|maintain|amc|warranty|after (launch|delivery|handover)|post[- ]?launch|bug ?fix\w*|ongoing)\b|பராமரிப்ப|சப்போர்ட|ஆதரவ|பிறகு உதவ/,
     respond: () => {
       const support = stat(/support/i);
       return {
@@ -189,7 +189,7 @@ export const FAQ = [
 
   {
     id: 'legal-terms',
-    test: /\b(nda|non[- ]?disclosure|confidential\w*|contract|agreement|sla|msa|ip rights|intellectual property|own the code|source code)\b/,
+    test: /\b(nda|non[- ]?disclosure|confidential\w*|contract|agreement|sla|msa|ip rights|intellectual property|own the code|source code)\b|ஒப்பந்த|ரகசிய|என்.டி.ஏ|சட்ட/,
     respond: () => ({
       text: {
         en:
@@ -204,7 +204,7 @@ export const FAQ = [
 
   {
     id: 'refund-payment',
-    test: /\b(refund|money back|cancellation|payment terms|advance|instal?lment|invoice terms|milestone)\b|\bhow (do|can) i pay\b/,
+    test: /\b(refund|money back|cancellation|payment terms|advance|instal?lment|invoice terms|milestone)\b|\bhow (do|can) i pay\b|பணம் திருப்ப|ரீஃபண்ட|பணம் செலுத்த|முன்பணம|தவணை/,
     respond: () => ({
       text: {
         en: `Payment and cancellation terms are part of the proposal, not a published price list. ${askUs('en')}`,
@@ -226,7 +226,7 @@ export const FAQ = [
     // "can I try Aura" is a trial question that never says "trial", and it was
     // being answered with a description of Aura — which does not tell the
     // person whether they can have one.
-    test: /\b(free trial|trial|demo account|pilot|proof of concept|poc|sandbox)\b|\b(can|could|may) (i|we) try\b|\btry (it|this|out|before)\b/,
+    test: /\b(free trial|trial|demo account|pilot|proof of concept|poc|sandbox)\b|\b(can|could|may) (i|we) try\b|\btry (it|this|out|before)\b|இலவச முயற்சி|டெமோ|சோதனை|ட்ரயல/,
     respond: () => ({
       text: {
         en:
@@ -246,7 +246,7 @@ export const FAQ = [
 
   {
     id: 'careers',
-    test: /\b(hiring|job|jobs|vacanc\w*|career\w*|intern(s|ship|ships)?|recruit\w*|resume|my cv|work (for|with) you|join (you|the team))\b/,
+    test: /\b(hiring|job|jobs|vacanc\w*|career\w*|intern(s|ship|ships)?|recruit\w*|resume|my cv|work (for|with) you|join (you|the team))\b|வேலை வாய்ப்ப|வேக்கன்சி|இண்டர்ன|வேலை இருக்க/,
     respond: () => ({
       text: {
         en:
@@ -269,7 +269,7 @@ export const FAQ = [
      * trackers, never sold or shared with advertisers, deletion on request by
      * email. The retention figure is the consent notice's own: 24 months.
      */
-    test: /\b(privacy|gdpr|dpdp|my data|data (safe|secure|security|protection|stored)|cookies|tracking me|delete my|opt out|unsubscribe)\b/,
+    test: /\b(privacy|gdpr|dpdp|my data|data (safe|secure|security|protection|stored)|cookies|tracking me|delete my|opt out|unsubscribe)\b|தனியுரிம|தரவு பாதுகாப|என் தகவல/,
     respond: () => ({
       text: {
         en:
@@ -294,7 +294,7 @@ export const FAQ = [
      * Whether it takes clients outside Chennai or outside India is published
      * nowhere, and is not claimed here.
      */
-    test: /\b(remote\w*|onsite|on[- ]site|outside chennai|another (city|state|country)|international\w*|overseas|abroad|outside india|only in chennai)\b/,
+    test: /\b(remote\w*|onsite|on[- ]site|outside chennai|another (city|state|country)|international\w*|overseas|abroad|outside india|only in chennai)\b|வெளியூர|ரிமோட|சென்னைக்கு வெளிய|வேறு ஊர/,
     respond: () => ({
       text: {
         en:
@@ -319,7 +319,7 @@ export const FAQ = [
      * what the homepage stat band renders. Interpolated rather than typed out,
      * so the bot cannot contradict the band a visitor just scrolled past.
      */
-    test: /\b(years? (of )?(experience|in business)|how old|since when|established|how many (clients|customers|projects|employees|people|staff|years))\b|\bhow long have you\b/,
+    test: /\b(years? (of )?(experience|in business)|how old|since when|established|how many (clients|customers|projects|employees|people|staff|years))\b|\bhow long have you\b|எத்தனை வருட|அனுபவ|எப்போது தொடங|எத்தனை வாடிக்கை/,
     respond: () => {
       const figures = COMPANY_STATS.map((s) => `${s.value} ${s.label.toLowerCase()}`);
       return {
@@ -350,7 +350,7 @@ export const FAQ = [
      * decide. A superlative would be the easy sentence to write and the one
      * nobody could stand behind.
      */
-    test: /\b(why (should|would) (i|we)|why you|why sirah|what makes you|how are you different|different from|better than|compare|competitors?|choose you|pick you|instead of)\b/,
+    test: /\b(why (should|would) (i|we)|why you|why sirah|what makes you|how are you different|different from|better than|compare|competitors?|choose you|pick you|instead of)\b|ஏன் உங்கள|எதற்கு உங்கள|என்ன வித்தியாச|ஏன் சிரா/,
     respond: () => {
       const years = stat(/experience/i);
       const clients = stat(/client/i);
@@ -388,7 +388,7 @@ export const FAQ = [
      * and a caption is not a citation: it names no award and no year. So this
      * says what is true, which is that the site does not list them.
      */
-    test: /\b(award|awards|recognition|certified|certification|iso|accredit\w*|rating|rated)\b/,
+    test: /\b(award|awards|recognition|certified|certification|iso|accredit\w*|rating|rated)\b|விருத|சான்றிதழ|அங்கீகார/,
     respond: () => ({
       text: {
         en:
@@ -414,7 +414,7 @@ export const FAQ = [
      * Aura transcribes and the two TNPSC Mentors teaches in —
      * src/data/products.js. Nothing is claimed about any other language.
      */
-    test: /\b(tamil|multi[- ]?lingual|regional language|what languages|which language|hindi|malayalam|telugu)\b/,
+    test: /\b(tamil|multi[- ]?lingual|regional language|what languages|which language|hindi|malayalam|telugu)\b|தமிழ|மொழி|இந்தி|மலையாள/,
     respond: () => ({
       text: {
         en:
