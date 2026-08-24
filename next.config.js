@@ -10,6 +10,34 @@ const nextConfig = {
   //   NEXT_DIST_DIR=.next-verify npx next build
   distDir: process.env.NEXT_DIST_DIR || '.next',
 
+  /*
+   * ── Where remote images may be fetched from ──────────────────────────
+   * next/image does not load a remote URL directly. It rewrites the src to
+   * /_next/image?url=…, and that optimizer refuses any hostname not listed
+   * here — with a 400, not a redirect to the original. The browser then shows
+   * a broken-image icon, which is what the Latest Insights covers on /about
+   * were doing: the CMS held correct URLs, Supabase served the files at 200,
+   * and the optimizer in between rejected all three.
+   *
+   * Nothing in the build warns about this. The page renders, the <img> carries
+   * a src, and the failure only exists at request time — so it survives a
+   * green build and a green deploy and is visible only by looking at the page.
+   *
+   * Scoped to the public storage path rather than the whole host, so this
+   * cannot be used to proxy arbitrary files out of the project. The hostname
+   * is not a secret: it is in the src of every CMS image on the public site.
+   * MEDIA_HOST overrides it if the bucket ever moves.
+   */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: process.env.MEDIA_HOST || 'gjbgpyriviixotdroxvg.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
+
   experimental: {
     /*
      * lib/industryImages, lib/productImages and lib/founderImages resolve
