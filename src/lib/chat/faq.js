@@ -52,13 +52,32 @@ import { INDUSTRIES } from '@/data/industries';
 export const CONSULT = {
   minutes: 45,
   // Verified from https://www.sirahdigital.in/api/slots: rows exist Monday to
-  // Saturday, never Sunday, with local start times from 10:00 to 19:00 IST.
+  // Saturday, never Sunday, with local start times from 10:30 to 18:30 IST —
+  // hourly, 45 minutes each, so the last one ends at 19:15 and the whole day
+  // sits inside the 10:30-19:30 window.
+  //
   // Restated rather than fetched, because a chat answer cannot wait on a
   // network call — and these are opening hours, not live availability. The
   // calendar on /book is what shows which of them are actually free.
+  //
+  // Keep this in step with the Availability screen in the admin. These strings
+  // are what the bot says out loud, and a bot quoting hours the calendar does
+  // not offer sends people to a page that contradicts it.
   days: 'Monday to Saturday',
-  hours: '10am to 8pm IST',
-  lastSlot: '7pm',
+  hours: '10:30am to 7:30pm IST',
+  lastSlot: '6:30pm',
+  /*
+   * The same window in Tamil, because "10:30am to 7:30pm IST" dropped into a
+   * Tamil sentence is the one thing a reader cannot skim — am/pm has no Tamil
+   * reading, so the eye stops on it. காலை/மாலை carry the meaning that am and pm
+   * carry in English, and the digits stay digits.
+   *
+   * A second string rather than a formatter: there are two of them, and a
+   * formatter that turns 10:30 into காலை 10:30 has to know where morning ends.
+   * Both live here so they change together.
+   */
+  daysTa: 'திங்கள் முதல் சனி',
+  hoursTa: 'காலை 10:30 முதல் மாலை 7:30 வரை (IST)',
 };
 
 /** A published figure, found by the label it carries in src/data/company.js. */
@@ -72,13 +91,18 @@ function stat(match) {
  *
  * One sentence, and it does two things a flat refusal does not: it says why
  * there is no answer rather than implying the question was silly, and it names
- * a route to a person. The phone number comes first because somebody asking
- * about terms wants to talk, not to fill in a form.
+ * a route to a person.
+ *
+ * That route used to be the phone number. It is the consultation now — the bot
+ * does not hand out the number any more, for the reason set out above
+ * CONTACT_CARD in persona.js. Somebody asking about terms wants to talk rather
+ * than fill in a form, which is exactly what the booking gives them; it is a
+ * time with the team, not a contact form.
  */
 function askUs(lang) {
   return lang === 'ta'
-    ? `இது இணையதளத்தில் வெளியிடப்படவில்லை - ஏனெனில் இது ஒவ்வொரு பணிக்கும் மாறுபடும். ${COMPANY.phone} என்ற எண்ணில் அழைக்கலாம், அல்லது ${CONSULT.minutes} நிமிட இலவச ஆலோசனையில் இதற்கு நேரடி பதில் கிடைக்கும்.`
-    : `That is not something the site publishes, because the answer changes with the job. Call ${COMPANY.phone} and ask, or take the free ${CONSULT.minutes}-minute consultation — you will get a straight answer on it there.`;
+    ? `இது இணையதளத்தில் வெளியிடப்படவில்லை - ஏனெனில் இது ஒவ்வொரு பணிக்கும் மாறுபடும். ${CONSULT.minutes} நிமிட இலவச ஆலோசனையில் இதற்கு நேரடி பதில் கிடைக்கும் — அல்லது ${COMPANY.email} க்கு மின்னஞ்சல் அனுப்பலாம்.`
+    : `That is not something the site publishes, because the answer changes with the job. Take the free ${CONSULT.minutes}-minute consultation and you will get a straight answer on it there, or email ${COMPANY.email} and ask.`;
 }
 
 /** Every FAQ answer offers the same two ways out. Booking first: it is the goal. */

@@ -46,6 +46,7 @@ export const UI = {
   },
   send: { en: 'Send', ta: 'அனுப்பு' },
   close: { en: 'Close chat', ta: 'அரட்டையை மூடு' },
+  restart: { en: 'Start over', ta: 'மீண்டும் தொடங்கு' },
   typing: { en: 'Sirah AI is typing', ta: 'Sirah AI தட்டச்சு செய்கிறது' },
   langToggle: { en: 'தமிழில் பேசு', ta: 'Switch to English' },
   restart: { en: 'Start over', ta: 'மீண்டும் தொடங்கு' },
@@ -411,10 +412,19 @@ export const PERSONA_INTENTS = [
   },
 ];
 
-/** The contact card, shared by the contact intent and the lead hand-off. */
+/**
+ * The contact card, shared by the contact intent and the lead hand-off.
+ *
+ * No phone number, deliberately. The number on the site is a personal mobile,
+ * and the bot is the one surface that hands it to anyone who types "contact" —
+ * including scrapers, which is how a personal line ends up on a call list. The
+ * booking page is the route in: it reaches the same people, at a time they have
+ * actually agreed to, and it leaves a record.
+ *
+ * The site's own contact page still publishes a number, as WhatsApp. That is a
+ * page someone chose to visit; this is a reply to a stranger's first message.
+ */
 export const CONTACT_CARD = {
   email: COMPANY.email,
-  phone: COMPANY.phone,
-  phoneHref: COMPANY.phoneHref,
   address: COMPANY.addressOneLine,
 };

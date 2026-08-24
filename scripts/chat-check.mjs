@@ -49,14 +49,14 @@ const ANSWER_FIXTURES = [
    * social_media intent claiming these questions and replying "WhatsApp is
    * the fastest if you want a person" with a row of links out. `reject`
    * carries that sentence so it cannot return quietly. */
-  { q: 'how do I contact you', intent: 'contact', expect: '+91 97899 61631', reject: /whatsapp is the fastest/i },
-  { q: 'what is your phone number', intent: 'contact', expect: '+91 97899 61631' },
+  { q: 'how do I contact you', intent: 'contact', expect: 'Pick a time', reject: /whatsapp is the fastest|97899|61631/i },
+  { q: 'what is your phone number', intent: 'contact', expect: 'consultation', reject: /97899|61631/ },
   { q: 'give me your email', intent: 'contact', expect: 'support@sirahdigital.in' },
-  { q: 'can I call you', intent: 'contact', expect: '+91 97899 61631' },
-  { q: 'whatsapp number', intent: 'contact', expect: '+91 97899 61631', reject: /wa\.link|instagram|facebook/i },
+  { q: 'can I call you', intent: 'contact', expect: 'Pick a time', reject: /97899|61631/ },
+  { q: 'whatsapp number', intent: 'contact', expect: 'Confirm', reject: /wa\.link|instagram|facebook|97899|61631/i },
   { q: 'where are you located', intent: 'contact', expect: 'Chennai' },
   { q: 'where is your office', intent: 'contact', expect: 'Pallavaram' },
-  { q: 'how do I get in touch', intent: 'contact', expect: '+91 97899 61631' },
+  { q: 'how do I get in touch', intent: 'contact', expect: 'Pick a time', reject: /97899|61631/ },
 
   // Booking must send people to /book. It spent a long time describing a
   // calendar and linking to /contact, which does not have one.
@@ -138,7 +138,7 @@ const ANSWER_FIXTURES = [
   { q: 'do you do seo', intent: 'faq:not-offered', expect: /not on our list/i },
   { q: 'do you run google ads', intent: 'faq:not-offered' },
   { q: 'do you do social media marketing', intent: 'faq:not-offered' },
-  { q: 'how long does a project take', intent: 'faq:timeline', expect: '+91 97899 61631' },
+  { q: 'how long does a project take', intent: 'faq:timeline', expect: 'support@sirahdigital.in', reject: /97899|61631/ },
   { q: 'do you provide support after launch', intent: 'faq:support', expect: '24/7' },
   { q: 'do you offer maintenance', intent: 'faq:support' },
   { q: 'do you sign an nda', intent: 'faq:legal-terms' },
@@ -198,7 +198,7 @@ const ANSWER_FIXTURES = [
    * the note about NDAs. See INTENT_VOCAB in answer.js. */
   { q: 'wat servcies do u provide', intent: 'services' },
   { q: 'how mch does it cost', intent: 'pricing' },
-  { q: 'contct', intent: 'contact', expect: '+91 97899 61631' },
+  { q: 'contct', intent: 'contact', expect: 'Pick a time', reject: /97899|61631/ },
   { q: 'tell me abt aura', intent: 'product' },
 
   /* ── questions carrying two intents ──────────────────────────────
@@ -263,7 +263,7 @@ const ANSWER_FIXTURES = [
    * Tamil question that came back in English would show up as a missing
    * `expect` here rather than passing quietly.
    */
-  { q: 'எப்படி தொடர்பு கொள்வது', intent: 'contact', expect: '97899' },
+  { q: 'எப்படி தொடர்பு கொள்வது', intent: 'contact', expect: 'நேரம் தேர்வு', reject: /97899|61631/ },
   { q: 'உங்கள் தொலைபேசி எண் என்ன', intent: 'contact' },
   { q: 'எந்த சேவைகளை வழங்குகிறீர்கள்', intent: 'services' },
   { q: 'உங்கள் தயாரிப்புகள் என்ன', intent: 'products' },
@@ -446,7 +446,7 @@ function haystack(reply) {
     reply.lead?.title,
     ...(reply.bullets || []).flatMap((b) => [b.title, b.detail]),
     ...(reply.links || []).map((l) => l.label),
-    reply.contact && [reply.contact.phone, reply.contact.email, reply.contact.address].join(' '),
+    reply.contact && [reply.contact.phone, reply.contact.email, reply.contact.address].filter(Boolean).join(' '),
     // The chips are on screen and tappable, so they are part of what the
     // visitor reads — and their language is a thing worth asserting.
     ...(reply.followUps || []).map((c) => (typeof c === 'string' ? c : c.label)),
@@ -483,7 +483,10 @@ function render(reply) {
     lines.push(`    • ${b.title}${b.detail ? ` — ${b.detail.slice(0, 80)}` : ''}`);
   }
   if (reply.extra) lines.push(`  ${reply.extra.slice(0, 160)}`);
-  if (reply.contact) lines.push(`  ${reply.contact.email} · ${reply.contact.phone}`);
+  // filter(Boolean): the card carries no phone any more, and printing
+  // "support@sirahdigital.in · undefined" made a deliberate omission look like a bug.
+  if (reply.contact)
+    lines.push(`  ${[reply.contact.email, reply.contact.phone, reply.contact.address].filter(Boolean).join(' · ')}`);
   if (reply.links?.length) lines.push(`  [ ${reply.links.map((l) => l.href).join('  ')} ]`);
   return lines.join('\n');
 }

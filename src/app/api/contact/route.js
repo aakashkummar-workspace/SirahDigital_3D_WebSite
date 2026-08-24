@@ -6,6 +6,7 @@ import {
 import { storeLead, hashIp, leadStoreConfigured } from '@/lib/leads';
 import { consentRecord } from '@/data/consent';
 import { HOME_PRODUCTS } from '@/data/products';
+import { isEmail, isPhone, PHONE_HINT } from '@/lib/validate';
 
 // Where leads go. Set LEAD_WEBHOOK_URL in .env.local to the endpoint that
 // should receive them (Evolution API, n8n, Make, a CRM, whatever). With it
@@ -14,7 +15,11 @@ import { HOME_PRODUCTS } from '@/data/products';
 const WEBHOOK = process.env.LEAD_WEBHOOK_URL;
 const WEBHOOK_TOKEN = process.env.LEAD_WEBHOOK_TOKEN;
 
-const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+/*
+ * isEmail and isPhone now come from src/lib/validate.js, shared with the two
+ * forms and with /api/book. The local copy this replaces accepted "a@b." — a
+ * trailing dot and no TLD — and there was no phone rule here beyond a length.
+ */
 
 // The forms that legitimately post here. /book no longer does — it posts to
 // /api/book, which stores its own lead and then claims the slot in one request —
@@ -103,14 +108,13 @@ export async function POST(request) {
   if (!trimmed.message) {
     return NextResponse.json({ ok: false, error: 'Please tell us what you need.' }, { status: 422 });
   }
-  // The confirmation goes out on WhatsApp, so we need a usable number.
-  const leadNumber = normalise(trimmed.phone);
-  if (leadNumber.length < 10) {
-    return NextResponse.json(
-      { ok: false, error: 'Please add a WhatsApp number we can reach you on.' },
-      { status: 422 }
-    );
+  // The reply goes out on WhatsApp, so the number has to be a real one.
+  // Same ten-digit rule as the booking route and both forms — see validate.js.
+  if (!isPhone(trimmed.phone)) {
+    return NextResponse.json({ ok: false, error: PHONE_HINT }, { status: 422 });
   }
+  // Gateway form (country code prepended, digits only) for the send below.
+  const leadNumber = normalise(trimmed.phone);
   /*
    * Consent is refused server-side, not just marked `required` on the input.
    * The checkbox is what a person sees; this is what makes it true of every

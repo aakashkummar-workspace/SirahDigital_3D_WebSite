@@ -3,6 +3,7 @@ import { storeLead, hashIp, leadStoreConfigured } from '@/lib/leads';
 import { claimSlot, bookingConfigured } from '@/lib/slots';
 import { consentRecord } from '@/data/consent';
 import { normalise } from '@/lib/whatsapp';
+import { isEmail, isPhone, PHONE_HINT } from '@/lib/validate';
 
 /**
  * POST /api/book — the whole booking, in one request.
@@ -26,7 +27,8 @@ import { normalise } from '@/lib/whatsapp';
  * still a lead worth following up, which is how /book behaved before.
  */
 
-const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+// isEmail/isPhone come from src/lib/validate.js — shared with both forms and
+// /api/contact. The local copy this replaces accepted "a@b." (no TLD).
 
 export async function POST(request) {
   let body;
@@ -76,11 +78,18 @@ export async function POST(request) {
   if (!isEmail(trimmed.email)) {
     return NextResponse.json({ ok: false, error: 'That email address does not look right.' }, { status: 422 });
   }
-  if (normalise(trimmed.phone).length < 10) {
-    return NextResponse.json(
-      { ok: false, error: 'Please add a WhatsApp number we can reach you on.' },
-      { status: 422 },
-    );
+  /*
+   * Exactly ten digits, from the same module the form uses.
+   *
+   * This was `normalise(phone).length < 10`, which could not have enforced ten:
+   * normalise() prepends the country code, so a ten-digit number arrives here as
+   * twelve and any length from one digit upward cleared the check. "5" was a
+   * valid WhatsApp number as far as this route was concerned — and the visitor
+   * still got their slot, still heard nothing, and had no way to tell that the
+   * number was why.
+   */
+  if (!isPhone(trimmed.phone)) {
+    return NextResponse.json({ ok: false, error: PHONE_HINT }, { status: 422 });
   }
   if (!Number.isInteger(Number(slotId)) || Number(slotId) <= 0) {
     return NextResponse.json({ ok: false, error: 'Please choose a time.' }, { status: 422 });

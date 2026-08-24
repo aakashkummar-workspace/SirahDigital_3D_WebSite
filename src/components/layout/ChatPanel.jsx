@@ -299,6 +299,38 @@ export default function ChatPanel({ open, onClose }) {
     commit(draft);
   }
 
+  /*
+   * Start the conversation over.
+   *
+   * Everything that makes a reply depend on what came before has to go, not
+   * just the visible transcript: `turnRef` drives the persona's turn-aware
+   * lines, `lastIntentRef` is what makes "how much for that?" resolve, and
+   * `nameRef` is why the bot uses a name it was told six messages ago. Clearing
+   * the list alone would leave a blank panel that still answers a pronoun with
+   * the subject of a conversation the visitor can no longer see — which is a
+   * stranger reply than not resetting at all.
+   *
+   * The language is deliberately kept. Someone who switched to Tamil and then
+   * wants a fresh start is asking for a clean conversation, not an English one.
+   *
+   * The greeting is re-seeded by the effect that watches `messages.length`, so
+   * emptying the list is enough — and it re-greets in the current language for
+   * free.
+   */
+  function restart() {
+    setMessages([]);
+    setDraft('');
+    setTyping(false);
+    setLeadOpen(false);
+    turnRef.current = 0;
+    nameRef.current = null;
+    lastIntentRef.current = null;
+    // A reply still in flight would otherwise land in the cleared panel and
+    // read as the bot answering a question nobody asked.
+    clearTimeout(timerRef.current);
+    if (window.matchMedia?.('(pointer: fine)').matches) inputRef.current?.focus();
+  }
+
   function switchLang() {
     const next = lang === 'en' ? 'ta' : 'en';
     setLang(next);
@@ -337,6 +369,35 @@ export default function ChatPanel({ open, onClose }) {
             <em aria-hidden="true" /> {pick(UI.status, lang)}
           </i>
         </span>
+        <button
+          type="button"
+          className="sirah-panel__restart"
+          onClick={restart}
+          title={pick(UI.restart, lang)}
+          aria-label={pick(UI.restart, lang)}
+        >
+          {/* Circular arrow. Drawn rather than an icon import: the panel ships
+              two inline SVGs already and a third is cheaper than a dependency.
+              The gap in the arc is where the arrowhead sits — a full circle
+              with a head on it reads as a spinner. */}
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+            <path
+              d="M20 12a8 8 0 1 1-2.34-5.66"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M20 4v4.5h-4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
         <button
           type="button"
           className="sirah-panel__lang"
@@ -400,7 +461,12 @@ export default function ChatPanel({ open, onClose }) {
               {m.contact && (
                 <div className="sirah-msg__contact">
                   <a href={`mailto:${m.contact.email}`}>{m.contact.email}</a>
-                  <a href={m.contact.phoneHref}>{m.contact.phone}</a>
+                  {/* Guarded because CONTACT_CARD no longer carries a phone —
+                      the bot does not hand out the number. Left conditional
+                      rather than deleted so a card that does carry one (an
+                      office line, if there is ever one to publish) still
+                      renders, instead of an empty <a> linking to "undefined". */}
+                  {m.contact.phone && <a href={m.contact.phoneHref}>{m.contact.phone}</a>}
                   <span>{m.contact.address}</span>
                 </div>
               )}

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import SlotPicker from '@/components/booking/SlotPicker';
 import { CONSENT_TEXT } from '@/data/consent';
+import { digitsOf, isEmail, isPhone, PHONE_HINT } from '@/lib/validate';
 
 import { PrimaryButton } from '@/components/ui/Button';
 
@@ -57,13 +58,47 @@ export default function BookingIntake() {
    */
   const [available, setAvailable] = useState(null);
 
+  /*
+   * Phone is filtered as it is typed rather than validated on submit.
+   *
+   * Both would catch a letter, but only this one tells the visitor why: a key
+   * that produces nothing is understood immediately, where a form that accepts
+   * "98765abcde" for a minute and then rejects it at the end reads as the site
+   * being broken. maxLength on the input handles the upper bound the same way —
+   * the eleventh digit simply does not appear.
+   *
+   * Everything else is passed through untouched. Trimming a name while someone
+   * is still typing it eats the space between their first and last.
+   */
   const set = (k) => (e) =>
-    setForm((f) => ({ ...f, [k]: k === 'consent' ? e.target.checked : e.target.value }));
+    setForm((f) => ({
+      ...f,
+      [k]:
+        k === 'consent'
+          ? e.target.checked
+          : k === 'phone'
+            ? digitsOf(e.target.value).slice(0, 10)
+            : e.target.value,
+    }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
+    /*
+     * Checked here as well as by the route, and in the order the fields appear,
+     * so the first thing wrong is the first thing named. The route is still the
+     * authority — this only saves a round trip and gives a better message than
+     * a 422 can.
+     */
+    if (!isEmail(form.email)) {
+      setError('That email address does not look right — check it and try again.');
+      return;
+    }
+    if (!isPhone(form.phone)) {
+      setError(`${PHONE_HINT} We need it to send your confirmation and the joining link.`);
+      return;
+    }
     if (!slotId) {
       setError('Please choose a time.');
       return;
@@ -189,6 +224,13 @@ export default function BookingIntake() {
             className={field}
             name="phone"
             type="tel"
+            /* inputMode, not type="number": a number spinner on a phone field
+               is wrong in every way that matters — it strips a leading zero,
+               offers up/down arrows for a thing that is not a quantity, and
+               scroll-wheels the value while the page scrolls. This gets the
+               numeric keypad on a phone without any of that. */
+            inputMode="numeric"
+            maxLength={10}
             required
             placeholder="WhatsApp number *"
             value={form.phone}

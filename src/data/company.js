@@ -9,6 +9,16 @@ export const COMPANY = {
   email: 'support@sirahdigital.in',
   phone: '+91 97899 61631',
   phoneHref: 'tel:+919789961631',
+  /*
+   * The same number as a WhatsApp deep link, because that is how the contact
+   * page offers it now — the line is a mobile that is answered on WhatsApp, and
+   * labelling it "Phone" invited voice calls to a number nobody picks up as one.
+   *
+   * wa.me wants the number bare: country code, digits only, no +, no spaces.
+   * A + or a space here does not error, it silently opens WhatsApp on a blank
+   * "invalid number" screen.
+   */
+  whatsappHref: 'https://wa.me/919789961631',
   address: ['8th Floor, Innovate,', 'Featherlite - The', 'Address, Pallavaram,', 'Chennai - 600044'],
   addressOneLine: '8th Floor, Innovate, Featherlite - The Address, Pallavaram, Chennai - 600044',
   blurb:

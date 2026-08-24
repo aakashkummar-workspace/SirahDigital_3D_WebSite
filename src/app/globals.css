@@ -660,6 +660,7 @@ textarea:focus-visible,
   box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
 }
 
+.sirah-panel__restart,
 .sirah-panel__lang,
 .sirah-panel__close {
   flex: none;
@@ -676,11 +677,32 @@ textarea:focus-visible,
   font-weight: 600;
   transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
+.sirah-panel__restart:hover,
 .sirah-panel__lang:hover,
 .sirah-panel__close:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Turns as it is pressed. The panel clears in the same frame, so without this
+   the only feedback for "start over" is content disappearing — which reads as a
+   glitch rather than as something you did. Suppressed under reduced-motion,
+   where the cleared transcript has to speak for itself. */
+.sirah-panel__restart:active svg {
+  transform: rotate(-140deg);
+}
+
+.sirah-panel__restart svg {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sirah-panel__restart svg,
+  .sirah-panel__restart:active svg {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* ---- log ---- */

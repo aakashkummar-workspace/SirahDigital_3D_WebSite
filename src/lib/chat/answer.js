@@ -60,6 +60,54 @@ import {
   pick,
 } from './persona';
 
+/*
+ * How booking works, as four steps.
+ *
+ * This is the contact intent's whole answer now that it gives no phone number,
+ * so it has to be a real one — "go to /book" is a link, not an explanation, and
+ * a visitor who does not know what happens after they click is the visitor who
+ * does not click.
+ *
+ * Every step is a fact about the live pipeline, not a description of an ideal
+ * one: the confirmation really is immediate, and the Meet link really is held
+ * back until an hour before (sirah-cms/src/lib/bookingNotify.ts). If that
+ * timing changes, this changes with it — a promise here that the pipeline does
+ * not keep is worse than no steps at all.
+ *
+ * `bullets` rather than newlines: the bubble renders text in one <p> with no
+ * white-space rule, so authored line breaks collapse.
+ */
+const BOOKING_STEPS = [
+  {
+    title: { en: '1. Pick a time', ta: '1. நேரம் தேர்வு செய்யுங்கள்' },
+    detail: {
+      en: `${CONSULT.days}, ${CONSULT.hours}. The calendar shows what is actually free.`,
+      ta: `${CONSULT.daysTa}, ${CONSULT.hoursTa}. காலியாக உள்ள நேரங்கள் மட்டுமே காட்டப்படும்.`,
+    },
+  },
+  {
+    title: { en: '2. Leave your details', ta: '2. உங்கள் விவரங்களை நிரப்புங்கள்' },
+    detail: {
+      en: 'Name, email and a WhatsApp number. Nothing else is asked for.',
+      ta: 'பெயர், மின்னஞ்சல், WhatsApp எண். வேறு எதுவும் கேட்கப்படாது.',
+    },
+  },
+  {
+    title: { en: '3. Confirm', ta: '3. உறுதி செய்யுங்கள்' },
+    detail: {
+      en: 'The slot is held the moment you submit, and the confirmation reaches you on WhatsApp straight away.',
+      ta: 'சமர்ப்பித்த உடனே நேரம் ஒதுக்கப்படும், உறுதிப்படுத்தல் WhatsApp-இல் உடனே வரும்.',
+    },
+  },
+  {
+    title: { en: '4. Join', ta: '4. இணையுங்கள்' },
+    detail: {
+      en: 'The Google Meet link arrives on WhatsApp an hour before, so it is not buried in a week-old message.',
+      ta: 'Google Meet இணைப்பு ஒரு மணி நேரம் முன்பு WhatsApp-இல் வரும் — பழைய செய்தியில் புதைந்து போகாது.',
+    },
+  },
+];
+
 /* ------------------------------------------------------------------ */
 /* Relevance gate                                                      */
 /* ------------------------------------------------------------------ */
@@ -772,33 +820,41 @@ const INTENTS = [
      * never leaves a stale copy in the bot — the same record the footer and the
      * contact page render.
      *
-     * ── why this answer leads with the phone number ──────────────────────
-     * "whatsapp number" and "I want to talk to someone" used to be taken by the
-     * social_media persona intent, which replied "WhatsApp is the fastest if
-     * you want a person" and offered a row of social profiles. A visitor asking
-     * how to reach a company is asking for its phone number, and being handed a
-     * link out to a messaging app instead is a redirect away from the thing
-     * they asked for. persona.js no longer claims those questions; they land
-     * here, and here answers with the number, the address and a time to book.
+     * ── why this answer no longer gives a phone number ───────────────────
+     * It used to. "whatsapp number" and "I want to talk to someone" had been
+     * taken by the social_media persona intent, which replied with a row of
+     * profile links, and the argument for moving them here was that someone
+     * asking how to reach a company is asking for its number.
+     *
+     * That still describes the question; it no longer describes what we are
+     * willing to answer with. The number on the site is a personal mobile, and
+     * this intent is the one place that would read it out to anyone who types
+     * "contact" — a stranger, a scraper, a bot walking the widget. So the reply
+     * is the booking route instead, spelled out step by step so it is a genuine
+     * answer and not a deflection: it reaches the same people, at a time they
+     * agreed to, and it leaves a record.
+     *
+     * The email address and the office address stay. Those are published, and
+     * a company that will not say where it is reads as a company to avoid.
      */
     respond: () => ({
-      // The sentence names the number and stops there. Email and address are
-      // in the card directly beneath it, already tappable — restating them
-      // here printed every detail twice in one bubble.
+      // Says what to do, then the card underneath carries email and address.
+      // The steps are `bullets` rather than newlines in this string: the bubble
+      // renders text in a single <p> with no white-space rule, so line breaks
+      // written here collapse into one long sentence.
       text: {
         en:
-          `Call ${COMPANY.phone} — that is the quickest way to us. Email and the office address ` +
-          `are below. If you would rather have a proper conversation, pick a time: the ` +
-          `${CONSULT.minutes}-minute consultation is free.`,
+          `The fastest way to reach us is to book the free ${CONSULT.minutes}-minute consultation — ` +
+          `four steps and you have a time with the team:`,
         ta:
-          `${COMPANY.phone} என்ற எண்ணில் அழைப்பதுதான் வேகமானது. மின்னஞ்சலும் அலுவலக முகவரியும் கீழே ` +
-          `உள்ளன. விரிவாகப் பேச வேண்டுமெனில் நேரம் தேர்வு செய்யுங்கள் — ${CONSULT.minutes} நிமிட ` +
-          `ஆலோசனை இலவசம்.`,
+          `எங்களை அடைய விரைவான வழி, இலவச ${CONSULT.minutes} நிமிட ஆலோசனையைப் பதிவு செய்வது — ` +
+          `நான்கு படிகள், குழுவுடன் ஒரு நேரம் உறுதி:`,
       },
+      bullets: BOOKING_STEPS,
       contact: CONTACT_CARD,
-      // No "Call us" button here: the contact card above already renders the
-      // number as a tel: link and the address below it, so a second one would
-      // be the same action twice. These are the two things the card cannot do.
+      // The card above carries email and address; these are the two things it
+      // cannot do. Booking is primary because it is now the answer, not an
+      // alternative to one.
       links: [
         { label: 'Book a free consultation', href: '/book', primary: true },
         { label: 'Contact page', href: '/contact' },
@@ -1165,6 +1221,29 @@ function resolve(value, lang) {
 }
 
 /*
+ * The same, for a bullet list.
+ *
+ * Bullets were English-only by construction until the contact intent started
+ * answering with numbered steps: everything else in a bullet is a service name
+ * or a product title, which the policy at the top of this file keeps in English
+ * on purpose. Steps are prose, and prose has to follow the answer.
+ *
+ * `resolve` passes a plain string straight through, so every existing bullet is
+ * untouched by this — it only has an effect where a title or detail was authored
+ * as a pair.
+ */
+function localiseBullets(bullets, lang) {
+  if (!Array.isArray(bullets)) return bullets;
+  return bullets.map((b) => ({
+    ...b,
+    title: resolve(b.title, lang),
+    // Not every bullet has a detail, and resolve() turns null into '' — which
+    // would render an empty <span> where there had been nothing.
+    ...(b.detail == null ? {} : { detail: resolve(b.detail, lang) }),
+  }));
+}
+
+/*
  * Suggestion chips, in the language of the answer.
  *
  * followUps are authored English everywhere — 13 distinct strings across the
@@ -1522,5 +1601,9 @@ export { QUICK_REPLIES_BY_LANG, GREETING_PAIR };
 export function answerQuestion(question, ctx = {}) {
   const lang = LANGS_SET.has(ctx.lang) ? ctx.lang : DEFAULT_LANG;
   const reply = answerQuestionInner(question, ctx);
-  return { ...reply, followUps: localiseFollowUps(reply.followUps, lang) };
+  return {
+    ...reply,
+    bullets: localiseBullets(reply.bullets, lang),
+    followUps: localiseFollowUps(reply.followUps, lang),
+  };
 }

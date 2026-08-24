@@ -60,9 +60,17 @@ export default function ContactDetails() {
           </a>
         </Row>
 
-        <Row label="Phone">
+        {/* WhatsApp, not "Phone". It is a mobile that gets answered on WhatsApp,
+            and the old label invited voice calls to a line nobody treats as one
+            — so the label was setting an expectation the number does not meet.
+            The href opens the chat directly; target is _blank because on desktop
+            wa.me hands off to web.whatsapp.com and would otherwise navigate the
+            contact page away mid-enquiry. */}
+        <Row label="WhatsApp">
           <a
-            href={COMPANY.phoneHref}
+            href={COMPANY.whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-[0.95rem] text-white transition-colors duration-300 ease-brand hover:text-brand-blue"
           >
             {COMPANY.phone}

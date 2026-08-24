@@ -5,6 +5,7 @@ import { CONSENT_TEXT } from '@/data/consent';
 import { HOME_PRODUCTS } from '@/data/products';
 
 import { PrimaryButton } from '@/components/ui/Button';
+import { digitsOf, isEmail, isPhone, PHONE_HINT } from '@/lib/validate';
 /**
  * The consultation form.
  *
@@ -110,7 +111,10 @@ const CHIP_OFF =
 const CHIP_ON =
   'border-brand-blue/70 bg-brand-blue/[0.14] text-white';
 
-function Field({ id, label, type = 'text', required = false, value, onChange, autoComplete }) {
+// `rest` carries inputMode/maxLength through to the phone field. Spread last so
+// a caller can override placeholder — but note the floating label depends on
+// placeholder=" " to drive :placeholder-shown, so overriding it moves the label.
+function Field({ id, label, type = 'text', required = false, value, onChange, autoComplete, ...rest }) {
   return (
     <div className="relative">
       <input
@@ -123,6 +127,7 @@ function Field({ id, label, type = 'text', required = false, value, onChange, au
         value={value}
         onChange={onChange}
         className={FIELD}
+        {...rest}
       />
       <label htmlFor={id} className={LABEL}>{label}</label>
     </div>
@@ -145,7 +150,16 @@ export default function ContactForm() {
    * whole optimisation and the effect that ran it are gone.
    */
 
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  /*
+   * Phone is filtered to digits as it is typed, and capped at ten. Same rule as
+   * the booking form, from the same module — see src/lib/validate.js for why a
+   * key that produces nothing beats a rejection at submit time.
+   */
+  const set = (key) => (e) =>
+    setForm((f) => ({
+      ...f,
+      [key]: key === 'phone' ? digitsOf(e.target.value).slice(0, 10) : e.target.value,
+    }));
 
   const toggleInterest = (id) =>
     setForm((f) => ({
@@ -158,6 +172,20 @@ export default function ContactForm() {
   const submitLead = async (e) => {
     e.preventDefault();
     if (status === 'sending') return;
+
+    // In field order, so the first thing wrong is the first thing named. The
+    // route checks both again — this saves a round trip and says which field.
+    if (!isEmail(form.email)) {
+      setStatus('error');
+      setStatusMessage('That email address does not look right — check it and try again.');
+      return;
+    }
+    if (!isPhone(form.phone)) {
+      setStatus('error');
+      setStatusMessage(`${PHONE_HINT} It is how the team replies.`);
+      return;
+    }
+
     setStatus('sending');
     setStatusMessage('');
     try {
@@ -237,7 +265,8 @@ export default function ContactForm() {
           value={form.email} onChange={set('email')}
         />
         <Field
-          id="phone" label="Phone (WhatsApp)" type="tel" required autoComplete="tel"
+          id="phone" label="WhatsApp number" type="tel" required autoComplete="tel"
+          inputMode="numeric" maxLength={10}
           value={form.phone} onChange={set('phone')}
         />
       </div>
