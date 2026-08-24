@@ -96,3 +96,95 @@ export async function claimSlot({ slotId, name, email, phone }) {
     return { ok: false, error: 'We could not reach the booking system just now.' };
   }
 }
+
+/**
+ * Look up a booking from the token in a reschedule link.
+ *
+ * No secret on this one, unlike everything else here — the CMS route is open
+ * because the token is itself the credential, and it answers with a first name
+ * and a time and nothing else. Adding the shared secret would gate it on the
+ * site rather than on the token, which is the same set of people.
+ *
+ * Returns `null` for anything that is not a usable booking, so the page has one
+ * branch instead of three: an unknown token, an expired link and an unreachable
+ * CMS all mean "show the ordinary booking page". The reason a *valid* booking
+ * cannot be moved — inside 24 hours, already moved twice — comes back on the
+ * object, because that one the visitor is owed an explanation for.
+ */
+export async function lookupReschedule(token) {
+  if (!slotsConfigured || !token) return null;
+
+  try {
+    const res = await fetch(`${CMS_API_BASE}/public/reschedule/${encodeURIComponent(token)}`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      // 404 is the ordinary case for a stale link, not an incident. Anything
+      // else is worth a line in the log.
+      if (res.status !== 404) console.error('[slots] reschedule lookup failed', res.status);
+      return null;
+    }
+    const body = await res.json();
+    return {
+      token,
+      firstName: body.firstName || '',
+      startAt: body.startAt,
+      timeZone: body.timeZone,
+      canReschedule: Boolean(body.canReschedule),
+      reason: body.reason || '',
+      movesUsed: body.movesUsed || 0,
+      movesAllowed: body.movesAllowed || 0,
+    };
+  } catch (err) {
+    console.error('[slots] reschedule lookup failed', err?.message);
+    return null;
+  }
+}
+
+/**
+ * Move a booking to a different time.
+ *
+ * Mirrors `claimSlot` deliberately, including the separate `taken` flag: losing
+ * a race is the one failure the page recovers from by itself, and a reschedule
+ * loses races for exactly the same reason a first booking does.
+ */
+export async function rescheduleBooking({ token, slotId }) {
+  if (!bookingConfigured) {
+    return { ok: false, error: 'Booking is not configured.' };
+  }
+
+  try {
+    const res = await fetch(`${CMS_API_BASE}/public/reschedule`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SECRET}`,
+      },
+      body: JSON.stringify({ token, slotId }),
+      signal: AbortSignal.timeout(20_000),
+    });
+
+    const body = await res.json().catch(() => ({}));
+
+    if (res.status === 409) {
+      /*
+       * 409 covers two different things and the page treats them differently:
+       * the slot went (recoverable — pick another), or the booking may not be
+       * moved at all (not recoverable — the cutoff or the cap). The message
+       * distinguishes them, so `taken` is set only for the first.
+       */
+      const taken = /just been taken/i.test(body.message || '');
+      return { ok: false, taken, error: body.message || 'That time has just been taken.' };
+    }
+    if (!res.ok) {
+      console.error('[slots] reschedule failed', res.status, body.message);
+      return { ok: false, error: body.message || 'We could not move that booking.' };
+    }
+
+    return { ok: true, startAt: body.startAt, timeZone: body.timeZone, movesUsed: body.movesUsed };
+  } catch (err) {
+    console.error('[slots] reschedule failed', err?.message);
+    return { ok: false, error: 'We could not reach the booking system just now.' };
+  }
+}

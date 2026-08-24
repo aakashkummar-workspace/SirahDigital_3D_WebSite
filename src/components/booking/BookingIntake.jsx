@@ -37,7 +37,19 @@ const EMPTY = {
   consent: false, website: '',
 };
 
-export default function BookingIntake() {
+/*
+ * ── Two modes, one form ──────────────────────────────────────────────────
+ * With `reschedule` set, everything about the person is already known — the
+ * booking it points at holds the name, email and number — so the details
+ * fieldset is not rendered and the submit goes to /api/reschedule instead.
+ *
+ * Asking again would be worse than redundant. The CMS finds the WhatsApp number
+ * by matching the lead on email, so a visitor who retypes it with a different
+ * address creates a booking that looks healthy and silently sends no messages
+ * at all. Not asking is what makes that impossible.
+ */
+export default function BookingIntake({ reschedule = null }) {
+  const moving = Boolean(reschedule);
   const [form, setForm] = useState(EMPTY);
   const [slotId, setSlotId] = useState('');
   const [state, setState] = useState('form'); // form | sending | done
@@ -85,6 +97,50 @@ export default function BookingIntake() {
     e.preventDefault();
     setError('');
 
+    if (!slotId) {
+      setError('Please choose a time.');
+      return;
+    }
+
+    /*
+     * Moving an existing booking: no fields to check, because none were asked
+     * for. Straight to the endpoint, which is the only thing that can decide
+     * whether the move is still allowed.
+     */
+    if (moving) {
+      setState('sending');
+      try {
+        const res = await fetch('/api/reschedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: reschedule.token, slotId }),
+        });
+        const body = await res.json().catch(() => ({}));
+
+        if (res.ok && body.ok) {
+          setConfirmed(body);
+          setState('done');
+          return;
+        }
+
+        // Same recovery as a first booking losing a race.
+        if (res.status === 409 && body.taken) {
+          setSlotId('');
+          setRefreshKey((n) => n + 1);
+          setError('Sorry — that time was taken while you were choosing. Please pick another.');
+          setState('form');
+          return;
+        }
+
+        setError(body.error || 'We could not move that booking. Please try again.');
+        setState('form');
+      } catch {
+        setError('We could not reach the booking system. Please try again, or email support@sirahdigital.in.');
+        setState('form');
+      }
+      return;
+    }
+
     /*
      * Checked here as well as by the route, and in the order the fields appear,
      * so the first thing wrong is the first thing named. The route is still the
@@ -97,10 +153,6 @@ export default function BookingIntake() {
     }
     if (!isPhone(form.phone)) {
       setError(`${PHONE_HINT} We need it to send your confirmation and the joining link.`);
-      return;
-    }
-    if (!slotId) {
-      setError('Please choose a time.');
       return;
     }
 
@@ -153,11 +205,14 @@ export default function BookingIntake() {
     return (
       <div className="rounded-xl border border-white/10 p-6">
         <p className="text-fluid-base font-medium text-white">
-          You are booked{form.firstName ? `, ${form.firstName}` : ''}.
+          {moving
+            ? `Moved${reschedule.firstName ? `, ${reschedule.firstName}` : ''}.`
+            : `You are booked${form.firstName ? `, ${form.firstName}` : ''}.`}
         </p>
         <p className="mt-3 max-w-[52ch] text-fluid-sm leading-relaxed text-brand-muted">
-          We have sent a confirmation to your WhatsApp. You will get a reminder the day before, and
-          the joining link an hour before we start.
+          {moving
+            ? 'Your old time is back on the calendar for someone else. We have sent a fresh confirmation to your WhatsApp, and the joining link still comes an hour before we start.'
+            : 'We have sent a confirmation to your WhatsApp. You will get a reminder the day before, and the joining link an hour before we start.'}
         </p>
         {/* The time is echoed back from the server's response, not from the
             button that was clicked — so what is shown is what was actually
@@ -183,6 +238,10 @@ export default function BookingIntake() {
 
   return (
     <form onSubmit={onSubmit} className="max-w-[560px] space-y-8">
+      {/* Not rendered when moving a booking — see the note on the component.
+          Wrapped rather than conditionally emptied so the fieldset, its legend
+          and its spacing all go together. */}
+      {!moving && (
       <fieldset className="space-y-4 border-0 p-0">
         <legend className="mb-4 text-[0.78rem] uppercase tracking-[0.14em] text-white/40">
           1 · Your details
@@ -270,10 +329,12 @@ export default function BookingIntake() {
           className="absolute h-0 w-0 overflow-hidden opacity-0"
         />
       </fieldset>
+      )}
 
       <fieldset className="border-0 p-0">
+        {/* "2 ·" only makes sense when there is a step 1 above it. */}
         <legend className="mb-4 text-[0.78rem] uppercase tracking-[0.14em] text-white/40">
-          2 · Pick a time
+          {moving ? 'Pick a new time' : '2 · Pick a time'}
         </legend>
         <SlotPicker
           value={slotId}
@@ -284,6 +345,11 @@ export default function BookingIntake() {
       </fieldset>
 
       <div className="space-y-4">
+        {/* Consent was given when the booking was made and is recorded against
+            that lead. Re-asking would imply the first one had lapsed, and a
+            `required` checkbox would block a move over a permission already
+            held. */}
+        {!moving && (
         <label className="flex cursor-pointer items-start gap-3 text-[0.8rem] leading-relaxed text-white/55">
           <input
             type="checkbox"
@@ -295,6 +361,7 @@ export default function BookingIntake() {
           />
           <span>{CONSENT_TEXT}</span>
         </label>
+        )}
 
         {error && (
           <p role="alert" className="text-[0.85rem] text-red-300">
@@ -314,7 +381,13 @@ export default function BookingIntake() {
           * for.
           */}
         <PrimaryButton type="submit" disabled={state === 'sending' || available === 0}>
-          {state === 'sending' ? 'Confirming…' : 'Confirm booking'}
+          {state === 'sending'
+            ? moving
+              ? 'Moving…'
+              : 'Confirming…'
+            : moving
+              ? 'Move my call'
+              : 'Confirm booking'}
         </PrimaryButton>
       </div>
     </form>
