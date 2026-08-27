@@ -64,6 +64,37 @@ export default function RootLayout({ children }) {
         <link rel="preload" href="/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/satoshi.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/zodiak.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+
+        {/*
+         * Microsoft Clarity — heatmaps and session replay.
+         *
+         * Inline and in <head>, which is where Microsoft's snippet is written
+         * to sit. It loads nothing itself: it appends an async <script> for
+         * clarity.ms and returns, so the parser is held for the microseconds
+         * that takes rather than for a network round trip. Calls made before
+         * the real tag lands queue on window.clarity.q, so the deferral costs
+         * no events.
+         *
+         * Deliberately not next/script. Its afterInteractive strategy injects
+         * after hydration — later than the first paint this is here to
+         * measure — and it would open a client boundary across the root layout
+         * for a tag that needs no React at all. The JSON-LD block below uses
+         * the same raw-script idiom for the same reason.
+         *
+         * The project id is not a secret. It is visible in the page source of
+         * every site running Clarity, and it identifies a dashboard rather
+         * than authorising anything, so there is nothing gained by moving it
+         * into an env var.
+         *
+         * ⚠ /privacy says this site uses no third-party analytics trackers.
+         * Clarity is one, and it records sessions. That sentence is false as
+         * of this commit and needs rewriting — see src/app/(site)/privacy.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "xxgqchsc0w");`,
+          }}
+        />
       </head>
       {/* overflow-x-hidden guarantees the "no horizontal scrolling" rule
           holds even if a decorative glow overshoots the viewport. */}
