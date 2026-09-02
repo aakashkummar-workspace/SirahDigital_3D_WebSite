@@ -71,6 +71,24 @@ export default function Navbar() {
   // otherwise render active on every page of the site.
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
+  /*
+   * Contact, clicked from a product page, carries the product.
+   *
+   * The two CTAs on a product page already do this — see products/[slug] —
+   * but "the contact button" is often this one, and a visitor who has just
+   * read the whole Aura page and reaches for the nav means the same thing as
+   * one who reaches for the button under the hero. Arriving at a blank "which
+   * product?" row either way is the bit that reads as the site not paying
+   * attention.
+   *
+   * Narrow on purpose: only the Contact link, and only from a product's own
+   * page. /products (the index) is not one product, so it is left alone, and
+   * every other nav item keeps the href data/nav.js gives it.
+   */
+  const productSlug = pathname.startsWith('/products/') ? pathname.split('/')[2] : null;
+  const hrefFor = (href) =>
+    href === '/contact' && productSlug ? `/contact?product=${productSlug}` : href;
+
   // Small delay on leave so the pointer can travel into the dropdown.
   // `label` rather than `true`: one item open at a time, by name.
   const openNow = (label) => { clearTimeout(closeTimer.current); setOpenMenu(label); };
@@ -140,7 +158,7 @@ export default function Navbar() {
               onBlur={link.menu ? closeSoon : undefined}
             >
               <Link
-                href={link.href}
+                href={hrefFor(link.href)}
                 className={`relative flex items-center justify-center gap-1.5 text-sm font-semibold transition-colors py-2 px-2 min-h-[44px] ${
                   isActive(link.href) ? 'text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
@@ -242,7 +260,7 @@ export default function Navbar() {
             {NAV_LINKS.map((link) => (
               <li key={link.label}>
                 <Link
-                  href={link.href}
+                  href={hrefFor(link.href)}
                   onClick={() => setMobileOpen(false)}
                   className={`block px-3 py-3 font-semibold transition-colors ${
                     isActive(link.href) ? 'text-white' : 'text-slate-400'

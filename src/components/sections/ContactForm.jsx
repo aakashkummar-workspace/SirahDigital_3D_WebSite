@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BookingStep from '@/components/booking/BookingStep';
 import { CONSENT_TEXT } from '@/data/consent';
 import { HOME_PRODUCTS } from '@/data/products';
@@ -103,6 +103,53 @@ const INTEREST_OPTIONS = [
   { id: NOT_SURE, label: 'Not sure yet' },
 ];
 
+/*
+ * Arriving from a product page with that product already ticked.
+ *
+ * `/contact?product=aura-transcriber` opens this form with Aura selected.
+ * Both CTAs on a product page carry it — "Book a demo" in the hero and the
+ * CTABand at the foot — because somebody who has just read a whole page about
+ * one product should not then be asked which product they mean.
+ *
+ * ── why the URL and not the referrer ────────────────────────────────────
+ * document.referrer would need no links changed, and it is the wrong tool: it
+ * is empty on a client-side navigation (which is how every one of these
+ * clicks actually happens), stripped by some privacy settings, and it makes
+ * the behaviour invisible from the markup. A query parameter is explicit,
+ * survives a copy-pasted link, and can be pointed at anything later.
+ *
+ * ── why it is read in an effect, not from searchParams ──────────────────
+ * Reading it server-side would be tidier, and it would opt /contact out of
+ * static generation for the whole page — a marketing page that is otherwise
+ * served straight off the CDN. useSearchParams() has the same problem in
+ * reverse: it needs a Suspense boundary, and the fallback would blink an
+ * already-rendered form out and back in.
+ *
+ * So it is read once after hydration. The chip is a convenience rather than
+ * content, it sits below the fold, and this way the page stays static and
+ * nothing moves on screen.
+ *
+ * Values are checked against the options that exist — a slug in a URL is a
+ * stranger's input, and an unknown one would otherwise set an interest the
+ * API allowlist rejects at submit time, failing the send for a reason the
+ * visitor could not see.
+ */
+const PRESELECT_PARAM = 'product';
+const VALID_INTEREST = new Set(INTEREST_OPTIONS.map((option) => option.id));
+
+function preselectedInterest(search) {
+  const params = new URLSearchParams(search || '');
+  const wanted = params
+    .getAll(PRESELECT_PARAM)
+    // `?product=a,b` as well as `?product=a&product=b`, because both are
+    // things people write by hand once they notice the parameter exists.
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim().toLowerCase())
+    .filter((value) => VALID_INTEREST.has(value));
+
+  return [...new Set(wanted)];
+}
+
 const CHIP =
   'inline-flex min-h-[44px] items-center rounded-full border px-4 text-[0.875rem] ' +
   'font-medium transition-all duration-300 ease-brand';
@@ -138,6 +185,19 @@ export default function ContactForm() {
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState('idle');
   const [statusMessage, setStatusMessage] = useState('');
+
+  /*
+   * Tick whatever the link asked for, once, after hydration.
+   *
+   * Only when nothing is selected yet: the effect is a starting position, not
+   * an override. If a visitor has already touched the row — or React re-runs
+   * this in development's double-invoked StrictMode — their choice stands.
+   */
+  useEffect(() => {
+    const wanted = preselectedInterest(window.location.search);
+    if (!wanted.length) return;
+    setForm((f) => (f.interest.length ? f : { ...f, interest: wanted }));
+  }, []);
 
   /*
    * There is nothing to warm up any more.

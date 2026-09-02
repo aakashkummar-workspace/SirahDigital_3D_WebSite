@@ -108,7 +108,11 @@ export default function ProductPage({ params }) {
            */}
           <Reveal delay={320} duration={700} y={14}>
             <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
-              <PrimaryButton href="/contact" arrow>
+              {/* Carries the product, so the enquiry form on the other end
+                  opens with this one already ticked rather than asking a
+                  visitor who just read a whole page about it. See
+                  PRESELECT_PARAM in sections/ContactForm.jsx. */}
+              <PrimaryButton href={`/contact?product=${product.slug}`} arrow>
                 Book a demo
               </PrimaryButton>
               {/* A product with a landing page of its own gets a second
@@ -211,6 +215,7 @@ export default function ProductPage({ params }) {
         {/* A product with its own offer states it here; the rest fall back to
             the walkthrough line, which is true of all three. */}
         <CTABand
+          href={`/contact?product=${product.slug}`}
           title={detail?.offer?.title || `Want to see ${product.title} on your data?`}
           subtitle={
             detail?.offer?.subtitle ||
