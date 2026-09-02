@@ -19,11 +19,43 @@ export default function ServicesHero() {
   const reduced = useReducedMotion();
   const shown = inView || reduced;
 
+  /*
+   * One fold exactly, and the arithmetic is the point.
+   *
+   * The section was min-h-[60vh], so the hero ended well above the fold and
+   * the pinned experience below it was already showing on load — the opening
+   * statement sharing the screen with the thing it is meant to hand over to.
+   *
+   * 100svh minus 72px, not 100svh: the (site) layout puts pt-[72px] on <main>
+   * to clear the fixed navbar, so a full-viewport hero would start 72px down
+   * and run 72px past the bottom edge. Subtracting the navbar is what makes
+   * the fold land on the screen rather than merely fill a viewport's worth
+   * of it.
+   *
+   * svh rather than vh because vh on a phone is measured against the viewport
+   * with the URL bar retracted — taller than what is actually visible on load
+   * — which would push the scroll hint below the fold on exactly the devices
+   * it matters most on. FullScreenCTA at the foot of this same page already
+   * uses svh for the same reason.
+   *
+   * min-h, so a short screen or a long translation grows the section rather
+   * than clipping it — and py-10 rather than the py-12 this had, because at
+   * 12 the stack (label, four heading lines, paragraph, scroll hint) measured
+   * 833px against an 828px fold on a 900px screen and overflowed it by five.
+   * Losing 16px of padding is what makes the content actually fit inside the
+   * screen it is sized to.
+   *
+   * The value is copied from the homepage hero rather than invented — see
+   * sections/Hero.jsx, which has always opened on exactly this fold. The two
+   * front doors of the site now measure the same. (Tailwind inserts the
+   * whitespace calc() needs around the minus when it emits the rule, which is
+   * why this reads as `100svh-72px` here and not `100svh_-_72px`.)
+   */
   return (
     <section
       ref={ref}
       aria-labelledby="services-hero-title"
-      className="relative min-h-[60vh] flex flex-col justify-center max-w-6xl mx-auto px-6 pt-12 pb-12"
+      className="relative min-h-[calc(100svh-72px)] flex flex-col justify-center max-w-6xl mx-auto px-6 py-10"
     >
       <p
         className="text-fluid-xs uppercase tracking-[0.35em] font-semibold text-brand-cyan"

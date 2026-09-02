@@ -272,8 +272,16 @@ textarea:focus-visible,
   /* Treated as a primary, because it is one — and the first one a keyboard
      visitor meets. Opaque rather than 4% glass, though: it appears over
      whatever happens to be at the top of the page, so it cannot borrow its
-     legibility from the backdrop the way a button sitting in a section can. */
-  position: relative;
+     legibility from the backdrop the way a button sitting in a section can.
+
+     There was a second `position: relative` in this block, below, added with
+     the opaque treatment and overriding the `absolute` above it. It cost 24px
+     at the top of every page on the site: relative positioning leaves the
+     element in flow, so `top: -100px` moved the link out of sight without
+     moving it out of the layout, and every route rendered its content 24px
+     lower than it was written to sit — a gap under the fixed navbar that
+     looked like padding nobody could find. `isolation: isolate` was the part
+     that actually needed adding, and it works on an absolute box. */
   isolation: isolate;
   background-color: #0b091a;
   color: #ffffff;
