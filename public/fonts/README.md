@@ -1,50 +1,50 @@
 # Fonts
 
-Three self-hosted variable webfonts. Satoshi and Zodiak come from
-[Fontshare](https://www.fontshare.com); Cormorant Garamond comes from
-[Google Fonts](https://fonts.google.com/specimen/Cormorant+Garamond).
+Two self-hosted variable webfonts, both from
+[Fontshare](https://www.fontshare.com).
 
 | File | Axis | Role |
 |---|---|---|
-| `cormorant-garamond.woff2` | wght 300–700 | every heading (`h1`, `h2`, `h3`) |
-| `satoshi.woff2` | wght 300–900 | every paragraph, label, button, description |
-| `zodiak.woff2` | wght 100–900 | every digit, inside both of the above |
+| `satoshi.woff2` | wght 300–900 | everything — headings, paragraphs, labels, buttons |
+| `zodiak.woff2` | wght 100–900 | every digit, inside Satoshi |
 
-118 KB for all three — lighter than the single Inter Tight pairing the site
+~80 KB for the pair, and lighter than the single Inter Tight pairing the site
 shipped with before.
 
-Cormorant's axis tops out at **700**, not 900 — a heading asking for
-`font-weight: 800` gets a synthesised bold rather than a real cut, so keep
-headings at 700 or below.
+## One face, two variables
 
-## The heading face has changed twice
+`--font-sans` and `--font-display` both resolve to Satoshi. Headings are
+separated from body text by weight, size and tracking rather than by a second
+typeface.
 
-Boska (Fontshare serif) → Clash Display (geometric sans) → Cormorant Garamond.
-Both earlier files have been deleted. Only the last hop matters for anything
-you might be reading this to do, and it carries one thing the others did not:
+The two variables are kept apart on purpose. Nine stylesheets ask for
+`var(--font-display)` by name and several others opt *out* of it deliberately
+(see `.work-group__label` in `globals.css`); those are statements about a
+role, not about a filename. Pointing both at one face is a design decision
+reversible in a single line — deleting the distinction would not be.
 
-### `size-adjust: 110%`
+Satoshi's axis runs to **900**, so headings can take a real 800 or 900 cut.
+The previous heading face stopped at 700 and synthesised anything above it.
 
-Cormorant is drawn with a small x-height by design — 0.386em, against 0.500em
-for Satoshi. Dropped in at the same `font-size` it looks about a quarter
-smaller than the face it replaced, and every heading clamp on the site was
-tuned against the taller ones.
+## The heading face has changed three times
 
-110% is **cap-height parity**, not x-height parity:
+Boska (Fontshare serif) → Clash Display (geometric sans) → Cormorant Garamond
+(Google serif) → Satoshi. Every earlier file has been deleted; all of them are
+recoverable from git history if a hop needs revisiting.
 
-| | Cormorant @110% | Clash Display |
-|---|---|---|
-| cap-height | 0.688em | 0.670em |
-| x-height | 0.425em | 0.504em |
+### Why Satoshi needs no `size-adjust`
 
-x-height parity would need 130%, which blows the caps to 0.81em. Matching caps
-keeps a heading's silhouette where it was and leaves the small x-height alone —
-that is the face's character, not a defect.
+Cormorant carried `size-adjust: 110%`, and it was a layout constant as much as
+a type one. Cormorant is drawn with a small x-height — 0.386em — so at a given
+`font-size` it looked about a quarter smaller than the Clash Display every
+heading clamp on this site had been tuned against. 110% was cap-height parity
+with Clash (0.688em against 0.670em), chosen so advance widths landed within a
+few percent of where Clash had them and nothing fitted to a container moved.
 
-**It is a layout constant as much as a type one.** `size-adjust` scales advance
-widths too. 110% was picked partly because it lands every measured string
-within a few percent of where Clash Display had it, so nothing fitted to a
-container had to move. If you change it, re-check:
+Satoshi needs no equivalent: its x-height is 0.500em against Clash's 0.504em,
+so it lands where those clamps already expect. If a future face does need a
+correction, the three places to re-check are the ones that measure strings
+against containers:
 
 - the uppercase category on the products cylinder (`portfolio-cylinder.module.css`)
 - the hub row's product names (`home-products.module.css`)

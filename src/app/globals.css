@@ -5,19 +5,18 @@
 /* ---------------------------------------------------------------------- */
 /* Typefaces                                                               */
 /*                                                                         */
-/* Three self-hosted variable webfonts, in public/fonts/. Satoshi and       */
-/* Zodiak come from Fontshare; Cormorant Garamond is Google's, taken as the */
-/* latin subset of its variable roman rather than through next/font/google, */
-/* so that all three faces load the same way.                               */
+/* Two self-hosted variable webfonts, in public/fonts/. Both come from      */
+/* Fontshare. A third — Cormorant Garamond, the old heading face — was      */
+/* dropped when headings moved to Satoshi; nothing referenced it after      */
+/* that, so the file, its @font-face and its preload went with it.          */
 /*                                                                         */
-/*   Cormorant Garamond  every heading                                     */
-/*   Satoshi            every paragraph, label, button and description     */
-/*   Zodiak             every digit, in both of the above                  */
+/*   Satoshi   every heading, paragraph, label, button and description      */
+/*   Zodiak    every digit, inside Satoshi                                  */
 /*                                                                         */
 /* Licence: Fontshare releases are free for personal AND commercial use.    */
 /* Nothing here needs a purchase before it ships.                           */
 /*                                                                         */
-/* All three are true VARIABLE, ROMAN cuts, verified against the files.     */
+/* Both are true VARIABLE, ROMAN cuts, verified against the files.         */
 /*                                                                         */
 /* Re-fetching these is a two-part trap and both halves fail silently.      */
 /* Fontshare's "@variable" CSS lists many @font-face blocks: several static */
@@ -38,46 +37,18 @@
 /* renders every heading in the fallback.                                   */
 /* ---------------------------------------------------------------------- */
 
-@font-face {
-  font-family: 'Cormorant Garamond';
-  src: url('/fonts/cormorant-garamond.woff2') format('woff2');
-  /* The real fvar axis read off the file. Declaring a wider range than the
-     font carries lets the browser synthesise weights outside it — and note
-     this one stops at 700, so a heading asking for 800 gets a fake bold. */
-  font-weight: 300 700;
-  font-style: normal;
-  font-display: swap;
-
-  /*
-   * The one line that makes a Garamond usable as a drop-in heading face.
-   *
-   * Cormorant is drawn with a deliberately small x-height — 0.386em, against
-   * 0.500em for Satoshi and 0.504em for the Clash Display this replaced. Set
-   * at the same font-size it therefore looks about a quarter smaller than
-   * either, and every heading clamp on this site was tuned against the taller
-   * faces. Without a correction the whole site's headings quietly shrink.
-   *
-   * 110% is cap-height parity, not x-height parity, and the difference is the
-   * whole decision:
-   *
-   *   cap-height  0.625 x 1.10 = 0.688em   vs Clash Display's 0.670em
-   *   x-height    0.386 x 1.10 = 0.425em   vs Clash Display's 0.504em
-   *
-   * Correcting all the way to x-height parity would need 130%, which would
-   * blow the caps out to 0.81em and make the ascenders and descenders
-   * enormous. Matching caps keeps the silhouette of a heading where it was
-   * while leaving the small x-height alone — that is not a defect to be
-   * corrected, it is what makes the face look like the reference.
-   *
-   * size-adjust scales advance widths too, which is why this number is also
-   * a layout constant. At 110% every measured string on the site lands within
-   * a few percent of where Clash Display had it, so nothing that was fitted
-   * to a container had to move. Changing it means re-checking those: the
-   * uppercase category on the products cylinder, the hub row's product names,
-   * and the "ABOUT" wordmark in about-statement.module.css.
-   */
-  size-adjust: 110%;
-}
+/*
+ * Cormorant Garamond used to be declared here, as the heading face, carrying
+ * `size-adjust: 110%` to fake the x-height of the Clash Display it replaced.
+ * Headings are Satoshi now, so the face, the file and the correction are all
+ * gone together — see --font-display below.
+ *
+ * The number is recorded because it was a layout constant as much as a type
+ * one: 110% was cap-height parity with Clash (0.688em against 0.670em), and
+ * it was chosen so that advance widths landed within a few percent of where
+ * Clash had them. Satoshi needs no equivalent — its x-height is 0.500em
+ * against Clash's 0.504em, so it fits the existing clamps as drawn.
+ */
 
 @font-face {
   font-family: 'Satoshi';
@@ -92,7 +63,7 @@
  *
  * `unicode-range` does the whole job. Zodiak is declared for U+0030-0039 and
  * nothing else, so sitting first in a stack it supplies only the digits and
- * the browser falls through to Cormorant or Satoshi for every letter. One
+ * the browser falls through to Satoshi for every letter. One
  * declaration, and every number on the site changes — the 01/02/03 on
  * /products, the client-systems numbering, the ROI figures, the metrics, the
  * phone number in the footer.
@@ -152,12 +123,29 @@
 :root {
   /*
    * Zodiak sits first in both stacks and covers only U+0030-0039, so it
-   * supplies the digits while Cormorant Garamond or Satoshi supplies
-   * everything else.
+   * supplies the digits while Satoshi supplies everything else.
    * See the @font-face note above.
+   *
+   * ── the two stacks are the same face now ────────────────────────────
+   * --font-display was Cormorant Garamond, and before that Clash Display,
+   * and before that Boska. Headings are Satoshi: the hierarchy is carried by
+   * weight, size and tracking rather than by a second face.
+   *
+   * The variable is kept rather than folded into --font-sans, and that is
+   * deliberate. Nine stylesheets ask for var(--font-display) by name, and
+   * several more opt *out* of it on purpose — see .work-group__label. Those
+   * are statements about a role, not about a filename, and collapsing them
+   * would throw away the site's record of which type is display and which is
+   * body. Pointing the two at one face is a design decision that can be
+   * reversed in this one line; deleting the distinction cannot.
+   *
+   * On the metrics: the heading clamps across the site were tuned against
+   * Clash Display (x-height 0.504em) and Cormorant carried size-adjust:110%
+   * to imitate it. Satoshi's x-height is 0.500em, so it lands where those
+   * clamps expect without a correction of its own.
    */
   --font-sans: 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
-  --font-display: 'Zodiak Numerals', 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
 
   --space: #0b0e17;
   --space-deep: #070910;
@@ -1418,8 +1406,9 @@ textarea:autofill {
 
 .work-group__label {
   /* An <h2> by markup, a label by job. Opts out of the site-wide display
-     face: Cormorant is a high-contrast Garamond, and at 11px uppercase on
-     0.32em tracking its hairlines drop out altogether. */
+     face. It read as a hairline problem when the display face was a
+     high-contrast Garamond; it is a role decision now that both stacks are
+     Satoshi, and it stays because this is a label, not a heading. */
   font-family: var(--font-sans);
   font-size: 0.6875rem;
   font-weight: 500;

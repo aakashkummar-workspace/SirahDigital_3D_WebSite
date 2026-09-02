@@ -6,18 +6,19 @@ import { SOCIALS } from "@/data/socials";
  * Typefaces are self-hosted, not loaded here.
  *
  * The site had no webfont at all originally, then Inter Tight via
- * next/font/google. It now runs three faces declared in
- * globals.css — Cormorant Garamond for headings, Satoshi for body, Zodiak
- * for digits.
- * next/font is gone from this file entirely: none of the three is in Google's
- * catalogue, so none of them can come through it.
+ * next/font/google. It now runs two faces declared in globals.css — Satoshi
+ * for headings and body alike, Zodiak for digits. Headings were Cormorant
+ * Garamond until the type was reset onto one face; its preload came out with
+ * it, which is a request and ~40KB off every cold load.
+ * next/font is gone from this file entirely: neither face is in Google's
+ * catalogue, so neither can come through it.
  *
  * What that costs, and why it is accepted: next/font does two things a plain
  * @font-face does not — it emits a <link rel=preload> for the file, and it
  * derives a size-adjusted local fallback so the swap does not shift layout.
- * Both are given up here. The mitigation is that all three files are small
- * variable cuts (~110KB together, less than the single Google pairing that
- * preceded them) and every one is declared font-display: swap.
+ * Both are given up here. The mitigation is that both files are small
+ * variable cuts, less than the single Google pairing that preceded them, and
+ * each is declared font-display: swap.
  *
  * Geist, Satoshi and General Sans were the brief's original choices. Satoshi
  * is now in. The note that used to sit here claiming it "would need a
@@ -61,7 +62,6 @@ export default function RootLayout({ children }) {
          * match the later fetch is discarded and re-fetched, which is worse
          * than not preloading at all.
          */}
-        <link rel="preload" href="/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/satoshi.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/zodiak.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
 
