@@ -66,6 +66,39 @@ export default function RootLayout({ children }) {
         <link rel="preload" href="/fonts/zodiak.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
 
         {/*
+         * Google Tag Manager — container GTM-P8WXN8JS.
+         *
+         * Same raw-script idiom as Clarity below, for the same reasons: inline,
+         * in <head>, and deliberately not next/script. Google's instruction is
+         * "as high in the <head> as possible" — anything the container is meant
+         * to measure that happens before it lands is simply not measured. It
+         * sits under the font preloads only so those two requests still start
+         * with the document.
+         *
+         * The snippet does no network work itself: it seeds window.dataLayer,
+         * pushes a gtm.start timestamp and appends an async <script> for
+         * gtm.js. Events pushed to dataLayer before the container arrives are
+         * not lost — it is a plain array that GTM drains on load.
+         *
+         * GA4 is deliberately not a second snippet here. It is configured as a
+         * tag inside this container, so the measurement id lives in the GTM UI
+         * rather than in this file. Pasting gtag.js alongside this is the
+         * standard way to count every pageview twice.
+         *
+         * The container id is not a secret, for the same reason the Clarity
+         * project id below is not.
+         *
+         * ⚠ This is a second tracker, and unlike Clarity it is a container that
+         * can load arbitrary further tags without this file changing. /privacy
+         * is updated in the same commit — see src/app/(site)/privacy.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P8WXN8JS');`,
+          }}
+        />
+
+        {/*
          * Microsoft Clarity — heatmaps and session replay.
          *
          * Inline and in <head>, which is where Microsoft's snippet is written
@@ -99,6 +132,26 @@ export default function RootLayout({ children }) {
       {/* overflow-x-hidden guarantees the "no horizontal scrolling" rule
           holds even if a decorative glow overshoots the viewport. */}
       <body className="bg-space antialiased m-0 p-0 overflow-x-hidden">
+        {/*
+          GTM's no-JavaScript fallback, which Google specifies immediately
+          after the opening <body> tag — so it goes above the JSON-LD block
+          rather than at the end of the body.
+
+          It has to stay a bare iframe: it is the only route by which a client
+          with JavaScript disabled registers with the container at all, and it
+          cannot be deferred or wrapped in a component without losing that.
+          Hidden and zero-sized, so it renders nothing, but it is not
+          decorative. style is an object here, not a string — JSX will not take
+          the raw `style="display:none;visibility:hidden"` from Google's HTML.
+        */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-P8WXN8JS"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         {/*
           Organization schema. The site this replaced shipped one and this app
           did not, which was a straight regression: it is what ties the brand
