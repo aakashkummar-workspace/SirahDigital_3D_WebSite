@@ -137,84 +137,67 @@ export async function POST(request) {
     submittedAt,
   };
 
-  /*
-   * Store first, notify second.
-   *
-   * The order is deliberate. A WhatsApp message is a courtesy that can be
-   * re-sent by hand; the row is the only thing that still exists tomorrow. If
-   * the gateway is up and the CMS is down, writing the row first means the
-   * enquiry survives — whereas notifying first and crashing loses it entirely,
-   * which is the failure this whole change exists to end.
-   */
   // Which form this came from, allowlisted. Recorded on the lead so the team can
   // tell an enquiry with a written brief from a straight booking — the two flows
   // are otherwise identical now, and both end on the calendar.
   const form = KNOWN_SOURCES.has(sourcePath) ? sourcePath : '/contact';
 
   let stored = false;
-  if (leadStoreConfigured) {
-    try {
-      await storeLead({
-        ...trimmed,
-        /*
-         * The "[Interested in: ...]" prefix that used to be glued onto the
-         * message is gone: Leads now has a real `interests` column, so the
-         * answer is stored as data rather than smuggled through prose. The
-         * booking email reads it from there.
-         */
-        message: trimmed.message,
-        interests,
-        sourcePath: form,
-        consentGivenAt: submittedAt,
-        consentText: consentRecord(),
-        ipHash: hashIp(request),
-      });
-      stored = true;
-    } catch (err) {
-      // Loud, and with the lead inlined: this log line is the only remaining
-      // copy of the enquiry when the CMS is unreachable.
-      console.error('[lead] CMS store FAILED - enquiry exists only in this log:', err?.message, lead);
-    }
-  }
-
-  // Confirm to the person on the number they typed, and alert the team if a
-  // team recipient is configured. Both are best-effort: a gateway failure must
-  // not cost us the lead, so we log and carry on rather than failing the POST.
   let confirmed = false;
   let notified = false;
 
   /*
-   * Sent from both forms, because both now end on the calendar.
+   * The three jobs run together, not one after another.
    *
-   * This was briefly restricted to /contact, when that form finished with "we
-   * will be in touch shortly" and /book went on to the calendar — the old
-   * wording promised a call to schedule, which contradicted anyone mid-booking.
-   * Both flows are the same now, and formatConfirmation was rewritten to suit
-   * them: it acknowledges the enquiry and carries the booking link rather than
-   * promising to arrange the time for them.
+   * They are independent: the WhatsApp messages do not read the stored row, and
+   * the row does not wait on them. Run in sequence the visitor sat through the
+   * CMS write and two gateway calls back to back — up to 30 seconds in the worst
+   * case — on the "One moment…" button. Each job still catches its own failure,
+   * so one being down never costs the others, and the lead row is still written
+   * even if both messages fail.
    *
-   * Its real audience is whoever fills in a form and then closes the tab without
-   * choosing a slot. The link is how they finish unaided; for anyone who does
-   * book, it simply arrives a moment before their confirmation and contradicts
-   * none of it.
+   * The confirmation is sent from both forms because both end on the calendar;
+   * its real audience is whoever closes the tab without choosing a slot.
    */
-  if (whatsappReady) {
-    try {
-      await sendWhatsAppText({ to: leadNumber, text: formatConfirmation(lead) });
-      confirmed = true;
-    } catch (err) {
-      console.error('[lead] WhatsApp confirmation failed:', err?.message, leadNumber);
-    }
-  }
-
-  if (whatsappConfigured) {
-    try {
-      await sendWhatsAppText({ text: formatLead(lead) });
-      notified = true;
-    } catch (err) {
-      console.error('[lead] WhatsApp team notify failed:', err?.message, lead);
-    }
-  }
+  await Promise.all([
+    (async () => {
+      if (!leadStoreConfigured) return;
+      try {
+        await storeLead({
+          ...trimmed,
+          message: trimmed.message,
+          interests,
+          sourcePath: form,
+          consentGivenAt: submittedAt,
+          consentText: consentRecord(),
+          ipHash: hashIp(request),
+        });
+        stored = true;
+      } catch (err) {
+        // Loud, and with the lead inlined: this log line is the only remaining
+        // copy of the enquiry when the CMS is unreachable.
+        console.error('[lead] CMS store FAILED - enquiry exists only in this log:', err?.message, lead);
+      }
+    })(),
+    (async () => {
+      if (!whatsappReady) return;
+      try {
+        await sendWhatsAppText({ to: leadNumber, text: formatConfirmation(lead) });
+        confirmed = true;
+      } catch (err) {
+        console.error('[lead] WhatsApp confirmation failed:', err?.message, leadNumber);
+      }
+    })(),
+    (async () => {
+      if (!whatsappConfigured) return;
+      try {
+        await sendWhatsAppText({ text: formatLead(lead) });
+        notified = true;
+      } catch (err) {
+        console.error('[lead] WhatsApp team notify failed:', err?.message, lead);
+      }
+    })(),
+  ]);
 
   if (!WEBHOOK) {
     /*

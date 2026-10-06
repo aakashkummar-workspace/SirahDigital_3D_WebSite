@@ -64,8 +64,8 @@ const A = {
    * Per seat covers rollout, integration and training; per transaction covers
    * building and running the automation that handles that volume.
    */
-  COST_PER_SEAT: 240,
-  COST_PER_1K_TRANSACTIONS: 600,
+  COST_PER_SEAT: 20000,
+  COST_PER_1K_TRANSACTIONS: 50000,
   /** Ongoing support, hosting and model costs as a share of build, per year. */
   RUN_COST_SHARE: 0.25,
 };
@@ -166,11 +166,16 @@ export function calculateROI(input) {
 
 /* ── formatting ─────────────────────────────────────────────────────────── */
 
+/**
+ * Indian rupees, in the units people here actually say aloud: lakh (1,00,000)
+ * and crore (1,00,00,000), not thousands and millions.
+ */
 export const money = (n) => {
   const v = Math.round(n);
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(v >= 10_000_000 ? 0 : 1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(v >= 100_000 ? 0 : 1)}K`;
-  return `$${v}`;
+  if (v >= 10_000_000) return `₹${(v / 10_000_000).toFixed(v >= 100_000_000 ? 0 : 2)} Cr`;
+  if (v >= 100_000) return `₹${(v / 100_000).toFixed(v >= 1_000_000 ? 0 : 1)} L`;
+  if (v >= 1_000) return `₹${(v / 1_000).toFixed(v >= 10_000 ? 0 : 1)}K`;
+  return `₹${v}`;
 };
 
 /**
@@ -180,9 +185,9 @@ export const money = (n) => {
  * the visitor's browser do not have to agree — an en-IN server renders 100000
  * as "1,00,000" while an en-US browser renders "100,000", which React reports
  * as a hydration mismatch and repaints. Pinning the locale makes both sides
- * produce the same string.
+ * produce the same string. en-IN, to match the rupee amounts it sits beside.
  */
-export const num = (n) => Number(n).toLocaleString('en-US');
+export const num = (n) => Number(n).toLocaleString('en-IN');
 
 export const compact = (n) => {
   const v = Math.round(n);

@@ -24,7 +24,7 @@ export default function CalculatorCTA({ result, input }) {
   const downloadReport = () => {
     const rows = [
       ['Annual cost savings', money(result.annualSavings)],
-      ['Hours saved per year', `${compact(result.hoursSaved)} hours`],
+      ['Hours saved per month', `${compact(result.hoursSaved / 12)} hours`],
       ['Revenue opportunity', money(result.revenueOpportunity)],
       ['Estimated ROI', `${Math.round(result.roi)}%`],
       ['Payback period', `${result.paybackMonths.toFixed(1)} months`],
@@ -36,7 +36,7 @@ export default function CalculatorCTA({ result, input }) {
       ['Industry', result.industry.label],
       ['Business size', result.size.label],
       ['Team size', `${input.teamSize} employees`],
-      ['Average hourly cost', `$${input.hourlyCost}`],
+      ['Average hourly cost', `₹${num(input.hourlyCost)}`],
       ['Manual hours per week', `${input.manualHours} per person`],
       ['Current automation', `${input.currentAutomation}%`],
     ];
@@ -64,10 +64,12 @@ export default function CalculatorCTA({ result, input }) {
   .v{text-align:right;font-variant-numeric:tabular-nums}
   .strong{font-weight:700;font-size:16px}
   .note{margin-top:36px;padding:14px 16px;background:#f6f5fc;border-left:3px solid #6366F1;color:#444;font-size:12px}
-  .brand{font-weight:800;letter-spacing:.04em}
+  .brandrow{display:flex;align-items:center;gap:12px;margin:0 0 18px}
+  .brandrow img{width:40px;height:auto;display:block}
+  .brand{font-weight:800;font-size:18px;letter-spacing:.04em}
   @media print{body{padding:24px}}
 </style></head><body>
-<p class="brand">${COMPANY.name}</p>
+<div class="brandrow"><img id="logo" src="${window.location.origin}/logo-mark.png" alt="" width="40"><span class="brand">${COMPANY.name}</span></div>
 <h1>AI Automation Impact Report</h1>
 <p class="sub">Prepared for a ${result.size.label.toLowerCase()} in ${result.industry.label}.</p>
 <h2>Projected annual impact</h2>
@@ -89,8 +91,23 @@ figures based on your actual processes. ${COMPANY.email} &middot; ${COMPANY.phon
     w.document.write(html);
     w.document.close();
     w.focus();
-    // Let the new document lay out before invoking the print dialog.
-    setTimeout(() => w.print(), 350);
+    // Print once the logo has loaded — the window is about:blank, so the image
+    // is fetched after write() and printing at once would catch it half-drawn.
+    // The timeout is the fallback for a logo that fails or never settles.
+    const logo = w.document.getElementById('logo');
+    let printed = false;
+    const printOnce = () => {
+      if (printed) return;
+      printed = true;
+      w.print();
+    };
+    if (logo && !logo.complete) {
+      logo.onload = printOnce;
+      logo.onerror = printOnce;
+      setTimeout(printOnce, 2500);
+    } else {
+      setTimeout(printOnce, 350);
+    }
   };
 
   return (

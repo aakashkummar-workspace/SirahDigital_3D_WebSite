@@ -94,6 +94,22 @@
 }
 
 /*
+ * The at sign.
+ *
+ * Satoshi draws "@" as a stylised glyph that reads as a different character at
+ * body size, which is exactly wrong for an email address — people read these
+ * letter by letter before typing them. Same mechanism as the numerals above: a
+ * face restricted by unicode-range to U+0040 alone, sitting first in the stack,
+ * so it supplies that one character from the visitor's own system font and
+ * everything else falls through to Satoshi. local() only, so no file is added.
+ */
+@font-face {
+  font-family: 'At Sign';
+  src: local('Segoe UI'), local('Helvetica Neue'), local('Helvetica'), local('Arial'), local('Roboto');
+  unicode-range: U+0040;
+}
+
+/*
  * The same file again, under a second name, with NO unicode-range.
  *
  * 'Zodiak Numerals' above is deliberately restricted to the digits, which is
@@ -144,8 +160,8 @@
    * to imitate it. Satoshi's x-height is 0.500em, so it lands where those
    * clamps expect without a correction of its own.
    */
-  --font-sans: 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
-  --font-display: 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
+  --font-sans: 'At Sign', 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
+  --font-display: 'At Sign', 'Zodiak Numerals', 'Satoshi', system-ui, sans-serif;
 
   --space: #0b0e17;
   --space-deep: #070910;

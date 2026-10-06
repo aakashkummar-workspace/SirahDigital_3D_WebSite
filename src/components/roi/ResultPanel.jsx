@@ -61,12 +61,12 @@ export default function ResultPanel({ result, accent }) {
       {/* ── secondary: hours ─────────────────────────────────────────────── */}
       <div className="mt-9">
         <AnimatedCounter
-          value={result.hoursSaved}
+          value={result.hoursSaved / 12}
           format={fHours}
           className="block font-semibold tabular-nums leading-none text-white"
           style={{ fontSize: 'clamp(1.6rem, 1.2rem + 1.4vw, 2rem)' }}
         />
-        <p className="mt-2 text-[13px] text-white/55">Hours saved per year</p>
+        <p className="mt-2 text-[13px] text-white/55">Hours saved per month</p>
       </div>
 
       {/* ── supporting figures, as text rows rather than cards ───────────── */}
