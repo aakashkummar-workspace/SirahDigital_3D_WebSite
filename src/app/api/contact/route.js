@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import {
   sendWhatsAppText, formatLead, formatConfirmation, normalise,
   whatsappConfigured, whatsappReady,
@@ -159,8 +160,8 @@ export async function POST(request) {
    * The confirmation is sent from both forms because both end on the calendar;
    * its real audience is whoever closes the tab without choosing a slot.
    */
-  await Promise.all([
-    (async () => {
+  const storing = (
+(async () => {
       if (!leadStoreConfigured) return;
       try {
         await storeLead({
@@ -178,7 +179,10 @@ export async function POST(request) {
         // copy of the enquiry when the CMS is unreachable.
         console.error('[lead] CMS store FAILED - enquiry exists only in this log:', err?.message, lead);
       }
-    })(),
+    })()
+  );
+
+  const messaging = Promise.all([
     (async () => {
       if (!whatsappReady) return;
       try {
@@ -198,6 +202,24 @@ export async function POST(request) {
       }
     })(),
   ]);
+
+  await storing;
+  /*
+   * The visitor does not wait for WhatsApp once the lead is safe.
+   *
+   * The gateway can be slow or down — a disconnected session answers only after
+   * the full 10-second timeout, twice over — and the messages are a courtesy:
+   * the stored row is the enquiry. So when the row exists the sends carry on
+   * after the response (waitUntil keeps the function alive for them) and the
+   * button clears as soon as the CMS write is done. When nothing was stored the
+   * messages may be the only record, so that case still waits for them and
+   * reports honestly below.
+   */
+  if (stored) {
+    waitUntil(messaging);
+  } else {
+    await messaging;
+  }
 
   if (!WEBHOOK) {
     /*
